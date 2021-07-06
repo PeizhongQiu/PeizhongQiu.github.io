@@ -197,7 +197,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/p/27d3c010.html" class="post-title-link" itemprop="url">虚拟化1</a>
+            <a href="/p/27d3c010.html" class="post-title-link" itemprop="url">系统虚拟化读书笔记（一）</a>
         </h2>
 
         <div class="post-meta">
@@ -208,7 +208,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-07-06 10:18:14 / 修改时间：19:01:59" itemprop="dateCreated datePublished" datetime="2021-07-06T10:18:14+08:00">2021-07-06</time>
+              <time title="创建时间：2021-07-06 10:18:14 / 修改时间：20:16:53" itemprop="dateCreated datePublished" datetime="2021-07-06T10:18:14+08:00">2021-07-06</time>
             </span>
 
           
@@ -222,7 +222,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          
+          <p>虚拟化就是由位于下层的软件模块，通过向上一层软件模块提供一个与它原先所期待的运行环境完全一致的接口的方法，抽象出一个虚拟的软件或硬件接口，使得上层软件可以直接运行在虚拟的环境上。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/p/27d3c010.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -272,7 +280,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-03-25 20:46:11" itemprop="dateModified" datetime="2021-03-25T20:46:11+08:00">2021-03-25</time>
+                <time title="修改时间：2021-07-06 19:31:54" itemprop="dateModified" datetime="2021-07-06T19:31:54+08:00">2021-07-06</time>
               </span>
 
           
@@ -289,15 +297,14 @@
           <h2 id="显示转换"><a href="#显示转换" class="headerlink" title="显示转换"></a>显示转换</h2><p>形式： </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cast-name&lt;type&gt;(expression)</span><br></pre></td></tr></table></figure>
 <p>type为转换的目标类型，expression为要转换的值。如果type为引用类型，则结果为左值。<br>cast-name有四种类型。static_cast，dynamic_cast，const_cast，reinterpret_cast。</p>
-<h3 id="static-cast"><a href="#static-cast" class="headerlink" title="static_cast"></a>static_cast</h3><p>任何具有明确定义的类型转换，只要不包含底层const，都可以使用static_cast。<br>static_cast 可以被用于强制隐形转换（例如，non-const对象转换为const对象，int转型为double，等等），它还可以用于很多这样的转换的反向转换 （例如，void*指针转型为有类型指针，基类指针转型为派生类指针），但是它不能将一个const对象转型为non-const对象（只有 const_cast能做到），它最接近于C-style的转换。应用到类的指针上，意思是说它允许子类类型的指针转换为父类类型的指针（这是一个有效的隐式转换），同时，也能够执行相反动作：转换父类为它的子类。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">double slope &#x3D; static_cast&lt;double&gt;(j) &#x2F; i;</span><br></pre></td></tr></table></figure>
-<h3 id="const-cast"><a href="#const-cast" class="headerlink" title="const _cast"></a>const _cast</h3><p>const_cast 只能改变运算对象的底层const。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">const char *pc;</span><br><span class="line">char *p &#x3D; const_cast&lt;char *&gt;(pc);</span><br></pre></td></tr></table></figure>
-<p>对于将常量转换为非常量的行为称为”cast away the const“（去掉const性质）。一旦我们去掉某个对象的const性质，编译器就不在阻止我们对该对象进行写操作。<br>只有const_cast能改变表达式的常量属性，使用其它形式的命名强制类型转换改变表达式的常量属性都将引发编译器错误。同样的，也不能用const_cast改变表达式的类型。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">const char * cp;</span><br><span class="line">char *q &#x3D; static_cast&lt;char *&gt;(cp); &#x2F;&#x2F;错误，static_cast不能去掉常量属性</span><br><span class="line">static_cast&lt;string&gt;(cp); &#x2F;&#x2F;正确，字符串常量转换为string类型</span><br><span class="line">const_cast&lt;string&gt;(cp);  &#x2F;&#x2F;错误，const_cast只改变常量属性</span><br></pre></td></tr></table></figure>
-<p>const_cast常用于有函数重载的上下文中。</p>
-<h3 id="reinterpret-cast"><a href="#reinterpret-cast" class="headerlink" title="reinterpret_cast"></a>reinterpret_cast</h3><p>reinterpret_cast 通常为运算对象的位模式提供较低层次上的重新解释。reinterpret_cast 是特意用于底层的强制转型，导致实现依赖（就是说，不可移植）的结果，例如，将一个指针转型为一个整数。这样的强制类型在底层代码以外应该极为罕见。操作 结果只是简单的从一个指针到别的指针的值得二进制拷贝。在类型之间指向的内容不做任何类型的检查和转换。</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/p/c07d3922.html#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -658,7 +665,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

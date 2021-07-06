@@ -70,6 +70,8 @@
     <content><![CDATA[<h2 id="显示转换"><a href="#显示转换" class="headerlink" title="显示转换"></a>显示转换</h2><p>形式： </p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cast-name&lt;type&gt;(expression)</span><br></pre></td></tr></table></figure>
 <p>type为转换的目标类型，expression为要转换的值。如果type为引用类型，则结果为左值。<br>cast-name有四种类型。static_cast，dynamic_cast，const_cast，reinterpret_cast。</p>
+<span id="more"></span>
+
 <h3 id="static-cast"><a href="#static-cast" class="headerlink" title="static_cast"></a>static_cast</h3><p>任何具有明确定义的类型转换，只要不包含底层const，都可以使用static_cast。<br>static_cast 可以被用于强制隐形转换（例如，non-const对象转换为const对象，int转型为double，等等），它还可以用于很多这样的转换的反向转换 （例如，void*指针转型为有类型指针，基类指针转型为派生类指针），但是它不能将一个const对象转型为non-const对象（只有 const_cast能做到），它最接近于C-style的转换。应用到类的指针上，意思是说它允许子类类型的指针转换为父类类型的指针（这是一个有效的隐式转换），同时，也能够执行相反动作：转换父类为它的子类。</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">double slope &#x3D; static_cast&lt;double&gt;(j) &#x2F; i;</span><br></pre></td></tr></table></figure>
 <h3 id="const-cast"><a href="#const-cast" class="headerlink" title="const _cast"></a>const _cast</h3><p>const_cast 只能改变运算对象的底层const。</p>
@@ -84,9 +86,29 @@
       </tags>
   </entry>
   <entry>
-    <title>虚拟化1</title>
+    <title>系统虚拟化读书笔记（一）</title>
     <url>/p/27d3c010.html</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p>虚拟化就是由位于下层的软件模块，通过向上一层软件模块提供一个与它原先所期待的运行环境完全一致的接口的方法，抽象出一个虚拟的软件或硬件接口，使得上层软件可以直接运行在虚拟的环境上。</p>
+<span id="more"></span>
+
+<p>在虚拟化中，物理资源通常有一个定语称为宿主（Host），而虚拟出来的资源通常有一个定语称为客户（Guest）。根据资源的不同，这两个名词的后面可以接不同的名词。</p>
+<p>系统虚拟化是指将一台物理计算机虚拟化为一台或多台虚拟计算机系统。每个虚拟计算机系统都拥有自己的虚拟硬件，来提供一个独立的虚拟机执行环境。通过虚拟化层的模拟，虚拟机中的操作系统认为自己仍然独占一个系统运行。每个虚拟机中的操作系统可以完全不同，并且执行环境是完全独立的。这个虚拟化层称为虚拟机监管器（Virtual Machine Monitor，VMM）。</p>
+<img src="/p/27d3c010/%E7%B3%BB%E7%BB%9F%E8%99%9A%E6%8B%9F%E5%8C%96.PNG" class title="图1 系统虚拟化">
+
+<p>本质上说，虚拟计算机系统和物理计算机系统可以是两个不同的ISA。但是，不同的ISA会使得虚拟机的每一条指令都需要在物理机上模拟执行，从而造成性能上的极大下降。相同的体系结构的系统虚拟化通常会有比较好的性能，VMM实现起来也比较简单。虚拟机的大部分指令可以在处理器上直接运行，只有那些需要虚拟化的指令才会由VMM进行处理。</p>
+<p>1974年，Popek和Goldberg定义了虚拟机可以看作是物理机的一种高效隔离的复制。上面的定义蕴含了三层含义：同质，高效和资源受控，这也是虚拟机所具有的三个典型特征。同质是指虚拟机的运行环境和物理机的环境在本质上需要是相同的，但在表现上能够有一些差距。例如，虚拟机所看到的处理器个数可以和物理机上实际的处理器个数不同，处理器主频和物理机不同，但是物理机上和虚拟机上的处理器必须是同一种基本类型的。高效是指虚拟机中运行的软件需要有接近在物理机上直接运行的性能。软件在虚拟机运行时，大多数指令需要直接在硬件上执行，只有少数指令需要经过VMM处理或模拟。资源受控是指VMM需要对系统的资源有完全控制能力和管理权限，包括资源的分配，监控和回收。</p>
+<p>完全虚拟化（Full Virtualization）</p>
+<p>半虚拟化（Partial-virtualization）</p>
+<p>虚拟化漏洞（Virtualization Hole）</p>
+<p>二进制代码翻译（Binary Translation）</p>
+<p>类虚拟化技术（Para-Virtualization）</p>
+<p>系统虚拟化好处：</p>
+<img src="/p/27d3c010/%E7%B3%BB%E7%BB%9F%E8%99%9A%E6%8B%9F%E5%8C%96%E4%BC%98%E7%82%B9.PNG" class title="图2 系统虚拟化优点">
+
+]]></content>
+      <tags>
+        <tag>虚拟化</tag>
+      </tags>
   </entry>
   <entry>
     <title>Dash: Scalable Hashing on Persistent Memory</title>
