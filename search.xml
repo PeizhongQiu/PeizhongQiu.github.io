@@ -54,9 +54,10 @@
   <entry>
     <title>__builtin_系列函数</title>
     <url>/p/7e0b4172.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<p><strong>__builtin_ffs (unsigned int x)</strong><br>返回x的最后一位1的是从后向前第几位，比如8（1000）返回4。</p>
+<span id="more"></span>
 
-<p><strong>__builtin_ffs (unsigned int x)</strong><br>返回x的最后一位1的是从后向前第几位，比如8（1000）返回4。<br><strong>__builtin_clz (unsigned int x)</strong><br>返回前导的0的个数。<br><strong>__builtin_ctz (unsigned int x)</strong><br>返回后面的0个个数，和__builtin_clz相对。<br><strong>__builtin_popcount (unsigned int x)</strong><br>返回二进制表示中1的个数。<br><strong>__builtin_parity (unsigned int x)</strong><br>返回x的奇偶校验位，也就是x的1的个数模2的结果。</p>
+<p><strong>__builtin_clz (unsigned int x)</strong><br>返回前导的0的个数。<br><strong>__builtin_ctz (unsigned int x)</strong><br>返回后面的0个个数，和__builtin_clz相对。<br><strong>__builtin_popcount (unsigned int x)</strong><br>返回二进制表示中1的个数。<br><strong>__builtin_parity (unsigned int x)</strong><br>返回x的奇偶校验位，也就是x的1的个数模2的结果。</p>
 <p>这些函数都有相应的usigned long和usigned long long版本，只需要在函数名后面加上l或ll就可以了，比如 __builtin_clzll。</p>
 <p>版权声明：本文为CSDN博主「Yuer-」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。<br>原文链接：<a href="https://blog.csdn.net/yuer158462008/article/details/46383635">https://blog.csdn.net/yuer158462008/article/details/46383635</a></p>
 ]]></content>
@@ -146,14 +147,6 @@
       </tags>
   </entry>
   <entry>
-    <title>The RESTless Cloud</title>
-    <url>/p/5393fe55.html</url>
-    <content><![CDATA[]]></content>
-      <tags>
-        <tag>云计算论文研读</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>sky computing</title>
     <url>/p/ac1fc4f3.html</url>
     <content><![CDATA[<p>Ion Stoica and Scott Shenker. 2021. From Cloud Computing to Sky Computing. In Workshop on Hot Topics in Operating Systems (HotOS ’21), May 31-June 2, 2021, Ann Arbor, MI, USA. ACM, New York, NY, USA, 7 pages. <a href="https://doi.org/10.1145/3458336.3465302">https://doi.org/10.1145/3458336.3465302</a></p>
@@ -238,9 +231,9 @@
   <entry>
     <title>云计算概念</title>
     <url>/p/ddd27e6.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<h2 id="新摩尔定律"><a href="#新摩尔定律" class="headerlink" title="新摩尔定律"></a>新摩尔定律</h2><p>图灵奖获得者杰姆·格雷（Jim Gray）曾提出著名的“新摩尔定律”：每18个月全球新增 信息量是计算机有史以来全部信息量的总和。</p>
+<span id="more"></span>
 
-<h2 id="新摩尔定律"><a href="#新摩尔定律" class="headerlink" title="新摩尔定律"></a>新摩尔定律</h2><p>图灵奖获得者杰姆·格雷（Jim Gray）曾提出著名的“新摩尔定律”：每18个月全球新增 信息量是计算机有史以来全部信息量的总和。</p>
 <h2 id="大数据特征"><a href="#大数据特征" class="headerlink" title="大数据特征"></a>大数据特征</h2><p>大数据具有4V+1C的特征。 </p>
 <p>（1）数据量大（Volume）：存储的数据量巨大，PB级别是常态，因而对其分析的计 算量也大。 </p>
 <p>（2）多样（Variety）：数据的来源及格式多样，数据格式除了传统的结构化数据 外，还包括半结构化或非结构化数据，比如用户上传的音频和视频内容。而随着人类活动 的进一步拓宽，数据的来源更加多样。</p>
@@ -268,9 +261,9 @@
   <entry>
     <title>openstack源码阅读（一） openstack简介</title>
     <url>/p/ecb3c3ec.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<h2 id="openstack与AWS"><a href="#openstack与AWS" class="headerlink" title="openstack与AWS"></a>openstack与AWS</h2><p>与AWS相比，openstack只是处于一个追随者的位置。</p>
+<span id="more"></span>
 
-<h2 id="openstack与AWS"><a href="#openstack与AWS" class="headerlink" title="openstack与AWS"></a>openstack与AWS</h2><p>与AWS相比，openstack只是处于一个追随者的位置。</p>
 <h3 id="AWS架构"><a href="#AWS架构" class="headerlink" title="AWS架构"></a>AWS架构</h3><p>AWS由五层组成，自下而上包括AWS全球基础架构，基础服务，应用平台服务，管理和用户应用程序。</p>
 <p>AWS提供六类主要服务：数据库，存储和内容分发，分析，计算和网络，部署管理，应用服务。</p>
 <p>数据库：NoSQL数据库服务DynamoDB，关系数据库服务RDS，缓存和数据仓库服务Redshift</p>
@@ -362,9 +355,9 @@
   <entry>
     <title>云计算术语</title>
     <url>/p/e562e976.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<p>云计算：cloud computing</p>
+<span id="more"></span>
 
-<p>云计算：cloud computing</p>
 <p>网格计算：grid computing</p>
 <p>效用计算：utility computing</p>
 <p>基础设施作为服务：Iaas（Infrastructure as a service）</p>
@@ -384,9 +377,9 @@
   <entry>
     <title>系统虚拟化读书笔记（二）</title>
     <url>/p/c54a0899.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<h2 id="可虚拟化架构和不可虚拟化架构"><a href="#可虚拟化架构和不可虚拟化架构" class="headerlink" title="可虚拟化架构和不可虚拟化架构"></a>可虚拟化架构和不可虚拟化架构</h2><p>虚拟机必须具备的三个特点：同质，高效和隔离，这决定了不是在任何体系结构下都可以虚拟化的。给定一个系统，其对应的体系结构是否可以虚拟化，就要看能否在该系统上虚拟化出具备上面三种特征的虚拟机。</p>
+<span id="more"></span>
 
-<h2 id="可虚拟化架构和不可虚拟化架构"><a href="#可虚拟化架构和不可虚拟化架构" class="headerlink" title="可虚拟化架构和不可虚拟化架构"></a>可虚拟化架构和不可虚拟化架构</h2><p>虚拟机必须具备的三个特点：同质，高效和隔离，这决定了不是在任何体系结构下都可以虚拟化的。给定一个系统，其对应的体系结构是否可以虚拟化，就要看能否在该系统上虚拟化出具备上面三种特征的虚拟机。</p>
 <p>为了VMM可以完全控制系统资源，它不允许直接运行虚拟机上操作系统（客户机操作系统）的敏感指令（操作特权资源的指令）。也就是说，敏感指令必须在VMM的监控审查下进行，或者经由VMM来完成。如果一个系统上的所有敏感指令都是特权指令（系统中一些操作和管理关键系统资源的指令），则可以用一个简单的办法实现一个虚拟环境：将VMM运行在系统的最高特权级上，而将客户机操作系统运行在非最高特权级上，当客户机操作系统因执行敏感指令而陷入到VMM时，VMM模拟执行引起的敏感指令，这种方法称为“陷入再模拟”。</p>
 <p>如果一个系统上的所有敏感指令都是特权指令，则它是可虚拟化的结构，否则，它无法支持在所有的敏感指令上触发异常（要么系统的系统的控制信息会被虚拟机修改或访问，要么VMM回遗漏需要模拟的操作，影响虚拟化的正确性），则不是一个可虚拟化的结构，称其存在“虚拟化漏洞”<strong>（virtualization hole）</strong>，就是说他们不能高效支持系统虚拟化。</p>
 <p>虽然系统虚拟化漏洞可能存在，但是可以采用一些方法填补漏洞。最简单最直接的方法是如果所有的虚拟化都采用模拟来实现，例如解释执行，就是取一条指令，模拟出这条指令执行的效果，再继续取下一条指令，那么就不存在陷入不陷入的问题，从而避免虚拟化漏洞。这种方法不但能适用于模拟和物理机相同体系结构的虚拟机，而且也能模拟不同体系结构的虚拟机。虽然这种方法保证了所有的指令（包括敏感指令）都受到VMM的监督审查，但是它对每条指令不区别对待，最大的缺点就是性能太差，不符合虚拟机高效的特点。</p>
