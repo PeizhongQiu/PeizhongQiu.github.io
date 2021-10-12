@@ -261,7 +261,8 @@
   <entry>
     <title>openstack源码阅读（一） openstack简介</title>
     <url>/p/ecb3c3ec.html</url>
-    <content><![CDATA[<h2 id="openstack与AWS"><a href="#openstack与AWS" class="headerlink" title="openstack与AWS"></a>openstack与AWS</h2><p>与AWS相比，openstack只是处于一个追随者的位置。</p>
+    <content><![CDATA[<p>内容主要摘自于《Openstack设计与实现》。</p>
+<h2 id="openstack与AWS"><a href="#openstack与AWS" class="headerlink" title="openstack与AWS"></a>openstack与AWS</h2><p>与AWS相比，openstack只是处于一个追随者的位置。</p>
 <span id="more"></span>
 
 <h3 id="AWS架构"><a href="#AWS架构" class="headerlink" title="AWS架构"></a>AWS架构</h3><p>AWS由五层组成，自下而上包括AWS全球基础架构，基础服务，应用平台服务，管理和用户应用程序。</p>
@@ -390,6 +391,101 @@
 ]]></content>
       <tags>
         <tag>虚拟化</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>openstack源码阅读（二） openstack通用技术</title>
+    <url>/p/7952953b.html</url>
+    <content><![CDATA[<p>内容主要摘自于《Openstack设计与实现》。</p>
+<span id="more"></span>
+
+<h2 id="消息总线"><a href="#消息总线" class="headerlink" title="消息总线"></a>消息总线</h2><p>Openstack遵循这样的原则：项目之间通过<strong>RESTful API</strong>进行通信，项目内部的不同服务进程之间的通信，则必须通过<strong>消息总线</strong>。oslo.messaging 库实现了以下两种方式来完成项目内部的不同服务进程之间的通信。</p>
+<ul>
+<li>远程过程调用（RPC）。通过RPC，一个服务进程可以调用其他远程服务进程的方法，并且有两种调用方式：同步和异步。</li>
+<li>事件通知（Event Notification）。某个服务进程可以把事件通知发送到消息总线上，该消息总线上的所有对此类事件感兴趣的服务进程，都可以获得此事件通知并进行进一步的处理，但是处理的结果并不会返回给事件的发送者。</li>
+</ul>
+<h3 id="AMQP-advanced-message-queuing-protocol"><a href="#AMQP-advanced-message-queuing-protocol" class="headerlink" title="AMQP(advanced message queuing protocol)"></a>AMQP(advanced message queuing protocol)</h3><p>在Openstack支持的消息总线类型中，大部分都是基于AMQP的。AMQP是一个异步消息传递所使用的开放的应用层协议，主要包括信息的导向，队列，路由，可靠性和安全性。oslo.messaging中支持的AMQP主要包括两个版本，AMQP 0.9.1和AMQP 1.0，两个版本有较大区别。</p>
+<h4 id="AMQP-0-9-1"><a href="#AMQP-0-9-1" class="headerlink" title="AMQP 0.9.1"></a>AMQP 0.9.1</h4><img src="/p/undefined/AMQP.PNG" class title="图1 AMQP结构">
+
+<p>当不同的消息由生产者（Publisher application）发送到broker时，会根据不同的条件把消息传递给不同的消费者（consumer）。如果消费者无法接收到信息或者接受信息不够快时，会把消息缓存在内存和磁盘上。</p>
+<p>生产者将消息发送给Exchange，并由Exchange来决定消息的路由，即消息发送给哪个Queue，然后消费者从Queue中取出消息，进行处理。</p>
+<p>每一个消息都有一个routing key，每一个queue有一个binding key，Exchange在收到消息时，会将routing key与每一个queue的binding key进行匹配，匹配成功，则会将信息转发到对应的queue中。</p>
+<p>转发的类型有三种：</p>
+<ul>
+<li><p>direct：routing key与binding key完全一致，不支持通配符；</p>
+</li>
+<li><p>topic：支持通配符；</p>
+</li>
+<li><p>fanout：忽略routing key与binding key。消息转发到所有queue中。</p>
+</li>
+</ul>
+<h4 id="RabbitMQ"><a href="#RabbitMQ" class="headerlink" title="RabbitMQ"></a>RabbitMQ</h4><p>RabbitMQ是一个实现了AMQP的消息中间件服务，支持多种语言的客户端开发，支持用户自定义插件开发的框架及多种插件。</p>
+<h4 id="AMQP-1-0"><a href="#AMQP-1-0" class="headerlink" title="AMQP 1.0"></a>AMQP 1.0</h4><p>与AMQP 0.9.1相比，1.0协议更加灵活和复杂。1.0实现了一种消息路由模式：位于调用者和服务器之间的不再是单节点的broker，而是一群互相连接的消息路由组成的路由网；路由不具备queue，没有存储消息的能力，作用只是传递消息；路由节点之间通过使用tcp连接进行通信；调用者可以通过tcp连接连到路由网中的某个路由，从而接入路由网。</p>
+<h2 id="SQLAlchemy与数据库"><a href="#SQLAlchemy与数据库" class="headerlink" title="SQLAlchemy与数据库"></a>SQLAlchemy与数据库</h2>
+
+<p>SQLAlchemy 主要包括两个部分：SQLAlchemy Core和SQLAlchemy ORM。SQLAlchemy core包括SQL语言表达式，数据引擎，连接池等。所有的实现都是以连接不同类型的后台数据库，提交查询和更新SQL请求，定义数据库数据类型和定义schema等为目的。SQLAlchemy ORM提供数据映射模式，即把程序语言的对象数据映射成数据库的关系数据，或者把关系数据映射为对象数据。另外SQLAlchemy对象关系映射是一个可选模块，开发人员可以完全不使用任何对象模型，直接使用SQLAlchemy操作数据。</p>
+<h2 id="RESTful-与-WSGI"><a href="#RESTful-与-WSGI" class="headerlink" title="RESTful 与 WSGI"></a>RESTful 与 WSGI</h2><h3 id="RESTful"><a href="#RESTful" class="headerlink" title="RESTful"></a>RESTful</h3><p>REST（representational state transfer，表述性状态转移）。从RESTful角度上看，网络中的所有东西都是资源，每个资源都对应于一个特定的URI，并用它进行标识。资源有多种具体的表现形式，即资源的表述。URI仅代表资源的实体，不能代表其表现形式。</p>
+<p>REST的指导原则</p>
+<ol>
+<li><strong>客户端 - 服务器</strong> 。</li>
+<li><strong>无状态</strong>。</li>
+<li><strong>可缓存</strong> 。</li>
+<li><strong>统一接口</strong> 。</li>
+<li><strong>分层系统</strong>。</li>
+<li><strong>按需编码（可选）</strong>。</li>
+</ol>
+<h3 id="WSGI（Web-service-gateway-interface）"><a href="#WSGI（Web-service-gateway-interface）" class="headerlink" title="WSGI（Web service gateway interface）"></a>WSGI（Web service gateway interface）</h3><p>RESTful只是设计风格而不是标准，WEB服务通常使用基于HTTP的符合RESTful的API，而WSGI则是python语言中所定义的WEB服务器和WEB应用程序或框架之间的通用接口标准。</p>
+<p>当处理一个WSGI请求时，服务端会为应用端提供上下文信息和一个回调函数，应用端在处理完请求后，会使用服务端所提供的回调函数返回对应请求的响应。</p>
+<p>WSGI将WEB组件分成三类：WEB服务器，WEB中间件，WEB应用程序。WEB服务器用于接收HTTP请求，封装一系列环境变量，按照WSGI接口标准调用注册的WSGI应用程序，然后将响应返回给客户端。</p>
+<p>WSGI应用程序是一个可被调用的Python对象，只接受两个参数，environ和start_response。</p>
+<ul>
+<li><p>environ指向一个python字典，要求里面至少包含一些在CGI中定义的变量以及至少包含其他7个WSGI所定义的环境变量。WSGI应用程序会从environ字典中获取相应的请求及其执行上下文中的所有信息。</p>
+</li>
+<li><p>start_response指向一个回调函数：</p>
+<p><code>start_response(status, response_headers,exe_info=None)</code></p>
+<p>status是一个响应状态的字符串；response_headers是一个包含了（header_name,header_value）元组的列表，分别表示HTTP相应中的HTTP头和内容；exe_info一般在错误时使用，用来让浏览器显示相关错误信息。</p>
+<p>回调函数返回形如write(data)的可被调用的对象。这个对象是为了兼容现有的一些特殊框架而设计的，一般不使用。</p>
+</li>
+</ul>
+<h4 id="Paste-文件"><a href="#Paste-文件" class="headerlink" title="Paste 文件"></a>Paste 文件</h4><p>  Openstack使用Paste的Deploy组件完成WSGI Server和WSGI Application的构建，每个项目源码的etc目录下都有一个Paste文件，如Nova的etc/nova/api-paste.ini，在部署时，这些文件被拷贝到系统/etc/&lt;project&gt;/目录下。</p>
+<p>Paste配置文件分为多个section，每个section以type:name命名。</p>
+<ul>
+<li><p>type = composite</p>
+<p>这个section会把URL请求发到对应的应用程序中，并由use指定具体的分发方式。</p>
+</li>
+<li><p>type = app</p>
+<p>一个app就是一个具体的WSGI 应用程序，这个app对应的python代码可以由use来指定。另一种指定方法是明确指定对应的python代码，这时必须给出代码应该符合的格式。</p>
+</li>
+<li><p>type = filter-app</p>
+<p>在接收到一个请求后，会先调用fliter-app中的use所指定的app进行过滤，如果请求没有被过滤，就会被转发到next所指定的app上进行下一步的处理。</p>
+</li>
+<li><p>type = filter</p>
+<p>跟上一个的区别是没有next。</p>
+</li>
+<li><p>type = pipeline</p>
+<p>由一系列filter组成，filter链条的末尾是一个app。pipeline类型对filter-app做了简化。</p>
+</li>
+</ul>
+<h4 id="WebOb"><a href="#WebOb" class="headerlink" title="WebOb"></a>WebOb</h4><p>  WebOb通过对WSGI的请求与相应进行封装，可以简化WSGI应用的编写。</p>
+<p>WebOb重要的对象：</p>
+<ul>
+<li><p>webob.Request。对WSGI请求的参数environ进行封装；</p>
+</li>
+<li><p>webob.Response。包含了标准WSGI响应的所有要素；</p>
+</li>
+<li><p>webob.exc。针对HTTP错误代码进行封装。</p>
+</li>
+<li><p>webob.dec.wsgify。以便可以不使用原始的WSGI参数和返回格式，而全部使用WebOb替代。</p>
+</li>
+</ul>
+<h4 id="Pecan"><a href="#Pecan" class="headerlink" title="Pecan"></a>Pecan</h4><p>Paste组合框架的REATful API代码过于臃肿，导致项目的可维护性差。一些新项目使用Pecan框架实现RESTful API。Pecan是一个轻量级的WSGI网络框架。其设计思想不是解决Web世界的所有问题，而是主要集中于对象路由和RESTful支持上，并不提供对话和数据库支持。  </p>
+<h2 id="Eventlet-与-AsyncIO"><a href="#Eventlet-与-AsyncIO" class="headerlink" title="Eventlet 与 AsyncIO"></a>Eventlet 与 AsyncIO</h2><p>Openstack中的绝大多数项目采用协程模型。协程与线程的区别是：多个线程可以同时执行，但是同一时间只能有一个协程运行。由于协程无需考虑很多有关锁的问题，因此开发和调试比较简单。</p>
+<p>协程的执行顺序与时间由程序决定。</p>
+<h3 id="Eventlet"><a href="#Eventlet" class="headerlink" title="Eventlet"></a>Eventlet</h3><p>协程来实现并发，将协程称为GreenTread，所谓的并发就是建立多个GreenTread，并对其进行管理。</p>
+<h3 id="AsyncIO"><a href="#AsyncIO" class="headerlink" title="AsyncIO"></a>AsyncIO</h3><p>Eventlet具有局部性，如不支持Python3，PyPy，Jython等，只支持CPython。目前Openstack正考虑用AsyncIO替代Eventlet。</p>
+<h2 id="oslo"><a href="#oslo" class="headerlink" title="oslo"></a>oslo</h2>]]></content>
+      <tags>
+        <tag>openstack</tag>
       </tags>
   </entry>
 </search>
