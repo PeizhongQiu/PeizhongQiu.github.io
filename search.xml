@@ -473,7 +473,7 @@
 <p>由一系列filter组成，filter链条的末尾是一个app。pipeline类型对filter-app做了简化。</p>
 </li>
 </ul>
-<h4 id="WebOb"><a href="#WebOb" class="headerlink" title="WebOb"></a>WebOb</h4><p>  WebOb通过对WSGI的请求与相应进行封装，可以简化WSGI应用的编写。</p>
+<h4 id="WebOb"><a href="#WebOb" class="headerlink" title="WebOb"></a>WebOb</h4><p>WebOb通过对WSGI的请求与相应进行封装，可以简化WSGI应用的编写。</p>
 <p>WebOb重要的对象：</p>
 <ul>
 <li><p>webob.Request。对WSGI请求的参数environ进行封装；</p>
