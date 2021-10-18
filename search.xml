@@ -426,7 +426,11 @@
 <h2 id="SQLAlchemy与数据库"><a href="#SQLAlchemy与数据库" class="headerlink" title="SQLAlchemy与数据库"></a>SQLAlchemy与数据库</h2><img src="/p/7952953b/SQLAlchemy.PNG" class title="图2 SQLAlchemy结构">
 
 <p>SQLAlchemy 主要包括两个部分：SQLAlchemy Core和SQLAlchemy ORM。SQLAlchemy core包括SQL语言表达式，数据引擎，连接池等。所有的实现都是以连接不同类型的后台数据库，提交查询和更新SQL请求，定义数据库数据类型和定义schema等为目的。SQLAlchemy ORM提供数据映射模式，即把程序语言的对象数据映射成数据库的关系数据，或者把关系数据映射为对象数据。另外SQLAlchemy对象关系映射是一个可选模块，开发人员可以完全不使用任何对象模型，直接使用SQLAlchemy操作数据。</p>
-<h2 id="RESTful-与-WSGI"><a href="#RESTful-与-WSGI" class="headerlink" title="RESTful 与 WSGI"></a>RESTful 与 WSGI</h2><h3 id="RESTful"><a href="#RESTful" class="headerlink" title="RESTful"></a>RESTful</h3><p>参考文献：<a href="https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm%EF%BC%8Chttp://restful.p2hp.com/">https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm，http://restful.p2hp.com/</a></p>
+<h2 id="RESTful-与-WSGI"><a href="#RESTful-与-WSGI" class="headerlink" title="RESTful 与 WSGI"></a>RESTful 与 WSGI</h2><h3 id="RESTful"><a href="#RESTful" class="headerlink" title="RESTful"></a>RESTful</h3><p>参考文献：</p>
+<ol>
+<li><a href="https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm">https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm</a></li>
+<li><a href="http://restful.p2hp.com/">http://restful.p2hp.com/</a></li>
+</ol>
 <p>REST（representational state transfer，表述性状态转移）。从RESTful角度上看，网络中的所有东西都是资源，每个资源都对应于一个特定的URI，并用它进行标识。资源有多种具体的表现形式，即资源的表述。URI仅代表资源的实体，不能代表其表现形式。</p>
 <p>REST的指导原则</p>
 <ol>
