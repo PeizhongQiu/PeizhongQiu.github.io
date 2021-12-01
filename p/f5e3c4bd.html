@@ -20,23 +20,23 @@
     var CONFIG = {"hostname":"peizhongqiu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="目标假设我们需要修改cpu0的频率。 过程首先需要进入&#x2F;sys&#x2F;devices&#x2F;system&#x2F;cpu&#x2F;cpu0&#x2F;cpufreq目录。该目录下文件如下图所示：   前缀cpuinfo代表的是cpu硬件上支持的频率，而scaling前缀代表的是可以通过CPUFreq系统用软件进行调节时所支持的频率。cpuinfo_cur_freq代表通过硬件实际上读到的频率值，而scaling_cur_freq则是软">
+  <meta name="description" content="目标假设我们需要修改cpu0的频率。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="频率">
 <meta property="og:url" content="https://peizhongqiu.github.io/p/f5e3c4bd.html">
 <meta property="og:site_name" content="Little Q 的个人博客">
-<meta property="og:description" content="目标假设我们需要修改cpu0的频率。 过程首先需要进入&#x2F;sys&#x2F;devices&#x2F;system&#x2F;cpu&#x2F;cpu0&#x2F;cpufreq目录。该目录下文件如下图所示：   前缀cpuinfo代表的是cpu硬件上支持的频率，而scaling前缀代表的是可以通过CPUFreq系统用软件进行调节时所支持的频率。cpuinfo_cur_freq代表通过硬件实际上读到的频率值，而scaling_cur_freq则是软">
+<meta property="og:description" content="目标假设我们需要修改cpu0的频率。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://peizhongqiu.github.io/p/undefined/cpufreq.PNG">
-<meta property="og:image" content="https://peizhongqiu.github.io/p/undefined/governor.PNG">
-<meta property="og:image" content="https://peizhongqiu.github.io/p/undefined/freq.PNG">
-<meta property="og:image" content="https://peizhongqiu.github.io/p/undefined/result.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/f5e3c4bd/cpufreq.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/f5e3c4bd/governor.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/f5e3c4bd/freq.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/f5e3c4bd/result.PNG">
 <meta property="article:published_time" content="2021-12-01T06:58:51.000Z">
-<meta property="article:modified_time" content="2021-12-01T08:21:21.803Z">
+<meta property="article:modified_time" content="2021-12-01T08:22:49.140Z">
 <meta property="article:author" content="Little_Q">
 <meta property="article:tag" content="linux命令">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://peizhongqiu.github.io/p/undefined/cpufreq.PNG">
+<meta name="twitter:image" content="https://peizhongqiu.github.io/p/f5e3c4bd/cpufreq.PNG">
 
 <link rel="canonical" href="https://peizhongqiu.github.io/p/f5e3c4bd.html">
 
@@ -218,7 +218,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2021-12-01 14:58:51 / 修改时间：16:21:21" itemprop="dateCreated datePublished" datetime="2021-12-01T14:58:51+08:00">2021-12-01</time>
+              <time title="创建时间：2021-12-01 14:58:51 / 修改时间：16:22:49" itemprop="dateCreated datePublished" datetime="2021-12-01T14:58:51+08:00">2021-12-01</time>
             </span>
 
           
@@ -233,25 +233,27 @@
 
       
         <h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><p>假设我们需要修改cpu0的频率。</p>
+<span id="more"></span>
+
 <h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><p>首先需要进入/sys/devices/system/cpu/cpu0/cpufreq目录。该目录下文件如下图所示：</p>
-<img src="/p/undefined/cpufreq.PNG" class title="图1 cpufreq">
+<img src="/p/f5e3c4bd/cpufreq.PNG" class title="图1 cpufreq">
 
 <p>前缀cpuinfo代表的是cpu硬件上支持的频率，而scaling前缀代表的是可以通过CPUFreq系统用软件进行调节时所支持的频率。cpuinfo_cur_freq代表通过硬件实际上读到的频率值，而scaling_cur_freq则是软件当前的设置值，多数情况下这两个值是一致的，但是也有可能因为硬件的原因，有微小的差异。</p>
 <p>从图中不难发现，只有scaling_governor，scaling_max_freq，scaling_min_freq，scaling_setspeed四个文件可以编辑。首先是scaling_governor。它的取值范围在scaling_available_governors中。scaling_available_governors保存了系统支持的电源策略，conservative (保守)，powersave（节能），ondemand（请求），performance（性能），userspace模式。</p>
-<img src="/p/undefined/governor.PNG" class title="图2 governor">
+<img src="/p/f5e3c4bd/governor.PNG" class title="图2 governor">
 
 <p>ondemand策略的主要思想是：只要cpu的负载超过某一个阀值，cpu的频率会立刻提升至最高，然后再根据实际情况降到合适的水平。scaling_driver则会输出当前使用哪一个驱动来设置cpu的工作频率。</p>
 <p>当我们选择userspace作为我们的调频governor时，我们可以通过scaling_setspeed手工设置需要的频率。powersave则简单地使用最低的工作频率进行运行，而performance则一直选择最高的频率进行运行。</p>
 <p>我们需要设定cpu0的频率，则需要将scaling_governor内写入userspace。</p>
 <p>另外，scaling_setspeed是设置频率。可以选择的频率值通过scaling_available_frequencies查看。</p>
-<img src="/p/undefined/freq.PNG" class title="图3 freq">
+<img src="/p/f5e3c4bd/freq.PNG" class title="图3 freq">
 
 <p>我们需要设定cpu0的频率，则需要将scaling_setspeed内写入需要的频率。</p>
 <p>所以需要修改cpu0的频率，只需要执行以下指令：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo userspace &gt; scaling_governor</span><br><span class="line">echo 1100000 &gt; scaling_setspeed</span><br></pre></td></tr></table></figure>
 
 <p>修改完毕后，执行s-tui查看结果。</p>
-<img src="/p/undefined/result.PNG" class title="图3 result">
+<img src="/p/f5e3c4bd/result.PNG" class title="图3 result">
 
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhangyongfeiyong/article/details/53506362">https://blog.csdn.net/zhangyongfeiyong/article/details/53506362</a></p>
 
