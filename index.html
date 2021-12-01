@@ -183,6 +183,183 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/f5e3c4bd.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lulu.jpg">
+      <meta itemprop="name" content="Little_Q">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Little Q 的个人博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/p/f5e3c4bd.html" class="post-title-link" itemprop="url">频率</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-12-01 14:58:51 / 修改时间：16:21:21" itemprop="dateCreated datePublished" datetime="2021-12-01T14:58:51+08:00">2021-12-01</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><p>假设我们需要修改cpu0的频率。</p>
+<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><p>首先需要进入/sys/devices/system/cpu/cpu0/cpufreq目录。该目录下文件如下图所示：</p>
+<img src="/p/undefined/cpufreq.PNG" class title="图1 cpufreq">
+
+<p>前缀cpuinfo代表的是cpu硬件上支持的频率，而scaling前缀代表的是可以通过CPUFreq系统用软件进行调节时所支持的频率。cpuinfo_cur_freq代表通过硬件实际上读到的频率值，而scaling_cur_freq则是软件当前的设置值，多数情况下这两个值是一致的，但是也有可能因为硬件的原因，有微小的差异。</p>
+<p>从图中不难发现，只有scaling_governor，scaling_max_freq，scaling_min_freq，scaling_setspeed四个文件可以编辑。首先是scaling_governor。它的取值范围在scaling_available_governors中。scaling_available_governors保存了系统支持的电源策略，conservative (保守)，powersave（节能），ondemand（请求），performance（性能），userspace模式。</p>
+<img src="/p/undefined/governor.PNG" class title="图2 governor">
+
+<p>ondemand策略的主要思想是：只要cpu的负载超过某一个阀值，cpu的频率会立刻提升至最高，然后再根据实际情况降到合适的水平。scaling_driver则会输出当前使用哪一个驱动来设置cpu的工作频率。</p>
+<p>当我们选择userspace作为我们的调频governor时，我们可以通过scaling_setspeed手工设置需要的频率。powersave则简单地使用最低的工作频率进行运行，而performance则一直选择最高的频率进行运行。</p>
+<p>我们需要设定cpu0的频率，则需要将scaling_governor内写入userspace。</p>
+<p>另外，scaling_setspeed是设置频率。可以选择的频率值通过scaling_available_frequencies查看。</p>
+<img src="/p/undefined/freq.PNG" class title="图3 freq">
+
+<p>我们需要设定cpu0的频率，则需要将scaling_setspeed内写入需要的频率。</p>
+<p>所以需要修改cpu0的频率，只需要执行以下指令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo userspace &gt; scaling_governor</span><br><span class="line">echo 1100000 &gt; scaling_setspeed</span><br></pre></td></tr></table></figure>
+
+<p>修改完毕后，执行s-tui查看结果。</p>
+<img src="/p/undefined/result.PNG" class title="图3 result">
+
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhangyongfeiyong/article/details/53506362">https://blog.csdn.net/zhangyongfeiyong/article/details/53506362</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/ffafa36b.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lulu.jpg">
+      <meta itemprop="name" content="Little_Q">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Little Q 的个人博客">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/p/ffafa36b.html" class="post-title-link" itemprop="url">查看时间，磁盘/内存可用空间</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-12-01 10:38:15 / 修改时间：13:41:05" itemprop="dateCreated datePublished" datetime="2021-12-01T10:38:15+08:00">2021-12-01</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="查看时间"><a href="#查看时间" class="headerlink" title="查看时间"></a>查看时间</h2><h3 id="date"><a href="#date" class="headerlink" title="date"></a>date</h3><p>date命令显示当前系统时间和日期：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">date</span><br></pre></td></tr></table></figure>
+
+<img src="/p/undefined/date.PNG" class title="图1 date">
+
+<h3 id="cal"><a href="#cal" class="headerlink" title="cal"></a>cal</h3><p>cal命令显示当月的日历：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cal</span><br></pre></td></tr></table></figure>
+
+<img src="/p/undefined/cal.PNG" class title="图2 cal">
+
+<h2 id="查看磁盘-内存可用空间"><a href="#查看磁盘-内存可用空间" class="headerlink" title="查看磁盘/内存可用空间"></a>查看磁盘/内存可用空间</h2><h3 id="df"><a href="#df" class="headerlink" title="df"></a>df</h3><p>df命令显示磁盘驱动器当前的可用空间：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df</span><br></pre></td></tr></table></figure>
+
+<img src="/p/undefined/df.PNG" class title="图3 df">
+
+<h3 id="free"><a href="#free" class="headerlink" title="free"></a>free</h3><p>free命令显示可用内存：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">free</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="目录操作"><a href="#目录操作" class="headerlink" title="目录操作"></a>目录操作</h2><h3 id="pwd"><a href="#pwd" class="headerlink" title="pwd"></a>pwd</h3><p>pwd命令显示当前工作目录：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pwd</span><br></pre></td></tr></table></figure>
+
+<img src="/p/undefined/pwd.PNG" class title="图5 pwd">
+
+<h3 id="ls"><a href="#ls" class="headerlink" title="ls"></a>ls</h3><p>ls命令列出当前工作目录的文件和目录：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls</span><br></pre></td></tr></table></figure>
+
+<img src="/p/undefined/ls.PNG" class title="图6 ls">
+
+
+
+<h3 id="cd"><a href="#cd" class="headerlink" title="cd"></a>cd</h3><p>cd命令改变工作目录。只需要输入cd命令，然后再输入目标工作目录的路径名即可：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd bin</span><br></pre></td></tr></table></figure>
+
+<img src="/p/undefined/cd.PNG" class title="图7 cd">
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/861b9aeb.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -214,7 +391,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-12-01 10:35:59" itemprop="dateModified" datetime="2021-12-01T10:35:59+08:00">2021-12-01</time>
+                <time title="修改时间：2021-12-01 10:40:42" itemprop="dateModified" datetime="2021-12-01T10:40:42+08:00">2021-12-01</time>
               </span>
 
           
@@ -732,145 +909,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/ecb3c3ec.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/lulu.jpg">
-      <meta itemprop="name" content="Little_Q">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Little Q 的个人博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/p/ecb3c3ec.html" class="post-title-link" itemprop="url">Nova源码阅读（一） openstack简介</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-08-30 14:20:07" itemprop="dateCreated datePublished" datetime="2021-08-30T14:20:07+08:00">2021-08-30</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-24 09:22:40" itemprop="dateModified" datetime="2021-11-24T09:22:40+08:00">2021-11-24</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>内容主要摘自于《Openstack设计与实现》。</p>
-<h2 id="openstack与AWS"><a href="#openstack与AWS" class="headerlink" title="openstack与AWS"></a>openstack与AWS</h2><p>与AWS相比，openstack只是处于一个追随者的位置。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/p/ecb3c3ec.html#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/200ca30a.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/lulu.jpg">
-      <meta itemprop="name" content="Little_Q">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Little Q 的个人博客">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/p/200ca30a.html" class="post-title-link" itemprop="url">nova-参数</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2021-08-27 10:11:47" itemprop="dateCreated datePublished" datetime="2021-08-27T10:11:47+08:00">2021-08-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-11-24 09:22:47" itemprop="dateModified" datetime="2021-11-24T09:22:47+08:00">2021-11-24</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>train版本</p>
-<p><a target="_blank" rel="noopener" href="https://docs.openstack.org/nova/train/configuration/config.html">https://docs.openstack.org/nova/train/configuration/config.html</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -942,7 +980,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
