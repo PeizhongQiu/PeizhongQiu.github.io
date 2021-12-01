@@ -861,17 +861,17 @@
 <h3 id="date"><a href="#date" class="headerlink" title="date"></a>date</h3><p>date命令显示当前系统时间和日期：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">date</span><br></pre></td></tr></table></figure>
 
-<img src="/p/undefined/date.PNG" class title="图1 date">
+<img src="/p/ffafa36b/date.PNG" class title="图1 date">
 
 <h3 id="cal"><a href="#cal" class="headerlink" title="cal"></a>cal</h3><p>cal命令显示当月的日历：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cal</span><br></pre></td></tr></table></figure>
 
-<img src="/p/undefined/cal.PNG" class title="图2 cal">
+<img src="/p/ffafa36b/cal.PNG" class title="图2 cal">
 
 <h2 id="查看磁盘-内存可用空间"><a href="#查看磁盘-内存可用空间" class="headerlink" title="查看磁盘/内存可用空间"></a>查看磁盘/内存可用空间</h2><h3 id="df"><a href="#df" class="headerlink" title="df"></a>df</h3><p>df命令显示磁盘驱动器当前的可用空间：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">df</span><br></pre></td></tr></table></figure>
 
-<img src="/p/undefined/df.PNG" class title="图3 df">
+<img src="/p/ffafa36b/df.PNG" class title="图3 df">
 
 <h3 id="free"><a href="#free" class="headerlink" title="free"></a>free</h3><p>free命令显示可用内存：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">free</span><br></pre></td></tr></table></figure>
@@ -881,19 +881,19 @@
 <h2 id="目录操作"><a href="#目录操作" class="headerlink" title="目录操作"></a>目录操作</h2><h3 id="pwd"><a href="#pwd" class="headerlink" title="pwd"></a>pwd</h3><p>pwd命令显示当前工作目录：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">pwd</span><br></pre></td></tr></table></figure>
 
-<img src="/p/undefined/pwd.PNG" class title="图5 pwd">
+<img src="/p/ffafa36b/pwd.PNG" class title="图5 pwd">
 
 <h3 id="ls"><a href="#ls" class="headerlink" title="ls"></a>ls</h3><p>ls命令列出当前工作目录的文件和目录：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ls</span><br></pre></td></tr></table></figure>
 
-<img src="/p/undefined/ls.PNG" class title="图6 ls">
+<img src="/p/ffafa36b/ls.PNG" class title="图6 ls">
 
 
 
 <h3 id="cd"><a href="#cd" class="headerlink" title="cd"></a>cd</h3><p>cd命令改变工作目录。只需要输入cd命令，然后再输入目标工作目录的路径名即可：</p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">cd bin</span><br></pre></td></tr></table></figure>
 
-<img src="/p/undefined/cd.PNG" class title="图7 cd">
+<img src="/p/ffafa36b/cd.PNG" class title="图7 cd">
 
 
 
