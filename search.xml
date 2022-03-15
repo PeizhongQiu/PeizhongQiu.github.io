@@ -87,24 +87,44 @@
       </tags>
   </entry>
   <entry>
-    <title>系统虚拟化读书笔记（一）</title>
+    <title>系统虚拟化读书笔记（一）开篇</title>
     <url>/p/27d3c010.html</url>
-    <content><![CDATA[<p>虚拟化就是由位于下层的软件模块，通过向上一层软件模块提供一个与它原先所期待的运行环境完全一致的接口的方法，抽象出一个虚拟的软件或硬件接口，使得上层软件可以直接运行在虚拟的环境上。</p>
+    <content><![CDATA[<p>以下内容摘自《系统虚拟化——原理与实现》一书。</p>
+<p>本质上，<strong>虚拟化</strong> 就是由位于下层的软件模块，通过向上一层软件模块提供一个与它原先所期待的运行环境完全一致的接口的方法，抽象出一个虚拟的软件或硬件接口，使得上层软件可以直接运行在虚拟的环境上。</p>
 <span id="more"></span>
 
-<p>在虚拟化中，物理资源通常有一个定语称为宿主（Host），而虚拟出来的资源通常有一个定语称为客户（Guest）。根据资源的不同，这两个名词的后面可以接不同的名词。</p>
-<p>系统虚拟化是指将一台物理计算机虚拟化为一台或多台虚拟计算机系统。每个虚拟计算机系统都拥有自己的虚拟硬件，来提供一个独立的虚拟机执行环境。通过虚拟化层的模拟，虚拟机中的操作系统认为自己仍然独占一个系统运行。每个虚拟机中的操作系统可以完全不同，并且执行环境是完全独立的。这个虚拟化层称为虚拟机监管器（Virtual Machine Monitor，VMM）。</p>
+<p>在虚拟化中，物理资源通常有一个定语称为 <strong>宿主（Host）</strong>，而虚拟出来的资源通常有一个定语称为 <strong>客户（Guest）</strong>。根据资源的不同，这两个名词的后面可以接不同的名词。</p>
+<ul>
+<li><strong>硬件抽象层上的虚拟化</strong> 是指虚拟硬件抽象层来实现虚拟机，为客户机操作系统呈现和物理硬件相同或相近的硬件抽象层。<ul>
+<li>由于客户机操作系统看到的是硬件抽象层，因此客户机操作系统的行为和在物理平台上没有区别。</li>
+<li>通常来说，宿主机和客户机的ISA是相同的，客户机大部分指令可以直接运行在宿主处理器上。只有那些需要虚拟化的指令才会由虚拟化软件处理，大大降低虚拟化开销。</li>
+</ul>
+</li>
+<li><strong>操作系统层上的虚拟化</strong> 是指操作系统的内核可以提供多个<font color="#FF0000">相互隔离</font>的用户态实例。这些用户态实例对于他的用户来说就像是一台真实的计算机。<ul>
+<li>操作系统层的虚拟化通常十分高效，虚拟化资源和开销都很小。</li>
+<li>灵活性一般较小，每个容器的操作系统通常必须是同一种操作系统。</li>
+<li>另外隔离性较强，但是粒度较粗。</li>
+</ul>
+</li>
+<li><strong>库函数上的虚拟化</strong> 是指通过虚拟化操作系统的应用级库函数的服务接口，使得应用程序不需要修改，就可以在不同的操作系统上无缝运行，从而提高系统间的互操作性。</li>
+<li><strong>编程语言层上的虚拟化</strong> <ul>
+<li>进程级虚拟化</li>
+</ul>
+</li>
+</ul>
+<h2 id="系统虚拟化"><a href="#系统虚拟化" class="headerlink" title="系统虚拟化"></a>系统虚拟化</h2><p><strong>系统虚拟化</strong> 是指将一台物理计算机虚拟化为一台或多台虚拟计算机系统。每个虚拟机都拥有自己的虚拟硬件，来提供一个独立的虚拟机执行环境。通过虚拟化层的模拟，虚拟机中的操作系统认为自己仍然独占一个系统运行。每个虚拟机中的操作系统可以完全不同，并且执行环境是完全独立的。这个虚拟化层称为虚拟机监管器（Virtual Machine Monitor，VMM）。</p>
 <img src="/p/27d3c010/%E7%B3%BB%E7%BB%9F%E8%99%9A%E6%8B%9F%E5%8C%96.PNG" class title="图1 系统虚拟化">
 
 <p>本质上说，虚拟计算机系统和物理计算机系统可以是两个不同的ISA。但是，不同的ISA会使得虚拟机的每一条指令都需要在物理机上模拟执行，从而造成性能上的极大下降。相同的体系结构的系统虚拟化通常会有比较好的性能，VMM实现起来也比较简单。虚拟机的大部分指令可以在处理器上直接运行，只有那些需要虚拟化的指令才会由VMM进行处理。</p>
-<p>1974年，Popek和Goldberg定义了虚拟机可以看作是物理机的一种高效隔离的复制。上面的定义蕴含了三层含义：同质，高效和资源受控，这也是虚拟机所具有的三个典型特征。同质是指虚拟机的运行环境和物理机的环境在本质上需要是相同的，但在表现上能够有一些差距。例如，虚拟机所看到的处理器个数可以和物理机上实际的处理器个数不同，处理器主频和物理机不同，但是物理机上和虚拟机上的处理器必须是同一种基本类型的。高效是指虚拟机中运行的软件需要有接近在物理机上直接运行的性能。软件在虚拟机运行时，大多数指令需要直接在硬件上执行，只有少数指令需要经过VMM处理或模拟。资源受控是指VMM需要对系统的资源有完全控制能力和管理权限，包括资源的分配，监控和回收。</p>
-<p>完全虚拟化（Full Virtualization）</p>
-<p>半虚拟化（Partial-virtualization）</p>
-<p>虚拟化漏洞（Virtualization Hole）</p>
-<p>二进制代码翻译（Binary Translation）</p>
-<p>类虚拟化技术（Para-Virtualization）</p>
-<p>系统虚拟化好处：</p>
-<img src="/p/27d3c010/%E7%B3%BB%E7%BB%9F%E8%99%9A%E6%8B%9F%E5%8C%96%E4%BC%98%E7%82%B9.PNG" class title="图2 系统虚拟化优点">
+<p>1974年，Popek和Goldberg定义了虚拟机可以看作是物理机的一种高效隔离的复制。上面的定义蕴含了三层含义：<font color="#FF0000">同质，高效和资源受控</font>，这也是虚拟机所具有的三个典型特征。</p>
+<ul>
+<li>同质是指虚拟机的运行环境和物理机的环境在本质上需要是相同的，但在表现上能够有一些差距。例如，虚拟机所看到的处理器个数可以和物理机上实际的处理器个数不同，处理器主频和物理机不同，但是物理机上和虚拟机上的处理器必须是同一种基本类型的。</li>
+<li>高效是指虚拟机中运行的软件需要有接近在物理机上直接运行的性能。软件在虚拟机运行时，大多数指令需要直接在硬件上执行，只有少数指令需要经过VMM处理或模拟。</li>
+<li>资源受控是指VMM需要对系统的资源有完全控制能力和管理权限，包括资源的分配，监控和回收。</li>
+</ul>
+<h3 id="系统虚拟化优点"><a href="#系统虚拟化优点" class="headerlink" title="系统虚拟化优点"></a>系统虚拟化优点</h3><img src="/p/27d3c010/%E7%B3%BB%E7%BB%9F%E8%99%9A%E6%8B%9F%E5%8C%96%E4%BC%98%E7%82%B9.PNG" class title="图2 系统虚拟化优点">
+
+
 
 ]]></content>
       <tags>
@@ -229,36 +249,6 @@
       </tags>
   </entry>
   <entry>
-    <title>云计算概念</title>
-    <url>/p/ddd27e6.html</url>
-    <content><![CDATA[<h2 id="新摩尔定律"><a href="#新摩尔定律" class="headerlink" title="新摩尔定律"></a>新摩尔定律</h2><p>图灵奖获得者杰姆·格雷（Jim Gray）曾提出著名的“新摩尔定律”：每18个月全球新增信息量是计算机有史以来全部信息量的总和。</p>
-<span id="more"></span>
-
-<h2 id="大数据特征"><a href="#大数据特征" class="headerlink" title="大数据特征"></a>大数据特征</h2><p>大数据具有4V+1C的特征。 </p>
-<p>（1）数据量大（Volume）：存储的数据量巨大，PB级别是常态，因而对其分析的计算量也大。 </p>
-<p>（2）多样（Variety）：数据的来源及格式多样，数据格式除了传统的结构化数据外，还包括半结构化或非结构化数据，比如用户上传的音频和视频内容。而随着人类活动的进一步拓宽，数据的来源更加多样。</p>
-<p>（3）快速（Velocity）：数据增长速度快，而且越新的数据价值越大，这就要求对数据的处理速度也要快，以便能够从数据中及时地提取知识，发现价值。</p>
-<p>（4）价值密度低（Value）：需要对大量的数据进行处理，挖掘其潜在的价值，因而，大数据对我们提出的明确要求是设计一种在成本可接受的条件下，通过快速采集、发 现和分析，从大量、多种类别的数据中提取价值的体系架构。 </p>
-<p>（5）复杂度（Complexity）：对数据的处理和分析的难度大。</p>
-<h2 id="云计算"><a href="#云计算" class="headerlink" title="云计算"></a>云计算</h2><p>在中国大数据专家委员会成立大会上，委员会主任怀进鹏院士用一个公式描述了大数据与云计算的关系：G=f（x）。x是大数据，f是云计算，G是我们的目标。也就是说，云计算是处理大数据的手段，大数据与云计算是一杖硬币的正反面。大数据是需求，云计算是手段。没有大数据，就不需要云计算。没有云计算，就无法处理大数据。</p>
-<p>之所以称为“云”，是因为它在某些方面具有现实中云的特征：云一般都较大；云的规模可以动态伸缩，它的边界是模糊的；云在空中飘忽不定，无法也无须确定它的具体位置，但它确实存在于某处。</p>
-<p>云计算是并行计算（Parallel Computing）、分布式计算（Distributed Computing）和网格计算（Grid Computing）的发展产物，或者说是这些计算科学概念的商业实现。云计算是虚拟化（Virtualization）、效用计算（Utility Computing）、将基础设施作为服务 IaaS（Infrastructure as a Service）、将平台作为服务PaaS（Platform as a Service）和将软件作为服务SaaS（Software as a Service）等概念混合演进并跃升的结果。</p>
-<p>云计算特点：超大规模（几十上百万台服务器），虚拟化，高可靠性，通用性，高可伸缩性，按需服务，极其廉价。</p>
-<p>云计算服务类型：将基础设施作为服务（IaaS）、将平台作为服务（PaaS）和将软件作为服务（SaaS）。</p>
-<p>云计算技术体系结构分为四层：物理资源层、资源池层、管理中间件层和 SOA（Service-Oriented Architecture，面向服务的体系结构）构建层。</p>
-<p>物理资源层包括计算机、存储器、网络设施、数据库和软件等。</p>
-<p>资源池层是将大量相同类型的资源构成同构或接近同构的资源池，如计算资源池、数据资源池等。构建资源池更多的是物理资源的集成和管理工作，例如研究在一个标准集装箱的空间如何装下2000个服务器、解决散热和故障节点替换的问题并降低能耗。</p>
-<p>管理中间件层负责对云计算的资源进行管理，并对众多应用任务进行调度，使资源能够高效、安全地为应用提供服务。</p>
-<p>SOA构建层将云计算能力封装成标准的Web Services服务，并纳入SOA体系进行管理和使用，包括服务接口、服务注册、服务查找、服务访问和服务工作流等。</p>
-<p>管理中间件层和资源池层是云计算技术的最关键部分，SOA构建层的功能更多依靠外部设施提供。 云计算的管理中间件层负责资源管理、任务管理、用户管理和安全管理等工作。资源管理负责均衡地使用云资源节点，检测节点的故障并试图恢复或屏蔽它，并对资源的使用情况进行监视统计；任务管理负责执行用户或应用提交的任务，包括完成用户任务映象 （Image）部署和管理、任务调度、任务执行、生命期管理等；用户管理是实现云计算商业模式的一个必不可少的环节，包括提供用户交互接口、管理和识别用户身份、创建用户程序的执行环境、对用户的使用进行计费等；安全管理保障云计算设施的整体安全，包括身份认证、访问授权、综合防护和安全审计等。</p>
-<img src="/p/ddd27e6/iaas%E6%9E%B6%E6%9E%84.PNG" class title="图1 iaas架构">
-
-]]></content>
-      <tags>
-        <tag>云计算</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Nova源码阅读（一） openstack简介</title>
     <url>/p/ecb3c3ec.html</url>
     <content><![CDATA[<p>内容主要摘自于《Openstack设计与实现》。</p>
@@ -372,6 +362,11 @@
 <p>Windows Azure：微软在互联网架构下构建云平台</p>
 <p>面向服务的体系结构：SOA（Service-Oriented Architecture）</p>
 <p>Google云计算应用：文件系统GFS，分布式计算编程模型MapReduce，分布式锁服务Chubby，分布式结构化数据表BigTable，分布式存储系统Megastore，分布式监控系统Dapper，海量数据的交互式分析工具Dremel，内存大数据分析系统PowerDrill。</p>
+<p>完全虚拟化（Full Virtualization）</p>
+<p>半虚拟化（Partial-virtualization）</p>
+<p>虚拟化漏洞（Virtualization Hole）</p>
+<p>二进制代码翻译（Binary Translation）</p>
+<p>类虚拟化技术（Para-Virtualization）</p>
 ]]></content>
       <tags>
         <tag>云计算</tag>
@@ -937,5 +932,50 @@
       <tags>
         <tag>linux命令</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>linux 内核参考资料</title>
+    <url>/p/f16f5a0d.html</url>
+    <content><![CDATA[<h2 id="attribute"><a href="#attribute" class="headerlink" title="__attribute__"></a>__attribute__</h2><p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes</a></p>
+<p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Type-Attributes.html#Type-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Type-Attributes.html#Type-Attributes</a></p>
+<p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Variable-Attributes.html#Variable-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Variable-Attributes.html#Variable-Attributes</a></p>
+<h2 id="percpu"><a href="#percpu" class="headerlink" title="percpu"></a>percpu</h2><p><a href="https://zhuanlan.zhihu.com/p/260986194">https://zhuanlan.zhihu.com/p/260986194</a></p>
+<h2 id="kvm-shared-msrs"><a href="#kvm-shared-msrs" class="headerlink" title="kvm_shared_msrs"></a>kvm_shared_msrs</h2><p><a href="https://oenhan.com/kvm_shared_msrs">https://oenhan.com/kvm_shared_msrs</a></p>
+<h2 id="slab-内存分配"><a href="#slab-内存分配" class="headerlink" title="slab 内存分配"></a>slab 内存分配</h2><p><a href="https://zhuanlan.zhihu.com/p/105582468">https://zhuanlan.zhihu.com/p/105582468</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/106106008">https://zhuanlan.zhihu.com/p/106106008</a></p>
+<h2 id="CPU-hotplug"><a href="#CPU-hotplug" class="headerlink" title="CPU hotplug"></a>CPU hotplug</h2><p><a href="https://www.kernel.org/doc/html/latest/core-api/cpu_hotplug.html">https://www.kernel.org/doc/html/latest/core-api/cpu_hotplug.html</a></p>
+]]></content>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>C++ 小知识</title>
+    <url>/p/fc6e32ad.html</url>
+    <content><![CDATA[<ul>
+<li><p>如果使用列表初始化且初始值存在丢失信息的风险，则编译器会报错。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">double</span> id = <span class="number">3.14</span>;</span><br><span class="line"><span class="keyword">int</span> a&#123;id&#125;;		<span class="comment">// 错误，存在信息丢失的风险</span></span><br><span class="line"><span class="keyword">int</span> b = id; 	<span class="comment">// 正确</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>学习网站</title>
+    <url>/p/52e318f2.html</url>
+    <content><![CDATA[<h2 id="Go"><a href="#Go" class="headerlink" title="Go"></a>Go</h2><p>Go语言圣经 <a href="http://gopl.io/">《The Go Programming Language》</a> 中文版本：<a href="http://shouce.jb51.net/gopl-zh/index.html">http://shouce.jb51.net/gopl-zh/index.html</a></p>
+<h2 id="课程网站"><a href="#课程网站" class="headerlink" title="课程网站"></a>课程网站</h2><h3 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h3><p>MIT6.824：<a href="https://pdos.csail.mit.edu/6.824/">https://pdos.csail.mit.edu/6.824/</a></p>
+<h2 id="benchmark"><a href="#benchmark" class="headerlink" title="benchmark"></a>benchmark</h2><p><a href="https://github.com/giltene/wrk2">wrk2</a>：a HTTP benchmarking tool based mostly on wrk</p>
+<p><a href="https://github.com/brianfrankcooper/YCSB/">YCSB</a>：测试在线数据库性能，扩展性的框架</p>
+]]></content>
+      <tags>
+        <tag>学习网站</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>kvm</title>
+    <url>/p/f1a53e46.html</url>
+    <content><![CDATA[]]></content>
   </entry>
 </search>
