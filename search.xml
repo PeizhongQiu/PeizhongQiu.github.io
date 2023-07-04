@@ -89,9 +89,9 @@
   <entry>
     <title>linux 内核参考资料</title>
     <url>/p/f16f5a0d.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<h2 id="attribute"><a href="#attribute" class="headerlink" title="__attribute__"></a>__attribute__</h2><span id="more"></span>
 
-<h2 id="attribute"><a href="#attribute" class="headerlink" title="__attribute__"></a>__attribute__</h2><p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes</a></p>
+<p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes</a></p>
 <p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Type-Attributes.html#Type-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Type-Attributes.html#Type-Attributes</a></p>
 <p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Variable-Attributes.html#Variable-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Variable-Attributes.html#Variable-Attributes</a></p>
 <h2 id="percpu"><a href="#percpu" class="headerlink" title="percpu"></a>percpu</h2><p><a href="https://zhuanlan.zhihu.com/p/260986194">https://zhuanlan.zhihu.com/p/260986194</a></p>
@@ -107,9 +107,9 @@
   <entry>
     <title>cpuidle</title>
     <url>/p/e0428171.html</url>
-    <content><![CDATA[<span id="more"></span> 
+    <content><![CDATA[<h2 id="逻辑-CPU"><a href="#逻辑-CPU" class="headerlink" title="逻辑 CPU"></a>逻辑 CPU</h2><span id="more"></span> 
 
-<h2 id="逻辑-CPU"><a href="#逻辑-CPU" class="headerlink" title="逻辑 CPU"></a>逻辑 CPU</h2><p>​        在 CPU 任务调度器看来 CPU 空闲时间管理是直接作用在 CPU 上的。在它看来，CPU 是一个逻辑单元。也就是说，CPU 不必是单独的物理实体，而可能只是一个对软件表现为单独的单核处理器的接口。 换句话说，CPU 是一个实体，它表现为正在从内存中获取属于一个程序的指令并执行它们，但它在物理上不需要以这种方式工作。 一般来说，这里可以考虑三种不同的情况。</p>
+<p>​        在 CPU 任务调度器看来 CPU 空闲时间管理是直接作用在 CPU 上的。在它看来，CPU 是一个逻辑单元。也就是说，CPU 不必是单独的物理实体，而可能只是一个对软件表现为单独的单核处理器的接口。 换句话说，CPU 是一个实体，它表现为正在从内存中获取属于一个程序的指令并执行它们，但它在物理上不需要以这种方式工作。 一般来说，这里可以考虑三种不同的情况。</p>
 <ul>
 <li><p>如果整个处理器一次只能执行一个指令序列，那么整个处理器就是一个 CPU。 在这种情况下，如果要求硬件进入空闲状态，整个处理器都将进入空闲状态。</p>
 </li>
@@ -311,9 +311,9 @@
   <entry>
     <title>Makefiles 简介</title>
     <url>/p/c677bb8a.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<p>内容摘自《GNU Make》第二章。</p>
+<span id="more"></span>
 
-<p>内容摘自《GNU Make》第二章。</p>
 <p>本文将讨论一个简单的 Makefile，这个 Makefile 将描述如何编译和连接 8 个 C 语言源代码文件和 3 个头文件。当 make 重新编译，每一个修改了的 C 语言源代码文件都要重新编译。如果头文件发生了修改，所有包含了该头文件的源代码文件要重新编译。每一次编译都会产生一个目标文件，当发生重新编译时，所有文件都要重新链接成一个新的可执行文件。</p>
 <h2 id="规则"><a href="#规则" class="headerlink" title="规则"></a>规则</h2><p>一个简单的 Makefile 由很多规则组成，规则有着以下的模式：</p>
 <figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line">target ... : prerequisites ...</span><br><span class="line">	recipe</span><br><span class="line">	...</span><br><span class="line">	...</span><br></pre></td></tr></table></figure>
@@ -349,9 +349,9 @@
   <entry>
     <title>写 Makefile 文件</title>
     <url>/p/dcfc36a.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<p>内容摘自《GNU Make》第三章。</p>
+<span id="more"></span>
 
-<p>内容摘自《GNU Make》第三章。</p>
 <h2 id="Makefile-内容"><a href="#Makefile-内容" class="headerlink" title="Makefile 内容"></a>Makefile 内容</h2><ul>
 <li><p>明确规则。明确的规则表明何时和怎样去 remake 一个或多个文件，这些文件称为规则的 targets。规则会列举 target 依赖的其他文件，这些文件称为 target 的 prerequistes。有些时候还会给出 recipe 用来创建或更新 target。</p>
 </li>
@@ -900,9 +900,9 @@
   <entry>
     <title>学习网站</title>
     <url>/p/52e318f2.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<h2 id="Go"><a href="#Go" class="headerlink" title="Go"></a>Go</h2><span id="more"></span>
 
-<h2 id="Go"><a href="#Go" class="headerlink" title="Go"></a>Go</h2><p>Go语言圣经 <a href="http://gopl.io/">《The Go Programming Language》</a> 中文版本：<a href="http://shouce.jb51.net/gopl-zh/index.html">http://shouce.jb51.net/gopl-zh/index.html</a></p>
+<p>Go语言圣经 <a href="http://gopl.io/">《The Go Programming Language》</a> 中文版本：<a href="http://shouce.jb51.net/gopl-zh/index.html">http://shouce.jb51.net/gopl-zh/index.html</a></p>
 <h2 id="课程网站"><a href="#课程网站" class="headerlink" title="课程网站"></a>课程网站</h2><h3 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h3><p>MIT6.824：<a href="https://pdos.csail.mit.edu/6.824/">https://pdos.csail.mit.edu/6.824/</a></p>
 <h2 id="benchmark"><a href="#benchmark" class="headerlink" title="benchmark"></a>benchmark</h2><p><a href="https://github.com/giltene/wrk2">wrk2</a>：a HTTP benchmarking tool based mostly on wrk</p>
 <p><a href="https://github.com/brianfrankcooper/YCSB/">YCSB</a>：测试在线数据库性能，扩展性的框架</p>
@@ -988,9 +988,9 @@
   <entry>
     <title>SGX 知识总结（一）</title>
     <url>/p/8cd79317.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><span id="more"></span>
 
-<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><a href="/p/undefined.html" title="SGX创建过程">SGX创建过程</a>
+<a href="/p/ccbadbc2.html" title="SGX创建过程">SGX创建过程</a>
 ]]></content>
       <tags>
         <tag>SGX</tag>
