@@ -7,6 +7,8 @@ date: 2022-04-21 13:40:05
 
 内容摘自《GNU Make》第三章。
 
+<!-- more -->
+
 ## Makefile 内容
 
 * 明确规则。明确的规则表明何时和怎样去 remake 一个或多个文件，这些文件称为规则的 targets。规则会列举 target 依赖的其他文件，这些文件称为 target 的 prerequistes。有些时候还会给出 recipe 用来创建或更新 target。

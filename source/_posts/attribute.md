@@ -7,6 +7,8 @@ date: 2022-02-23 16:23:57
 
 ## \_\_attribute\_\_
 
+<!-- more -->
+
 https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes
 
 https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Type-Attributes.html#Type-Attributes

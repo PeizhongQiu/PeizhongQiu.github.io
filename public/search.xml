@@ -89,7 +89,9 @@
   <entry>
     <title>linux 内核参考资料</title>
     <url>/p/f16f5a0d.html</url>
-    <content><![CDATA[<h2 id="attribute"><a href="#attribute" class="headerlink" title="__attribute__"></a>__attribute__</h2><p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes</a></p>
+    <content><![CDATA[<h2 id="attribute"><a href="#attribute" class="headerlink" title="__attribute__"></a>__attribute__</h2><span id="more"></span>
+
+<p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Function-Attributes.html#Function-Attributes</a></p>
 <p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Type-Attributes.html#Type-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Type-Attributes.html#Type-Attributes</a></p>
 <p><a href="https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Variable-Attributes.html#Variable-Attributes">https://gcc.gnu.org/onlinedocs/gcc-4.0.0/gcc/Variable-Attributes.html#Variable-Attributes</a></p>
 <h2 id="percpu"><a href="#percpu" class="headerlink" title="percpu"></a>percpu</h2><p><a href="https://zhuanlan.zhihu.com/p/260986194">https://zhuanlan.zhihu.com/p/260986194</a></p>
@@ -105,7 +107,9 @@
   <entry>
     <title>cpuidle</title>
     <url>/p/e0428171.html</url>
-    <content><![CDATA[<h2 id="逻辑-CPU"><a href="#逻辑-CPU" class="headerlink" title="逻辑 CPU"></a>逻辑 CPU</h2><p>​        在 CPU 任务调度器看来 CPU 空闲时间管理是直接作用在 CPU 上的。在它看来，CPU 是一个逻辑单元。也就是说，CPU 不必是单独的物理实体，而可能只是一个对软件表现为单独的单核处理器的接口。 换句话说，CPU 是一个实体，它表现为正在从内存中获取属于一个程序的指令并执行它们，但它在物理上不需要以这种方式工作。 一般来说，这里可以考虑三种不同的情况。</p>
+    <content><![CDATA[<h2 id="逻辑-CPU"><a href="#逻辑-CPU" class="headerlink" title="逻辑 CPU"></a>逻辑 CPU</h2><span id="more"></span> 
+
+<p>​        在 CPU 任务调度器看来 CPU 空闲时间管理是直接作用在 CPU 上的。在它看来，CPU 是一个逻辑单元。也就是说，CPU 不必是单独的物理实体，而可能只是一个对软件表现为单独的单核处理器的接口。 换句话说，CPU 是一个实体，它表现为正在从内存中获取属于一个程序的指令并执行它们，但它在物理上不需要以这种方式工作。 一般来说，这里可以考虑三种不同的情况。</p>
 <ul>
 <li><p>如果整个处理器一次只能执行一个指令序列，那么整个处理器就是一个 CPU。 在这种情况下，如果要求硬件进入空闲状态，整个处理器都将进入空闲状态。</p>
 </li>
@@ -142,7 +146,7 @@
 <p><a href="https://www.kernel.org/doc/html/latest/admin-guide/pm/cpuidle.html">https://www.kernel.org/doc/html/latest/admin-guide/pm/cpuidle.html</a></p>
 ]]></content>
       <tags>
-        <tag>Linux</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -308,6 +312,8 @@
     <title>Makefiles 简介</title>
     <url>/p/c677bb8a.html</url>
     <content><![CDATA[<p>内容摘自《GNU Make》第二章。</p>
+<span id="more"></span>
+
 <p>本文将讨论一个简单的 Makefile，这个 Makefile 将描述如何编译和连接 8 个 C 语言源代码文件和 3 个头文件。当 make 重新编译，每一个修改了的 C 语言源代码文件都要重新编译。如果头文件发生了修改，所有包含了该头文件的源代码文件要重新编译。每一次编译都会产生一个目标文件，当发生重新编译时，所有文件都要重新链接成一个新的可执行文件。</p>
 <h2 id="规则"><a href="#规则" class="headerlink" title="规则"></a>规则</h2><p>一个简单的 Makefile 由很多规则组成，规则有着以下的模式：</p>
 <figure class="highlight makefile"><table><tr><td class="code"><pre><span class="line">target ... : prerequisites ...</span><br><span class="line">	recipe</span><br><span class="line">	...</span><br><span class="line">	...</span><br></pre></td></tr></table></figure>
@@ -344,6 +350,8 @@
     <title>写 Makefile 文件</title>
     <url>/p/dcfc36a.html</url>
     <content><![CDATA[<p>内容摘自《GNU Make》第三章。</p>
+<span id="more"></span>
+
 <h2 id="Makefile-内容"><a href="#Makefile-内容" class="headerlink" title="Makefile 内容"></a>Makefile 内容</h2><ul>
 <li><p>明确规则。明确的规则表明何时和怎样去 remake 一个或多个文件，这些文件称为规则的 targets。规则会列举 target 依赖的其他文件，这些文件称为 target 的 prerequistes。有些时候还会给出 recipe 用来创建或更新 target。</p>
 </li>
@@ -878,7 +886,7 @@
 <p><a href="https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link">https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link</a></p>
 ]]></content>
       <tags>
-        <tag>linux命令</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -892,7 +900,9 @@
   <entry>
     <title>学习网站</title>
     <url>/p/52e318f2.html</url>
-    <content><![CDATA[<h2 id="Go"><a href="#Go" class="headerlink" title="Go"></a>Go</h2><p>Go语言圣经 <a href="http://gopl.io/">《The Go Programming Language》</a> 中文版本：<a href="http://shouce.jb51.net/gopl-zh/index.html">http://shouce.jb51.net/gopl-zh/index.html</a></p>
+    <content><![CDATA[<h2 id="Go"><a href="#Go" class="headerlink" title="Go"></a>Go</h2><span id="more"></span>
+
+<p>Go语言圣经 <a href="http://gopl.io/">《The Go Programming Language》</a> 中文版本：<a href="http://shouce.jb51.net/gopl-zh/index.html">http://shouce.jb51.net/gopl-zh/index.html</a></p>
 <h2 id="课程网站"><a href="#课程网站" class="headerlink" title="课程网站"></a>课程网站</h2><h3 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h3><p>MIT6.824：<a href="https://pdos.csail.mit.edu/6.824/">https://pdos.csail.mit.edu/6.824/</a></p>
 <h2 id="benchmark"><a href="#benchmark" class="headerlink" title="benchmark"></a>benchmark</h2><p><a href="https://github.com/giltene/wrk2">wrk2</a>：a HTTP benchmarking tool based mostly on wrk</p>
 <p><a href="https://github.com/brianfrankcooper/YCSB/">YCSB</a>：测试在线数据库性能，扩展性的框架</p>
@@ -964,7 +974,7 @@
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a href="https://blog.csdn.net/zhangyongfeiyong/article/details/53506362">https://blog.csdn.net/zhangyongfeiyong/article/details/53506362</a></p>
 ]]></content>
       <tags>
-        <tag>linux命令</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -973,6 +983,83 @@
     <content><![CDATA[]]></content>
       <tags>
         <tag>资源调度</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SGX 知识总结（一）</title>
+    <url>/p/8cd79317.html</url>
+    <content><![CDATA[<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><span id="more"></span>
+
+
+<a href="/p/undefined.html" title="SGX数据结构">SGX数据结构</a>
+<a href="/p/ccbadbc2.html" title="SGX创建过程">SGX创建过程</a>
+]]></content>
+      <tags>
+        <tag>SGX</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SGX创建过程</title>
+    <url>/p/ccbadbc2.html</url>
+    <content><![CDATA[<p>本文内容源自《Intel Software Developer’s Manual: Volumn 3》2023 年 3 月版本。</p>
+<span id="more"></span>
+
+<p>enclave 创建过程主要包括以下步骤：<br></p>
+<ol>
+<li>应用提交 enclave 内容和创建 enclave 的 API 需要的额外信息给运行在 <font color="#FF0000"> 特权级为0 </font> 的 enclave 创建服务；</li>
+<li>运行在 0 特权级的 enclave 创建服务使用 ECREATE 叶函数去初始化环境，声明 enclave 基地址和大小。这个范围是应用地址空间的一部分，称为 ELRANGE。ECREATE 还为 SECS 分配 EPC 页面。<font color="#FF0000"> 注意为 SECS 分配的 EPC 页面不必在 encalve 线性地址空间内，也不需要映射到进程</font>；</li>
+<li>Enclave 创建服务使用 EADD 叶函数提交 EPC 页面到 enclave，使用 EEXTEND 计算 enclave 提交页面的测度。对于将要加入 enclave 的每个页面：使用 EADD 将新页面加入到 enclave；如果 enclave 开发人员需要页面的测度作为内容的证明，则使用 EEXTEND 计算页面 256 字节的测度，重复该步骤直到整个页面都被计算；</li>
+<li>Enclave 创建服务使用 EINIT 叶函数完成 enclave 的创建过程，结束 enclave 测度计算并创建 enclave 实体。在 EINIT 执行之前，不允许执行 enclave 内部代码。</li>
+</ol>
+<h2 id="ECREATE"><a href="#ECREATE" class="headerlink" title="ECREATE"></a>ECREATE</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>指令：ENCLS[ECREATE]</p>
+<p>参数：EAX = 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）</p>
+<p>ENCLS[ECREATE] 是 enclave 构建进程执行的第一条指令。ECREATE 拷贝外部的 SECS 到 EPC 页面中，之后内部的 SECS 不能被软件获取。</p>
+<p>ECREATE 会初始化受保护的 SECS，并检查未使用的字段是否为0，并将其对应的 EPC 页面设置为 VALID 状态。 </p>
+<p>应用提交的源 SECS 需要设置以下字段：BASEADDR，SIZE，ATTRIBUTES，CONFIGID，CONFIGSVN。SIZE 至少两个页面，BASEADDR 与 SIZE 边界对齐。</p>
+<p>RBX 参数包含 PAGEINFO 的有效地址，PAGEINFO 包含源 SECS 的地址（SRCPAGE 字段）和 SECINFO 地址。PAGEINFO 的 SECS 字段未使用。SECINFO 字段必须指定 EPC 页面为 SECS 页面类型。</p>
+<p>RCX 参数是目标 SECS 页面地址，该地址指向一个空白的 EPC 页面。</p>
+<h3 id="权限"><a href="#权限" class="headerlink" title="权限"></a>权限</h3><p>PAGEINFO：允许 non-enclave 读</p>
+<p>PAGEINFO.SRCPGE：允许 non-enclave 读</p>
+<p>PAGEINFO.SECINFO：允许 non-enclave 读</p>
+<p>EPCPAGE：允许 enclave 写</p>
+<h3 id="并发限制"><a href="#并发限制" class="headerlink" title="并发限制"></a>并发限制</h3><table>
+    <tr>
+        <th rowspan="2">Leaf function</th><th rowspan="2">Parameter</th><th colspan="3">Base Concurrency Restrictions</th>
+    </tr>
+    <tr>
+        <th> Access</th><th>On Conflict</th><th>SGX_CONFLICT VM Exit Qualification</th>
+    </tr>
+    <tr>
+        <td>ECREATE</td><td>SECS[DS:RCX]</td><td>Exclusive</td><td>#GP</td><td>EPC_PAGE_CONFLICT_EXCEPTION</td>
+    </tr>
+</table>
+
+<table>
+    <th rowspan="3">Leaf function</th><th rowspan="3">Parameter</th><th colspan="6">Additional Concurrency Restrictions</th>
+    
+    <tr>
+        <th colspan="2">vs. EACCEPT, EACCEPTCOPY, EMODPE, EMODPR, EMODT </th><th colspan="2">vs. EADD, EEXTEND, EINIT</th><th colspan="2">vs. ETRACK, ETRACKC</th>
+    </tr>
+    <th> Access</th><th>On Conflict</th><th> Access</th><th>On Conflict</th><th> Access</th><th>On Conflict</th>
+    <tr>
+        <td>ECREATE</td><td>SECS[DS:RCX]</td><td>Concurrent</td><td></td><td>Concurrent</td><td></td><td>Concurrent</td><td></td>
+    </tr>
+<table>
+
+<h3 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EADD-EXTEND"><a href="#EADD-EXTEND" class="headerlink" title="EADD/EXTEND"></a>EADD/EXTEND</h2><h2 id="EINIT"><a href="#EINIT" class="headerlink" title="EINIT"></a>EINIT</h2></table></table>]]></content>
+      <tags>
+        <tag>SGX</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SGX数据结构</title>
+    <url>/p/43899435.html</url>
+    <content><![CDATA[<p>本文内容源自《Intel Software Developer’s Manual: Volumn 3》2023 年 3 月版本。</p>
+<span id="more"></span>
+
+<h2 id="SECS"><a href="#SECS" class="headerlink" title="SECS"></a>SECS</h2>]]></content>
+      <tags>
+        <tag>SGX</tag>
       </tags>
   </entry>
 </search>
