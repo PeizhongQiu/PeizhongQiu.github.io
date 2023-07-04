@@ -990,6 +990,8 @@
     <url>/p/8cd79317.html</url>
     <content><![CDATA[<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><span id="more"></span>
 
+
+<a href="/p/undefined.html" title="SGX数据结构">SGX数据结构</a>
 <a href="/p/ccbadbc2.html" title="SGX创建过程">SGX创建过程</a>
 ]]></content>
       <tags>
@@ -999,9 +1001,63 @@
   <entry>
     <title>SGX创建过程</title>
     <url>/p/ccbadbc2.html</url>
-    <content><![CDATA[<span id="more"></span>
+    <content><![CDATA[<p>本文内容源自《Intel Software Developer’s Manual: Volumn 3》2023 年 3 月版本。</p>
+<span id="more"></span>
 
-<h2 id="ECREATE"><a href="#ECREATE" class="headerlink" title="ECREATE"></a>ECREATE</h2><h2 id="EADD-EXTEND"><a href="#EADD-EXTEND" class="headerlink" title="EADD/EXTEND"></a>EADD/EXTEND</h2><h2 id="EINIT"><a href="#EINIT" class="headerlink" title="EINIT"></a>EINIT</h2>]]></content>
+<p>enclave 创建过程主要包括以下步骤：<br></p>
+<ol>
+<li>应用提交 enclave 内容和创建 enclave 的 API 需要的额外信息给运行在 <font color="#FF0000"> 特权级为0 </font> 的 enclave 创建服务；</li>
+<li>运行在 0 特权级的 enclave 创建服务使用 ECREATE 叶函数去初始化环境，声明 enclave 基地址和大小。这个范围是应用地址空间的一部分，称为 ELRANGE。ECREATE 还为 SECS 分配 EPC 页面。<font color="#FF0000"> 注意为 SECS 分配的 EPC 页面不必在 encalve 线性地址空间内，也不需要映射到进程</font>；</li>
+<li>Enclave 创建服务使用 EADD 叶函数提交 EPC 页面到 enclave，使用 EEXTEND 计算 enclave 提交页面的测度。对于将要加入 enclave 的每个页面：使用 EADD 将新页面加入到 enclave；如果 enclave 开发人员需要页面的测度作为内容的证明，则使用 EEXTEND 计算页面 256 字节的测度，重复该步骤直到整个页面都被计算；</li>
+<li>Enclave 创建服务使用 EINIT 叶函数完成 enclave 的创建过程，结束 enclave 测度计算并创建 enclave 实体。在 EINIT 执行之前，不允许执行 enclave 内部代码。</li>
+</ol>
+<h2 id="ECREATE"><a href="#ECREATE" class="headerlink" title="ECREATE"></a>ECREATE</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>指令：ENCLS[ECREATE]</p>
+<p>参数：EAX = 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）</p>
+<p>ENCLS[ECREATE] 是 enclave 构建进程执行的第一条指令。ECREATE 拷贝外部的 SECS 到 EPC 页面中，之后内部的 SECS 不能被软件获取。</p>
+<p>ECREATE 会初始化受保护的 SECS，并检查未使用的字段是否为0，并将其对应的 EPC 页面设置为 VALID 状态。 </p>
+<p>应用提交的源 SECS 需要设置以下字段：BASEADDR，SIZE，ATTRIBUTES，CONFIGID，CONFIGSVN。SIZE 至少两个页面，BASEADDR 与 SIZE 边界对齐。</p>
+<p>RBX 参数包含 PAGEINFO 的有效地址，PAGEINFO 包含源 SECS 的地址（SRCPAGE 字段）和 SECINFO 地址。PAGEINFO 的 SECS 字段未使用。SECINFO 字段必须指定 EPC 页面为 SECS 页面类型。</p>
+<p>RCX 参数是目标 SECS 页面地址，该地址指向一个空白的 EPC 页面。</p>
+<h3 id="权限"><a href="#权限" class="headerlink" title="权限"></a>权限</h3><p>PAGEINFO：允许 non-enclave 读</p>
+<p>PAGEINFO.SRCPGE：允许 non-enclave 读</p>
+<p>PAGEINFO.SECINFO：允许 non-enclave 读</p>
+<p>EPCPAGE：允许 enclave 写</p>
+<h3 id="并发限制"><a href="#并发限制" class="headerlink" title="并发限制"></a>并发限制</h3><table>
+    <tr>
+        <th rowspan="2">Leaf function</th><th rowspan="2">Parameter</th><th colspan="3">Base Concurrency Restrictions</th>
+    </tr>
+    <tr>
+        <th> Access</th><th>On Conflict</th><th>SGX_CONFLICT VM Exit Qualification</th>
+    </tr>
+    <tr>
+        <td>ECREATE</td><td>SECS[DS:RCX]</td><td>Exclusive</td><td>#GP</td><td>EPC_PAGE_CONFLICT_EXCEPTION</td>
+    </tr>
+</table>
+
+<table>
+    <th rowspan="3">Leaf function</th><th rowspan="3">Parameter</th><th colspan="6">Additional Concurrency Restrictions</th>
+    
+    <tr>
+        <th colspan="2">vs. EACCEPT, EACCEPTCOPY, EMODPE, EMODPR, EMODT </th><th colspan="2">vs. EADD, EEXTEND, EINIT</th><th colspan="2">vs. ETRACK, ETRACKC</th>
+    </tr>
+    <th> Access</th><th>On Conflict</th><th> Access</th><th>On Conflict</th><th> Access</th><th>On Conflict</th>
+    <tr>
+        <td>ECREATE</td><td>SECS[DS:RCX]</td><td>Concurrent</td><td></td><td>Concurrent</td><td></td><td>Concurrent</td><td></td>
+    </tr>
+<table>
+
+<h3 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EADD-EXTEND"><a href="#EADD-EXTEND" class="headerlink" title="EADD/EXTEND"></a>EADD/EXTEND</h2><h2 id="EINIT"><a href="#EINIT" class="headerlink" title="EINIT"></a>EINIT</h2></table></table>]]></content>
+      <tags>
+        <tag>SGX</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SGX数据结构</title>
+    <url>/p/43899435.html</url>
+    <content><![CDATA[<p>本文内容源自《Intel Software Developer’s Manual: Volumn 3》2023 年 3 月版本。</p>
+<span id="more"></span>
+
+<h2 id="SECS"><a href="#SECS" class="headerlink" title="SECS"></a>SECS</h2>]]></content>
       <tags>
         <tag>SGX</tag>
       </tags>
