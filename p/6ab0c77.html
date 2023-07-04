@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"peizhongqiu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="dash bucket结构Dash的总体结构如图1所示。从图中可以看出，该结构和CCEH同样采取了可拓展的哈希结构，并且同样有三个层次，一个是Directory层，一个是Segment层，一个是Bucket层。不同的是，每个Segment层除了正常的Bucket外，还有Stash buckets用来存储冲突的键值对。根据论文，一个Segment层的Stash buckets数量为2或4。另外，在D">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Dash: Scalable Hashing on Persistent Memory">
+<meta property="og:url" content="https://peizhongqiu.github.io/p/6ab0c77.html">
+<meta property="og:site_name" content="Little Q 的个人博客">
+<meta property="og:description" content="dash bucket结构Dash的总体结构如图1所示。从图中可以看出，该结构和CCEH同样采取了可拓展的哈希结构，并且同样有三个层次，一个是Directory层，一个是Segment层，一个是Bucket层。不同的是，每个Segment层除了正常的Bucket外，还有Stash buckets用来存储冲突的键值对。根据论文，一个Segment层的Stash buckets数量为2或4。另外，在D">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/6ab0c77/dash_architecture.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/6ab0c77/dash_bucket.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/6ab0c77/insert_top.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/6ab0c77/dash_search.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/6ab0c77/re1.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/6ab0c77/re2.PNG">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/6ab0c77/re3.PNG">
+<meta property="article:published_time" content="2021-03-20T21:27:22.000Z">
+<meta property="article:modified_time" content="2021-11-24T01:23:28.070Z">
+<meta property="article:author" content="Little_Q">
+<meta property="article:tag" content="NVM论文研读">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://peizhongqiu.github.io/p/6ab0c77/dash_architecture.PNG">
+
+<link rel="canonical" href="https://peizhongqiu.github.io/p/6ab0c77.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Dash: Scalable Hashing on Persistent Memory | Little Q 的个人博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <!--<div class="headband"></div>-->
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Little Q 的个人博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/6ab0c77.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lulu.jpg">
+      <meta itemprop="name" content="Little_Q">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Little Q 的个人博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Dash: Scalable Hashing on Persistent Memory
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-21 05:27:22" itemprop="dateCreated datePublished" datetime="2021-03-21T05:27:22+08:00">2021-03-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-11-24 09:23:28" itemprop="dateModified" datetime="2021-11-24T09:23:28+08:00">2021-11-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="dash-bucket结构"><a href="#dash-bucket结构" class="headerlink" title="dash bucket结构"></a>dash bucket结构</h2><p>Dash的总体结构如图1所示。从图中可以看出，该结构和CCEH同样采取了可拓展的哈希结构，并且同样有三个层次，一个是Directory层，一个是Segment层，一个是Bucket层。不同的是，每个Segment层除了正常的Bucket外，还有Stash buckets用来存储冲突的键值对。根据论文，一个Segment层的Stash buckets数量为2或4。另外，在Directory层有三个主要变量，Lock是锁，Version用来做版本控制，Clean用来判断系统的关闭是否是干净的。</p>
+<span id="more"></span>
+
+<img src="/p/6ab0c77/dash_architecture.PNG" class title="图1 Dash总体结构">
+
+<p>图2是bucket层的具体结构。从图中可知，一个bucket就只存储14个键值对，一个键值对16个字节。另外，每个bucket有32字节的元数据，其中包括4字节的版本锁，根据代码可知，最高位是互斥锁，后面31位作为版本号进行版本控制；接着的counter是用来计算bucket中有多少个键值对；membership是一个位图，用来显示那些不是直接索引到该bucket中的键值对；Alloc.bitmap也是一个位图，用来显示该bucket中的全部键值对；接下来是18个fingeprint，每个fingerprint是1字节，所谓的fingerprint是哈希值的后8位，通过fingerprint可以大量减少NVM读的次数，有一点值得注意，一个bucket只有14个键值对，但是却有18个fingerprint，这是stash bucket中在本bucket溢出的键值对的fingerprint；overflow fingerprint bitmap是4位，判断溢出的对应的fingerprint是否被占用；overflow bit用来判断这个bucket是否有溢出的键值对，stash bucket index用来判断fingerprint对应的键值对在哪个bucket；overflow membership用来判断溢出的键值对是否直接索引到该bucket ；overflow count表示直接对应该bucket的键值对却无法插入到该bucket和下一个bucket的键值对数量，注意overcount不包括那些在bucket或下一个bucket有存储fingerprint的键值对。</p>
+<img src="/p/6ab0c77/dash_bucket.PNG" class title="图2 bucket结构">
+
+<h2 id="dash实现细节"><a href="#dash实现细节" class="headerlink" title="dash实现细节"></a>dash实现细节</h2><p>每个Segment有64个bucket，因此可以根据6位来确定bucket的位置。哈希值最后8位是作为fingerprint，最后9到14位来确定bucket位置。</p>
+<h3 id="dash-insert"><a href="#dash-insert" class="headerlink" title="dash insert"></a>dash insert</h3><p>最上层的伪代码如图3所示。首先，是判断键值是否已经存在，如果存在，则直接返回。其次，如果target_bucket和probing_bucket都未满，为了让两者负载均衡，会插入到两者数量较少的一边；如果两者都满了，则会判断target和probing target中是否有可以移动的键值对，即在target中属于前一个bucket的键值对，且前一个bucket有空余的位置，则将其中一个插入到前一个bucket，或者probe target中属于probe target的键值对，且后一个bucket有空余的位置，则将其中一个插入到前一个bucket。最后，如果没有空闲的位置，则插入到stash中，并设置target的overflow为1，如果stash中也没有空余的位置，则分裂。接下来，对其中的有些细节进行补充。</p>
+<img src="/p/6ab0c77/insert_top.PNG" class title="图3 dash insert伪代码">
+
+<h3 id="key-exists"><a href="#key-exists" class="headerlink" title="key exists"></a>key exists</h3><p>根据源代码，首先是在target_bucket和probing_bucket中寻找是否存在相同的键值，这个部分可以利用fingerprint大量减少读的次数，并且，fingerprint可以使用SSE加速，另外，在源代码中，对14位每位进行判断的时候，使用了循环展开的方法降低开销；之后，判断是否需要去stash中查找，判断是否要在stash中查找要依次查看overflow bit是否为0，overcount是否为0，overflowBit与overflow fingerprint与overflow membership的关系，不满足则要对stash进行搜索。</p>
+<h3 id="bucket-insert"><a href="#bucket-insert" class="headerlink" title="bucket insert"></a>bucket insert</h3><p>首先找到空闲的键值对，这可以利用bitmap进行位运算得到。接着插入，并设置标志位。由于clflush一次刷新一个cacheline，一个cacheline为64字节，所以所有的元数据都可以在一次刷新中刷入。</p>
+<h3 id="split"><a href="#split" class="headerlink" title="split"></a>split</h3><p>Split过程基本与CCEH相似。重点说明几点不同之处：第一，分裂的时候，dash要将所有bucket的锁都上锁，第二，dash在分裂时候的正确性由libpmemobj的事务保障，这保证分裂出去的Segment在程序崩溃之后能够回收成功。</p>
+<h3 id="search"><a href="#search" class="headerlink" title="search"></a>search</h3><p>search伪代码如图4所示。从伪代码中，可以看出，在搜索的过程中并没有使用锁。dash采用乐观锁的方式大大提高并行环境下的搜索效率。在搜索之前，判断bucket是否上锁；在搜索完成后，dash通过检查bucket的版本是否与之前读取的一致来判断search的过程中是否有进程对bucket进行修改，如果有，则会重新读取。另外，由于fingerprint的存在，大大减少了读的次数。</p>
+<img src="/p/6ab0c77/dash_search.PNG" class title="图4 dash search伪代码">
+
+<h2 id="dash-与-cceh评测"><a href="#dash-与-cceh评测" class="headerlink" title="dash 与 cceh评测"></a>dash 与 cceh评测</h2><h3 id="cceh改写"><a href="#cceh改写" class="headerlink" title="cceh改写"></a>cceh改写</h3><p>dash的作者对cceh进行了改写，首先在insert上，作者增加了判断新增的键值对是否存在的判断，由于cceh没有此方面的实现，所以作者相当于搜索了一次；另外，在split的过程中，作者将cceh的分裂用libpmemobj的事务进行处理。</p>
+<h3 id="单线程比较"><a href="#单线程比较" class="headerlink" title="单线程比较"></a>单线程比较</h3><p>对于key大小大于8字节的键值对来说，由于每次读取键值都需要先读指针，再读key，这就体现了fingerprint的优越性，fingerprint大大减少了读的次数。</p>
+<img src="/p/6ab0c77/re1.PNG" class title="图5 单线程">
+
+<h3 id="多线程比较"><a href="#多线程比较" class="headerlink" title="多线程比较"></a>多线程比较</h3><img src="/p/6ab0c77/re2.PNG" class title="图6 多线程">
+
+<h3 id="负载因子"><a href="#负载因子" class="headerlink" title="负载因子"></a>负载因子</h3><img src="/p/6ab0c77/re3.PNG" class title="图7 负载因子">
+
+<h2 id="dash代码运行环境要求"><a href="#dash代码运行环境要求" class="headerlink" title="dash代码运行环境要求"></a>dash代码运行环境要求</h2><p>源代码地址 <a target="_blank" rel="noopener" href="https://github.com/baotonglu/dash.git">https://github.com/baotonglu/dash.git</a><br>linux 内核版本4.17之后<br>glibc 版本2.29之后</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Little_Q
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://peizhongqiu.github.io/p/6ab0c77.html" title="Dash: Scalable Hashing on Persistent Memory">https://peizhongqiu.github.io/p/6ab0c77.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/NVM%E8%AE%BA%E6%96%87%E7%A0%94%E8%AF%BB/" rel="tag"># NVM论文研读</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/p/c7035f77.html" rel="prev" title="WIN10配置hexo">
+      <i class="fa fa-chevron-left"></i> WIN10配置hexo
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/p/4a17b156.html" rel="next" title="Hello World">
+      Hello World <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#dash-bucket%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">dash bucket结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dash%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">2.</span> <span class="nav-text">dash实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dash-insert"><span class="nav-number">2.1.</span> <span class="nav-text">dash insert</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#key-exists"><span class="nav-number">2.2.</span> <span class="nav-text">key exists</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bucket-insert"><span class="nav-number">2.3.</span> <span class="nav-text">bucket insert</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#split"><span class="nav-number">2.4.</span> <span class="nav-text">split</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#search"><span class="nav-number">2.5.</span> <span class="nav-text">search</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dash-%E4%B8%8E-cceh%E8%AF%84%E6%B5%8B"><span class="nav-number">3.</span> <span class="nav-text">dash 与 cceh评测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#cceh%E6%94%B9%E5%86%99"><span class="nav-number">3.1.</span> <span class="nav-text">cceh改写</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8D%95%E7%BA%BF%E7%A8%8B%E6%AF%94%E8%BE%83"><span class="nav-number">3.2.</span> <span class="nav-text">单线程比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%AF%94%E8%BE%83"><span class="nav-number">3.3.</span> <span class="nav-text">多线程比较</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B4%9F%E8%BD%BD%E5%9B%A0%E5%AD%90"><span class="nav-number">3.4.</span> <span class="nav-text">负载因子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dash%E4%BB%A3%E7%A0%81%E8%BF%90%E8%A1%8C%E7%8E%AF%E5%A2%83%E8%A6%81%E6%B1%82"><span class="nav-number">4.</span> <span class="nav-text">dash代码运行环境要求</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Little_Q"
+      src="/images/lulu.jpg">
+  <p class="site-author-name" itemprop="name">Little_Q</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/PeizhongQiu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;PeizhongQiu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Little_Q</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

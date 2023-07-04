@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"peizhongqiu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="传统算法[1]">
+<meta property="og:type" content="article">
+<meta property="og:title" content="资源调度算法调研（一）">
+<meta property="og:url" content="https://peizhongqiu.github.io/p/bcc3e70e.html">
+<meta property="og:site_name" content="Little Q 的个人博客">
+<meta property="og:description" content="传统算法[1]">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://peizhongqiu.github.io/p/bcc3e70e/tabu.PNG">
+<meta property="article:published_time" content="2021-10-26T01:36:04.000Z">
+<meta property="article:modified_time" content="2021-11-24T01:21:55.145Z">
+<meta property="article:author" content="Little_Q">
+<meta property="article:tag" content="资源调度">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://peizhongqiu.github.io/p/bcc3e70e/tabu.PNG">
+
+<link rel="canonical" href="https://peizhongqiu.github.io/p/bcc3e70e.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>资源调度算法调研（一） | Little Q 的个人博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <!--<div class="headband"></div>-->
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Little Q 的个人博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/bcc3e70e.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lulu.jpg">
+      <meta itemprop="name" content="Little_Q">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Little Q 的个人博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          资源调度算法调研（一）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-10-26 09:36:04" itemprop="dateCreated datePublished" datetime="2021-10-26T09:36:04+08:00">2021-10-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-11-24 09:21:55" itemprop="dateModified" datetime="2021-11-24T09:21:55+08:00">2021-11-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="传统算法-1"><a href="#传统算法-1" class="headerlink" title="传统算法[1]"></a>传统算法<sup>[1]</sup></h2><span id="more"></span>
+
+<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p><font color="#FF0000">metatask</font>: a collection of independent tasks with no intertask data dependencies;</p>
+<p><font color="#FF0000">&tau;</font>: The size of the metatask (i.e., the number of tasks to execute);</p>
+<p><font color="#FF0000">&mu;</font>: the number of machines in the HC suite;</p>
+<p>&tau; and &mu; are static and known beforehand.</p>
+<p>It is assumed that an accurate estimate of the expected execution time for each task on each machine is known prior to execution and contained within a &tau;*&mu; ETC (expected time to compute) matrix;</p>
+<p>It is also assumed that each machine executes a single task at a time.</p>
+<p><font color="#FF0000">Machine availability time, mat(m<sub>j</sub>)</font>：the earliest time machine m<sub>j</sub> can complete the execution of all the tasks that have previously been assigned to it (based on the ETC entries for those tasks). </p>
+<p><font color="#FF0000">The completion time for a new task t<sub>i</sub> on machine m<sub>j</sub> , ct(t<sub>i</sub> , m<sub>j</sub>)</font>: the machine availability time for m<sub>j</sub> plus the execution time of task t<sub>i</sub> on machine m<sub>j</sub> , i.e., ct(t<sub>i</sub> , m<sub>j</sub>)= mat(m<sub>j</sub>)+ETC(t<sub>i</sub> , m<sub>j</sub>). </p>
+<p>The performance criterion used to compare the results of the heuristics is the maximum value of ct(t<sub>i</sub> , m<sub>j</sub>), for  0 &le; i &lt; &tau; and 0 &le; j &lt; &mu;. The maximum ct(t<sub>i</sub> , m<sub>j</sub>) value, over 0 &le; i &lt; &tau; and 0 &le; j &lt; &mu;, is the metatask execution time, and is called the <font color="#FF0000">makespan</font> . </p>
+<p>Each heuristic is attempting to minimize the makespan, i.e., finish execution of the metatask as soon as possible.</p>
+<h3 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h3><table>
+<thead>
+<tr>
+<th align="center">算法</th>
+<th align="left"><p align="middle">描述</p></th>
+<th align="left"><p align="middle">优点</p></th>
+<th align="left"><p align="middle">缺点</p></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Opportunistic Load Balancing (OLB)</td>
+<td align="left">OLB算法会将负载随机交给一个可用的节点，不管任务执行的时间。动机是尽量保持所有的机器忙碌。</td>
+<td align="left"><p align="middle">简单</p></td>
+<td align="left">poor makespan</td>
+</tr>
+<tr>
+<td align="center">Minimum Execution Time (MET)</td>
+<td align="left">MET会将任务分配给对于该任务，有着最小执行时间的机器，不管机器何时可用。动机是尽量将任务分配给最适合它的机器。</td>
+<td align="left"></td>
+<td align="left">会造成严重的负载不均衡</td>
+</tr>
+<tr>
+<td align="center">Minimum Completion Time (MCT)</td>
+<td align="left">MCT会将任务分配给对于该任务，有着最小完成时间的机器。</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center">Min-min</td>
+<td align="left">U：unmapped tasks；M={min<sub>0&le;j&lt;&mu;</sub>(ct(t<sub>i</sub> , m<sub>j</sub>)), for each t<sub>i</sub> &in;U}；M中最小的任务分配给对应的机器，之后将该任务移除，重复该步骤直到U为空。</td>
+<td align="left">good makespan</td>
+<td align="left">执行长任务而带来延迟。比如：当有很多短任务和一个很长的任务，会由于最后执行长任务而带来极大的开销</td>
+</tr>
+<tr>
+<td align="center">Max-min</td>
+<td align="left">U：unmapped tasks；M={min<sub>0&le;j&lt;&mu;</sub>(ct(t<sub>i</sub> , m<sub>j</sub>)), for each t<sub>i</sub> &in;U}；<br>M中最大的任务分配给对应的机器，之后将该任务移除，重复该步骤直到U为空。</td>
+<td align="left">最小化由于执行长任务而带来的延迟。比如：当有很多短任务和一个很长的任务，Min-Min会由于最后执行长任务而带来极大的开销，这时Max-Min算法会更优。</td>
+<td align="left">其他时候调度策略都不够好。短任务的等待时间过长。</td>
+</tr>
+<tr>
+<td align="center">Duplex</td>
+<td align="left">会同时执行Min-Min和Max-Min，然后选择更好的一个</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center">Round-Robin(RR)</td>
+<td align="left">Round-Robin 算法将负载均匀的发放给各个节点。当使用这个算法时，调度器会循环的将VM分配给节点。比如：3个节点，第一个请求到达时，分配给第一个节点，第二个请求到达时，分配给第二个节点，第三个请求到达时分配给第三个节点，第四个请求到达时又分配给第一个节点，以此类推。</td>
+<td align="left">能均匀的利用所有的资源，保障了公平性</td>
+<td align="left">没有考虑任务的执行时间和资源使用情况。</td>
+</tr>
+<tr>
+<td align="center">Power Save Algorithm</td>
+<td align="left">在调度器分配了VM后，检查是否有空闲的节点，有的话就关掉。等到有请求需要分配到该节点时，再打开该节点。</td>
+<td align="left">考虑能耗问题</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center">Genetic Algorithms (GA)</td>
+<td align="left">initial population genetation;<br>evaluation;<br>while(stopping criteria not met){<br>&emsp;selection;<br>&emsp;crossover;<br>&emsp;mutation;<br>&emsp;evaluation;<br>}<br>output best solution;<br>具体算法可以参考<a href="/p/e830ed97.html" title="Genetic Algorithm">Genetic Algorithm</a></td>
+<td align="left">Genetic Algorithms (GAs) are a technique used for searching large solution spaces.  GA usually found the best mappings of all 11 heuristics.</td>
+<td align="left">调度时间长</td>
+</tr>
+<tr>
+<td align="center">Simulated Annealing (SA)</td>
+<td align="left">具体算法可以参考<a href="/p/ba79e3d5.html" title="Simulated Annealing">Simulated Annealing</a></td>
+<td align="left"></td>
+<td align="left">可能会找到比Min-Min和GA更差的解决办法；调度时间较长</td>
+</tr>
+<tr>
+<td align="center">Genetic Simulated Annealing (GSA)</td>
+<td align="left">a combination of the GA and SA techniques . In general, GSA follows procedures similar to the GA outlined above. However, for the selection process, GSA uses the SA cooling schedule and system temperature and a simplified SA decision process for accepting or rejecting a new chromosome.</td>
+<td align="left"></td>
+<td align="left">调度时间长</td>
+</tr>
+<tr>
+<td align="center">Tabu</td>
+<td align="left"><img src="/p/bcc3e70e/tabu.PNG" class title="图1 tabu"><br>具体算法可以参考<a href="/p/5b9a6a68.html" title="Tabu">Tabu</a></td>
+<td align="left"></td>
+<td align="left">调度时间较长</td>
+</tr>
+<tr>
+<td align="center">A*</td>
+<td align="left">具体算法可以参考<a href="/p/7300a56d.html" title="A*">A*</a></td>
+<td align="left"></td>
+<td align="left">调度时间很长</td>
+</tr>
+</tbody></table>
+<h3 id="总体评价："><a href="#总体评价：" class="headerlink" title="总体评价："></a>总体评价：</h3><ul>
+<li>基本没有考虑能耗情况，所有的节点都是一开始就准备好，一直开启；</li>
+<li>假设很多也已经不符合现在的情况，比如：现在一个节点都是多线程任务，很少一个机器一个时间只有一个任务执行；</li>
+<li>很少考虑节点是否有充足的资源，这可能是因为一个时间一个机器只有一个任务，也就是说，在一个时间，机器所有的资源都会给到该任务，所以不考虑，但是，在多进程的环境下，资源问题也需要考虑；</li>
+<li>不支持热迁移</li>
+<li>这些算法都是静态的算法，有些还是批处理的，提前会知道很多信息。</li>
+</ul>
+<h2 id="论文算法"><a href="#论文算法" class="headerlink" title="论文算法"></a>论文算法</h2><h3 id="AN-ADAPTIVE-ALGORITHM-FOR-DYNAMIC-PRIORITY-BASED-VIRTUAL-MACHINE-SCHEDULING-IN-CLOUD-2"><a href="#AN-ADAPTIVE-ALGORITHM-FOR-DYNAMIC-PRIORITY-BASED-VIRTUAL-MACHINE-SCHEDULING-IN-CLOUD-2" class="headerlink" title="AN ADAPTIVE ALGORITHM FOR DYNAMIC PRIORITY BASED VIRTUAL MACHINE SCHEDULING IN CLOUD[2]"></a>AN ADAPTIVE ALGORITHM FOR DYNAMIC PRIORITY BASED VIRTUAL MACHINE SCHEDULING IN CLOUD<sup>[2]</sup></h3><h4 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">Input: None</span><br><span class="line">Output: None</span><br><span class="line">Algorithm sched_priority</span><br><span class="line">&#123; </span><br><span class="line">	If(P1 is not set)</span><br><span class="line">		P1&#x3D;max available resource node</span><br><span class="line">		If(P1 is turned OFF)</span><br><span class="line">			Turn P1 ON</span><br><span class="line">	If(load factor of P1&lt;0.8)</span><br><span class="line">		Assign VM to P1</span><br><span class="line">	Else if(P2 is set AND load factor of P2&lt;0.8)</span><br><span class="line">		Swap P1 and P2;</span><br><span class="line">		Assign VM to P1;</span><br><span class="line">	Else</span><br><span class="line">		P2&#x3D;P1</span><br><span class="line">		P1&#x3D;current max available resource node </span><br><span class="line"> </span><br><span class="line">		If(P1 is turned OFF)</span><br><span class="line">			Turn P1 ON</span><br><span class="line">		Assign VM to P1;</span><br><span class="line">	Turn OFF all unused nodes;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>在初始状态下，P1和P2都是没有设置的。当一个请求到达时，会判断是否设置了P1，如果没有设置P1，则将P1设置为拥有最多空闲资源的节点，如果此时该节点没有开启，则将该节点开启；之后判断P1的负载因子是否小于0.8，如果小于0.8，说明P1还能够放其他资源，就将资源放入P1对应的节点中；如果P1的负载因子大于0.8，P2被设置了且负载因子小于0.8，则交换P1和P2，将资源交给P1对应的节点；如果P2没有被设置，或者负载因子也大于0.8，则将P2设置为P1的节点，并将P1设置为当前拥有空闲资源最多的节点。最后，关掉那些没有使用的空闲节点。</p>
+<h4 id="评析"><a href="#评析" class="headerlink" title="评析"></a>评析</h4><p>优点：考虑了能源问题，在有空闲节点时，能够关闭掉那些空闲的节点；可拓展性较好；给了伪代码；<br>缺点：实验简单，虚拟机的数量过少，只有10个虚拟机，实验过程省略了；缺少热迁移的考虑，即缺少任务整合的部分，那么，是否可以在此基础上增加一个任务整合的模块？即当某个主机的负载低于某个阈值，比如10%时，将主机的内容迁移到其他主机上，并将该主机关闭；资源分很多种，比如：内存，vcpu等等，不同类型一次申请的量可能不同，可能在某一负载下只能满足其中部分，不能满足全部；。</p>
+<h3 id="Dynamic-Round-Robin-DRR-3"><a href="#Dynamic-Round-Robin-DRR-3" class="headerlink" title="Dynamic Round-Robin (DRR)[3]"></a>Dynamic Round-Robin (DRR)<sup>[3]</sup></h3><p>DRR是在传统RR的基础上，增加了两条规则：第一，在一个虚拟机结束时，该主机将不会接受新的虚拟机，这种状态称为“退休状态”，等该主机的所有VM都结束，关闭该主机；第二，如果主机在“退休状态”呆了足够长的时间，就将主机的所有VM热迁移到其他主机，然后将主机关闭。</p>
+<h4 id="评析-1"><a href="#评析-1" class="headerlink" title="评析"></a>评析</h4><p>优点：考虑了能耗；支持live migration；<br>缺点：没有源代码；实验部分阐述过于简单，没有说明实验的环境，数据量大小，甚至过程都省略了；没有参考文献；如果同时有很多主机的虚拟机都同时结束了，那么这些主机都不能接受新的虚拟机，那么当新的虚拟机到来时，就只能轮询少量的虚拟机，这可能会使少部分的虚拟机过度使用；传统Round-Robin的问题也会发生在这里，比如：故障处理；如果虚拟机退出时，该主机有很多的虚拟机，迁移的开销就会很高。</p>
+<h3 id="Power-Aware-Load-Balancing-for-Cloud-Computing（PALB）-4"><a href="#Power-Aware-Load-Balancing-for-Cloud-Computing（PALB）-4" class="headerlink" title="Power Aware Load Balancing for Cloud Computing（PALB）[4]"></a>Power Aware Load Balancing for Cloud Computing（PALB）<sup>[4]</sup></h3><h4 id="伪代码-1"><a href="#伪代码-1" class="headerlink" title="伪代码"></a>伪代码</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">balance:</span><br><span class="line">	for all active compute nodes j ∈ [m] do</span><br><span class="line">		n[j] &#x3D; current utilization of compute node j</span><br><span class="line">	end for</span><br><span class="line">	if all n[j] &gt; 75% utilization &#x2F;&#x2F;all available nodes are active</span><br><span class="line">		boot vm on most underutilized n[j]</span><br><span class="line">	end if</span><br><span class="line">	else</span><br><span class="line">		boot vm on most utilized n[j], which can also fulfill requirements</span><br><span class="line">	end else</span><br><span class="line">upscale:</span><br><span class="line">	if each n[j] &gt; 75% utilization</span><br><span class="line">		if n[j] &lt; m</span><br><span class="line">			boot compute node n[j+1]</span><br><span class="line">		end if</span><br><span class="line">	end if</span><br><span class="line">downscale:</span><br><span class="line">	if vmi idle &gt; 6 hours or user initiated shutdown</span><br><span class="line">		shutdown vmi</span><br><span class="line">	end if</span><br><span class="line">	if n[j] has no active vm</span><br><span class="line">		shutdown n[j]</span><br><span class="line">	end if</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="说明-1"><a href="#说明-1" class="headerlink" title="说明"></a>说明</h4><p>该算法的目标是在维持节点可用性的同时，降低能耗。该算法主要有三个过程：balance，upscale，downscale。</p>
+<ul>
+<li>balance过程确定虚拟机应该安装的位置。首先获取当前所有活跃节点的利用率，当所有结点的利用率都大于75%时，将虚拟机分配到利用率最低的节点，否则将虚拟机分配到利用率最高的，且可以满足需求的节点。</li>
+<li>upscale过程是当所有虚拟机节点的利用率都大于75%时，创建一个新的虚拟机</li>
+<li>downscale过程是当虚拟机长时间闲置时，关闭虚拟机，而当一个主机没有活跃的虚拟机时，关闭主机。</li>
+</ul>
+<h4 id="评析-2"><a href="#评析-2" class="headerlink" title="评析"></a>评析</h4><p>优点：实验做得比较详细，说明了实验环境和步骤；考虑了能源因素，能够将长时间未使用的虚拟机关掉，将未使用的主机关掉；资源利用率高；考虑了异质的问题<br>缺点：为考虑热迁移，即如果一个主机的负载过低，将主机的虚拟机迁移，之后关闭虚拟机；在虚拟机运行的时候，并不是满负载的，对于申请时要求的资源小于实际使用的资源的情况缺少考虑；实验部分虚拟机个数有点少，只测试了20个和30个虚拟机。</p>
+<h3 id="Load-Balanced-Min-Min-Algorithm-LBMM-5"><a href="#Load-Balanced-Min-Min-Algorithm-LBMM-5" class="headerlink" title="Load Balanced Min-Min Algorithm(LBMM)[5]"></a>Load Balanced Min-Min Algorithm(LBMM)<sup>[5]</sup></h3><h4 id="伪代码-2"><a href="#伪代码-2" class="headerlink" title="伪代码"></a>伪代码</h4><p><strong>CT<sub>i</sub><sub>j</sub></strong>: completion time of task i on machines j </p>
+<p><strong>ET<sub>i</sub><sub>j</sub></strong>: expected execution time of job i on resource j  </p>
+<p><strong>Rj</strong>: ready time or availability time of resource j after  completing the previously assigned jobs.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">for all tasks Ti </span><br><span class="line">	for all resources </span><br><span class="line">		Cij&#x3D;Eij+rj </span><br><span class="line">	do until all tasks are mapped </span><br><span class="line"> 		for each task find the earliest completion time and the resource that obtains it </span><br><span class="line">		find the task Tk with the minimum earliest completion time </span><br><span class="line">		assign task Tk to the resource Rl that gives the earliest completion time </span><br><span class="line">		delete task Tk from list</span><br><span class="line">		update ready time of resource Rl</span><br><span class="line">		update Cil for all i </span><br><span class="line">	end do </span><br><span class="line">&#x2F;&#x2F; rescheduling to balance the load</span><br><span class="line">sort the resources in the order of completion time</span><br><span class="line">for all resources R</span><br><span class="line">	Compute makespan &#x3D; max(CT(R))</span><br><span class="line">End for</span><br><span class="line">for all resources</span><br><span class="line">	for all tasks</span><br><span class="line">		find the task Ti that has minimum ET in Rj</span><br><span class="line">		find the MCT of task Ti</span><br><span class="line">		if MCT &lt; makespan</span><br><span class="line">			Reschedule the task Ti to the resource that produces it </span><br><span class="line">			Update the ready time of both resources</span><br><span class="line">		End if</span><br><span class="line">	End for</span><br><span class="line">End for</span><br><span class="line">&#x2F;&#x2F;Where MCT represents Maximum Completion Time</span><br></pre></td></tr></table></figure>
+
+<h4 id="说明-2"><a href="#说明-2" class="headerlink" title="说明"></a>说明</h4><p>这个算法是为了解决在Min-Min算法长任务滞后带来的问题。该算法主要分成两个部分，第一部分使用传统的Min-Min算法得到一般的解决方案；第二部分对第一部分的解决方案进行重新调度，首先将所有的节点根据完成时间进行排序，然后对每个节点中的每个任务进行调度，如果再次调度后可以得到更小的最大完成时间，则将任务进行调度，并更新信息。</p>
+<h4 id="评析-3"><a href="#评析-3" class="headerlink" title="评析"></a>评析</h4><p>优点：在原来Min-Min的基础上增加了重新调度的过程，降低了makespan<br>缺点：没有摆脱传统算法的限制，直接使用传统算法的假设，因此，传统算法的缺点这个方法仍然有；实验过于简单，最后资源的实验说的很含糊</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Braun T D ,  Siegel H J ,  Beck N , et al. A Comparison of Eleven Static Heuristics for Mapping a Class of Independent Tasks onto Heterogeneous Distributed Computing Systems[J]. Journal of Parallel &amp; Distributed Computing, 2001, 61(6):810-837.</p>
+<p>[2] Subramanian S ,  Krishna N G ,  Kumar K M , et al. An Adaptive Algorithm for Dynamic Priority Based Virtual Machine Scheduling in Cloud[J]. International Journal of Computer Science Issues, 2012, 9(6).</p>
+<p>[3] Lin C C ,  Liu P ,  Wu J J . Energy-Aware Virtual Machine Dynamic Provision and Scheduling for Cloud Computing[J]. IEEE, 2011.</p>
+<p>[4] Galloway J M ,  Smith K L ,  Vrbsky S S . Power Aware Load Balancing for Cloud Computing[J]. lecture notes in engineering &amp; computer science, 2011.</p>
+<p>[5] Kokilavani T ,  Amalarethinam D G . Load Balanced MinMin Algorithm for Static MetaTask Scheduling in Grid Computing[J]. International Journal of Computer Applications, 2011, 20(2):42-48.</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Little_Q
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://peizhongqiu.github.io/p/bcc3e70e.html" title="资源调度算法调研（一）">https://peizhongqiu.github.io/p/bcc3e70e.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6/" rel="tag"># 资源调度</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/p/7952953b.html" rel="prev" title="Nova源码阅读（二） openstack通用技术">
+      <i class="fa fa-chevron-left"></i> Nova源码阅读（二） openstack通用技术
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/p/e830ed97.html" rel="next" title="Genetic Algorithm">
+      Genetic Algorithm <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9F%E7%AE%97%E6%B3%95-1"><span class="nav-number">1.</span> <span class="nav-text">传统算法[1]</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E4%BD%93%E8%AF%84%E4%BB%B7%EF%BC%9A"><span class="nav-number">1.3.</span> <span class="nav-text">总体评价：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BA%E6%96%87%E7%AE%97%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">论文算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AN-ADAPTIVE-ALGORITHM-FOR-DYNAMIC-PRIORITY-BASED-VIRTUAL-MACHINE-SCHEDULING-IN-CLOUD-2"><span class="nav-number">2.1.</span> <span class="nav-text">AN ADAPTIVE ALGORITHM FOR DYNAMIC PRIORITY BASED VIRTUAL MACHINE SCHEDULING IN CLOUD[2]</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="nav-number">2.1.1.</span> <span class="nav-text">伪代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">2.1.2.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%84%E6%9E%90"><span class="nav-number">2.1.3.</span> <span class="nav-text">评析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dynamic-Round-Robin-DRR-3"><span class="nav-number">2.2.</span> <span class="nav-text">Dynamic Round-Robin (DRR)[3]</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%84%E6%9E%90-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">评析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Power-Aware-Load-Balancing-for-Cloud-Computing%EF%BC%88PALB%EF%BC%89-4"><span class="nav-number">2.3.</span> <span class="nav-text">Power Aware Load Balancing for Cloud Computing（PALB）[4]</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%AA%E4%BB%A3%E7%A0%81-1"><span class="nav-number">2.3.1.</span> <span class="nav-text">伪代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E-1"><span class="nav-number">2.3.2.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%84%E6%9E%90-2"><span class="nav-number">2.3.3.</span> <span class="nav-text">评析</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Load-Balanced-Min-Min-Algorithm-LBMM-5"><span class="nav-number">2.4.</span> <span class="nav-text">Load Balanced Min-Min Algorithm(LBMM)[5]</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%AA%E4%BB%A3%E7%A0%81-2"><span class="nav-number">2.4.1.</span> <span class="nav-text">伪代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E-2"><span class="nav-number">2.4.2.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%84%E6%9E%90-3"><span class="nav-number">2.4.3.</span> <span class="nav-text">评析</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Little_Q"
+      src="/images/lulu.jpg">
+  <p class="site-author-name" itemprop="name">Little_Q</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">25</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/PeizhongQiu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;PeizhongQiu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Little_Q</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
