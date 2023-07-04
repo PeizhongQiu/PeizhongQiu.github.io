@@ -1052,43 +1052,97 @@
 <table>
 
 <h3 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h3><ol>
-<li><p>检查 DS:RBX 是否 32 字节对齐，DS:ECX 是否 4K 字节对齐，不是则 #GP(0)；</p>
+<li>检查 DS:RBX 是否 32 字节对齐，DS:ECX 是否 4K 字节对齐，不是则 #GP(0)；</li>
+<li>检查 DS:RCX 是否指向一个 EPC，不是则 #PF(DS:RCX)；</li>
+<li>检查 DS:RBX.SRCPGE 是否 4K 字节对齐, DS:RBX.SECINFO 是否 64 字节对齐，不是则 #GP(0)；</li>
+<li>检查 DS:RBX.LINADDR 是否为 0，不是则 #GP(0)；检查 DS:RBX.SECS 是否为 0，不是则 #GP(0)；</li>
+<li>检查 DS:RBX.SECINFO 保留字段是否为 0，不是则 #GP(0)；检查 DS:RBX.SECINFO.FLAG.PT 是否为 PT_SECS，不是则 #GP(0)；</li>
+<li>如果 DS:RCX 指向的 EPC 页面正在使用，且正在进行 VMX non-root 操作，且 ENABLE_EPC_VIRTUALIZATION_EXTENSIONS，则：
+    
+
+<pre><code>VMCS.Exit_reason := SGX_CONFLICT; 
+VMCS.Exit_qualification.code := EPC_PAGE_CONFLICT_EXCEPTION;  
+VMCS.Exit_qualification.error := 0; 
+VMCS.Guest-physical_address := &lt;&lt; translation of DS:RCX produced by paging &gt;&gt;;  
+VMCS.Guest-linear_address := DS:RCX;  
+Deliver VMEXIT;
+</code></pre>
 </li>
-<li><p>检查 DS:RCX 是否指向一个 EPC，不是则 #PF(DS:RCX)；</p>
+<li>如果 DS:RCX 指向的 EPC 页面正在使用，是则 #GP(0)；</li>
+<li>检查 EPCM(DS:RCX).VALID 是否为 1，是则 #PF(DS:RCX)；</li>
+<li><font color="#FF0000"> DS:RCX[32767:0] := DS:RBX.SRCPGE[32767:0]; </font> 注解：将 PAGEINFO 中 SRCPAGE 指向的页面拷贝到目标 SECS 中；</li>
+<li>检查 XFRM 是否合法，且 DS:RCX.ATTRIBUTES.XFRM 最后两位为 3，不是则 #GP(0)；</li>
+<li>检查 CET_ATTRIBUTES 是否合法，不是则 #GP(0)；判断伪代码如下（TMP_SECS 即 ECX）：
+
+<pre><code>IF ((DS:TMP_SECS.ATTRIBUTES.CET = 0 and DS:TMP_SECS.CET_ATTRIBUTES ≠ 0) ||
+(DS:TMP_SECS.ATTRIBUTES.CET = 0 and DS:TMP_SECS.CET_LEG_BITMAP_OFFSET ≠ 0) || 
+(CPUID.(EAX=7, ECX=0):EDX[CET_IBT] = 0 and DS:TMP_SECS.CET_LEG_BITMAP_OFFSET ≠ 0) || 
+(CPUID.(EAX=7, ECX=0):EDX[CET_IBT] = 0 and DS:TMP_SECS.CET_ATTRIBUTES[5:2] ≠ 0) || 
+(CPUID.(EAX=7, ECX=0):ECX[CET_SS] = 0 and DS:TMP_SECS.CET_ATTRIBUTES[1:0] ≠ 0) || 
+(DS:TMP_SECS.ATTRIBUTES.MODE64BIT = 1 and
+(DS:TMP_SECS.BASEADDR + DS:TMP_SECS.CET_LEG_BITMAP_OFFSET) not canonical) || 
+(DS:TMP_SECS.ATTRIBUTES.MODE64BIT = 0 and
+(DS:TMP_SECS.BASEADDR + DS:TMP_SECS.CET_LEG_BITMAP_OFFSET) &amp; 0xFFFFFFFF00000000) || 
+(DS:TMP_SECS.CET_ATTRIBUTES.reserved fields not 0) or
+(DS:TMP_SECS.CET_LEG_BITMAP_OFFSET) is not page aligned)) 
+THEN
+    #GP(0); 
+FI;
+</code></pre>
 </li>
-<li><p>检查 DS:RBX.SRCPGE 是否 4K 字节对齐, DS:RBX.SECINFO 是否 64 字节对齐，不是则 #GP(0)；</p>
+<li>通过 CPUID.(EAX=12H, ECX=0):EBX[31:0] 判断 DS:RCX.MISCSELECT[31:0] 中的功能是不是全部支持，不支持则 #GP(0)；</li>
+<li>计算当发生 AEX 时，enclave 需要保存的状态大小 TMP_XSIZE，并检查 TMP_XSIZE 是否大于 <font color="#FF0000"> DS:RCX.SSAFRAMESIZE*4096</font>，是则 #GP(0)；注解：DS:RCX.SSAFRAMESIZE 单位为 1 个页面；</li>
+<li>检查 DS:RCX.BASEADDR 和 DS:RCX.SIZE 是否合法，不合法则 #GP(0)；<font color="#FF0000">注解：SIZE 至少两页面，且大小必须为 2 的幂，单位为字节；</font></li>
+<li>检查 DS:RCX.ATTRIBUTES 中不包含 CR_SGX_ATTRIBUTES_MASK 不支持的属性；</li>
+<li>检查 CONFIGID 和 CONFIGSVN 是否为 0 或 DS:TMP_SECS.ATTRIBUTES.KSS 不为 0，是则 #GP(0)；</li>
+<li>将 DS:RCX 设置为 Uninitialized，初始化 DS:RCX，计算 DS:RCX.MRENCLAVE；伪代码如下：
+
+
+<pre><code>Clear DS:TMP_SECS to Uninitialized;
+DS:TMP_SECS.MRENCLAVE := SHA256INITIALIZE(DS:TMP_SECS.MRENCLAVE); 
+DS:TMP_SECS.ISVSVN := 0;
+DS:TMP_SECS.ISVPRODID := 0;
+(* Initialize hash updates etc*)
+Initialize enclave’s MRENCLAVE update counter;
+(* Add “ECREATE” string and SECS fields to MRENCLAVE *) 
+TMPUPDATEFIELD[63:0] := 0045544145524345H; // “ECREATE” 
+TMPUPDATEFIELD[95:64] := DS:TMP_SECS.SSAFRAMESIZE; 
+TMPUPDATEFIELD[159:96] := DS:TMP_SECS.SIZE;
+IF (CPUID.(EAX=7, ECX=0):EDX[CET_IBT] = 1) 
+    THEN
+        TMPUPDATEFIELD[223:160] := DS:TMP_SECS.CET_LEG_BITMAP_OFFSET; 
+    ELSE
+        TMPUPDATEFIELD[223:160] := 0;
+FI;
+TMPUPDATEFIELD[511:160] := 0;
+DS:TMP_SECS.MRENCLAVE := SHA256UPDATE(DS:TMP_SECS.MRENCLAVE, TMPUPDATEFIELD) 
+INC enclave’s MRENCLAVE update counter;
+(* Set EID *)
+DS:TMP_SECS.EID := LockedXAdd(CR_NEXT_EID, 1);
+(* Initialize the virtual child count to zero *) 
+DS:TMP_SECS.VIRTCHILDCNT := 0;
+(* Load ENCLAVECONTEXT with Address out of paging of SECS *)
+&lt;&lt; store translation of DS:RCX produced by paging in SECS(DS:RCX).ENCLAVECONTEXT &gt;&gt;
+</code></pre>
 </li>
-<li><p>检查 DS:RBX.LINADDR 是否为 0，不是则 #GP(0)；检查 DS:RBX.SECS 是否为 0，不是则 #GP(0)；</p>
+<li>更新 EPCM(DS:RCX)，注意 RWX 字段都为 0，说明 SECS 页面不能被应用直接读/写/执行；伪代码如下：
+    
+
+<pre><code>EPCM(DS:TMP_SECS).PT := PT_SECS;
+EPCM(DS:TMP_SECS).ENCLAVEADDRESS := 0;
+EPCM(DS:TMP_SECS).R := 0;
+EPCM(DS:TMP_SECS).W := 0; 
+EPCM(DS:TMP_SECS).X := 0;
+(* Set EPCM entry fields *) 
+EPCM(DS:RCX).BLOCKED := 0; 
+EPCM(DS:RCX).PENDING := 0; 
+EPCM(DS:RCX).MODIFIED := 0; 
+EPCM(DS:RCX).PR := 0; 
+EPCM(DS:RCX).VALID := 1;
+</code></pre>
 </li>
-<li><p>检查 DS:RBX.SECINFO 保留字段是否为 0，不是则 #GP(0)；检查 DS:RBX.SECINFO.FLAG.PT 是否为 PT_SECS，不是则 #GP(0)；</p>
-</li>
-<li><p>如果 DS:RCX 指向的 EPC 页面正在使用，且正在进行 VMX non-root 操作，且 ENABLE_EPC_VIRTUALIZATION_EXTENSIONS，则：</p>
- <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">VMCS.Exit_reason :&#x3D; SGX_CONFLICT; </span><br><span class="line">VMCS.Exit_qualification.code :&#x3D; EPC_PAGE_CONFLICT_EXCEPTION;  VMCS.Exit_qualification.error :&#x3D; 0; </span><br><span class="line">VMCS.Guest-physical_address :&#x3D; &lt;&lt; translation of DS:RCX produced by paging &gt;&gt;;  </span><br><span class="line">VMCS.Guest-linear_address :&#x3D; DS:RCX;  </span><br><span class="line">Deliver VMEXIT;</span><br></pre></td></tr></table></figure></li>
-<li><p>如果 DS:RCX 指向的 EPC 页面正在使用，是则 #GP(0)；</p>
-</li>
-<li><p>检查 EPCM(DS:RCX).VALID 是否为 1，是则 #PF(DS:RCX)；</p>
-</li>
-<li><p><font color="#FF0000"> DS:RCX[32767:0] := DS:RBX.SRCPGE[32767:0]; </font> 注解：将 PAGEINFO 中 SRCPAGE 指向的页面拷贝到目标 SECS 中；</p>
-</li>
-<li><p>检查 XFRM 是否合法，且 DS:RCX.ATTRIBUTES.XFRM 最后两位为 3，不是则 #GP(0)；</p>
-</li>
-<li><p>检查 CET_ATTRIBUTES 是否合法，不是则 #GP(0)；判断伪代码如下（TMP_SECS 即 ECX）：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">IF ((DS:TMP_SECS.ATTRIBUTES.CET &#x3D; 0 and DS:TMP_SECS.CET_ATTRIBUTES ≠ 0) ||</span><br><span class="line">(DS:TMP_SECS.ATTRIBUTES.CET &#x3D; 0 and DS:TMP_SECS.CET_LEG_BITMAP_OFFSET ≠ 0) || </span><br><span class="line">(CPUID.(EAX&#x3D;7, ECX&#x3D;0):EDX[CET_IBT] &#x3D; 0 and DS:TMP_SECS.CET_LEG_BITMAP_OFFSET ≠ 0) || </span><br><span class="line">(CPUID.(EAX&#x3D;7, ECX&#x3D;0):EDX[CET_IBT] &#x3D; 0 and DS:TMP_SECS.CET_ATTRIBUTES[5:2] ≠ 0) || </span><br><span class="line">(CPUID.(EAX&#x3D;7, ECX&#x3D;0):ECX[CET_SS] &#x3D; 0 and DS:TMP_SECS.CET_ATTRIBUTES[1:0] ≠ 0) || </span><br><span class="line">(DS:TMP_SECS.ATTRIBUTES.MODE64BIT &#x3D; 1 and</span><br><span class="line">(DS:TMP_SECS.BASEADDR + DS:TMP_SECS.CET_LEG_BITMAP_OFFSET) not canonical) || </span><br><span class="line">(DS:TMP_SECS.ATTRIBUTES.MODE64BIT &#x3D; 0 and</span><br><span class="line">(DS:TMP_SECS.BASEADDR + DS:TMP_SECS.CET_LEG_BITMAP_OFFSET) &amp; 0xFFFFFFFF00000000) || </span><br><span class="line">(DS:TMP_SECS.CET_ATTRIBUTES.reserved fields not 0) or</span><br><span class="line">(DS:TMP_SECS.CET_LEG_BITMAP_OFFSET) is not page aligned)) </span><br><span class="line">THEN</span><br><span class="line">    #GP(0); </span><br><span class="line">FI;</span><br></pre></td></tr></table></figure></li>
-<li><p>通过 CPUID.(EAX=12H, ECX=0):EBX[31:0] 判断 DS:RCX.MISCSELECT[31:0] 中的功能是不是全部支持，不支持则 #GP(0)；</p>
-</li>
-<li><p>计算当发生 AEX 时，enclave 需要保存的状态大小 TMP_XSIZE，并检查 TMP_XSIZE 是否大于 <font color="#FF0000"> DS:RCX.SSAFRAMESIZE*4096</font>，是则 #GP(0)；注解：DS:RCX.SSAFRAMESIZE 单位为 1 个页面；</p>
-</li>
-<li><p>检查 DS:RCX.BASEADDR 和 DS:RCX.SIZE 是否合法，不合法则 #GP(0)；<font color="#FF0000">注解：SIZE 至少两页面，且大小必须为 2 的幂，单位为字节；</font></p>
-</li>
-<li><p>检查 DS:RCX.ATTRIBUTES 中不包含 CR_SGX_ATTRIBUTES_MASK 不支持的属性；</p>
-</li>
-<li><p>检查 CONFIGID 和 CONFIGSVN 是否为 0 或 DS:TMP_SECS.ATTRIBUTES.KSS 不为 0，是则 #GP(0)；</p>
-</li>
-<li><p>将 DS:RCX 设置为 Uninitialized，初始化 DS:RCX，计算 DS:RCX.MRENCLAVE；伪代码如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Clear DS:TMP_SECS to Uninitialized;</span><br><span class="line">DS:TMP_SECS.MRENCLAVE :&#x3D; SHA256INITIALIZE(DS:TMP_SECS.MRENCLAVE); </span><br><span class="line">DS:TMP_SECS.ISVSVN :&#x3D; 0;</span><br><span class="line">DS:TMP_SECS.ISVPRODID :&#x3D; 0;</span><br><span class="line">(* Initialize hash updates etc*)</span><br><span class="line">Initialize enclave’s MRENCLAVE update counter;</span><br><span class="line">(* Add “ECREATE” string and SECS fields to MRENCLAVE *) TMPUPDATEFIELD[63:0] :&#x3D; 0045544145524345H; &#x2F;&#x2F; “ECREATE” TMPUPDATEFIELD[95:64] :&#x3D; DS:TMP_SECS.SSAFRAMESIZE; </span><br><span class="line">TMPUPDATEFIELD[159:96] :&#x3D; DS:TMP_SECS.SIZE;</span><br><span class="line">IF (CPUID.(EAX&#x3D;7, ECX&#x3D;0):EDX[CET_IBT] &#x3D; 1) </span><br><span class="line">    THEN</span><br><span class="line">        TMPUPDATEFIELD[223:160] :&#x3D; DS:TMP_SECS.CET_LEG_BITMAP_OFFSET; </span><br><span class="line">    ELSE</span><br><span class="line">        TMPUPDATEFIELD[223:160] :&#x3D; 0;</span><br><span class="line">FI;</span><br><span class="line">TMPUPDATEFIELD[511:160] :&#x3D; 0;</span><br><span class="line">DS:TMP_SECS.MRENCLAVE :&#x3D; SHA256UPDATE(DS:TMP_SECS.MRENCLAVE, TMPUPDATEFIELD) </span><br><span class="line">INC enclave’s MRENCLAVE update counter;</span><br><span class="line">(* Set EID *)</span><br><span class="line">DS:TMP_SECS.EID :&#x3D; LockedXAdd(CR_NEXT_EID, 1);</span><br><span class="line">(* Initialize the virtual child count to zero *) </span><br><span class="line">DS:TMP_SECS.VIRTCHILDCNT :&#x3D; 0;</span><br><span class="line">(* Load ENCLAVECONTEXT with Address out of paging of SECS *)</span><br><span class="line">&lt;&lt; store translation of DS:RCX produced by paging in SECS(DS:RCX).ENCLAVECONTEXT &gt;&gt;</span><br></pre></td></tr></table></figure></li>
-<li><p>更新 EPCM(DS:RCX)，注意 RWX 字段都为 0，说明 SECS 页面不能被应用直接读/写/执行；伪代码如下：</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">EPCM(DS:TMP_SECS).PT :&#x3D; PT_SECS;</span><br><span class="line">EPCM(DS:TMP_SECS).ENCLAVEADDRESS :&#x3D; 0;</span><br><span class="line">EPCM(DS:TMP_SECS).R :&#x3D; 0;</span><br><span class="line">EPCM(DS:TMP_SECS).W :&#x3D; 0; EPCM(DS:TMP_SECS).X :&#x3D; 0;</span><br><span class="line">(* Set EPCM entry fields *) </span><br><span class="line">EPCM(DS:RCX).BLOCKED :&#x3D; 0; </span><br><span class="line">EPCM(DS:RCX).PENDING :&#x3D; 0; </span><br><span class="line">EPCM(DS:RCX).MODIFIED :&#x3D; 0; </span><br><span class="line">EPCM(DS:RCX).PR :&#x3D; 0; </span><br><span class="line">EPCM(DS:RCX).VALID :&#x3D; 1;</span><br></pre></td></tr></table></figure></li>
 </ol>
+
 <h2 id="EADD"><a href="#EADD" class="headerlink" title="EADD"></a>EADD</h2><h3 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h3><p>指令：ENCLS[ECREATE]</p>
 <p>参数：EAX = 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）</p>
 <h3 id="权限-1"><a href="#权限-1" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-1"><a href="#并发限制-1" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-1"><a href="#算法描述-1" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EEXTEND"><a href="#EEXTEND" class="headerlink" title="EEXTEND"></a>EEXTEND</h2><h3 id="简介-2"><a href="#简介-2" class="headerlink" title="简介"></a>简介</h3><h3 id="权限-2"><a href="#权限-2" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-2"><a href="#并发限制-2" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-2"><a href="#算法描述-2" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EINIT"><a href="#EINIT" class="headerlink" title="EINIT"></a>EINIT</h2><h3 id="简介-3"><a href="#简介-3" class="headerlink" title="简介"></a>简介</h3><h3 id="权限-3"><a href="#权限-3" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-3"><a href="#并发限制-3" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-3"><a href="#算法描述-3" class="headerlink" title="算法描述"></a>算法描述</h3></table></table>]]></content>
