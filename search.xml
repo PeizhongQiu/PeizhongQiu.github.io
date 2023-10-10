@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>A*</title>
-    <url>/p/7300a56d.html</url>
-    <content><![CDATA[]]></content>
-      <tags>
-        <tag>资源调度</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Dash: Scalable Hashing on Persistent Memory</title>
     <url>/p/6ab0c77.html</url>
     <content><![CDATA[<h2 id="dash-bucket结构"><a href="#dash-bucket结构" class="headerlink" title="dash bucket结构"></a>dash bucket结构</h2><p>Dash的总体结构如图1所示。从图中可以看出，该结构和CCEH同样采取了可拓展的哈希结构，并且同样有三个层次，一个是Directory层，一个是Segment层，一个是Bucket层。不同的是，每个Segment层除了正常的Bucket外，还有Stash buckets用来存储冲突的键值对。根据论文，一个Segment层的Stash buckets数量为2或4。另外，在Directory层有三个主要变量，Lock是锁，Version用来做版本控制，Clean用来判断系统的关闭是否是干净的。</p>
@@ -593,150 +585,6 @@
       </tags>
   </entry>
   <entry>
-    <title>资源调度算法调研（一）</title>
-    <url>/p/bcc3e70e.html</url>
-    <content><![CDATA[<h2 id="传统算法-1"><a href="#传统算法-1" class="headerlink" title="传统算法[1]"></a>传统算法<sup>[1]</sup></h2><span id="more"></span>
-
-<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p><font color="#FF0000">metatask</font>: a collection of independent tasks with no intertask data dependencies;</p>
-<p><font color="#FF0000">&tau;</font>: The size of the metatask (i.e., the number of tasks to execute);</p>
-<p><font color="#FF0000">&mu;</font>: the number of machines in the HC suite;</p>
-<p>&tau; and &mu; are static and known beforehand.</p>
-<p>It is assumed that an accurate estimate of the expected execution time for each task on each machine is known prior to execution and contained within a &tau;*&mu; ETC (expected time to compute) matrix;</p>
-<p>It is also assumed that each machine executes a single task at a time.</p>
-<p><font color="#FF0000">Machine availability time, mat(m<sub>j</sub>)</font>：the earliest time machine m<sub>j</sub> can complete the execution of all the tasks that have previously been assigned to it (based on the ETC entries for those tasks). </p>
-<p><font color="#FF0000">The completion time for a new task t<sub>i</sub> on machine m<sub>j</sub> , ct(t<sub>i</sub> , m<sub>j</sub>)</font>: the machine availability time for m<sub>j</sub> plus the execution time of task t<sub>i</sub> on machine m<sub>j</sub> , i.e., ct(t<sub>i</sub> , m<sub>j</sub>)= mat(m<sub>j</sub>)+ETC(t<sub>i</sub> , m<sub>j</sub>). </p>
-<p>The performance criterion used to compare the results of the heuristics is the maximum value of ct(t<sub>i</sub> , m<sub>j</sub>), for  0 &le; i &lt; &tau; and 0 &le; j &lt; &mu;. The maximum ct(t<sub>i</sub> , m<sub>j</sub>) value, over 0 &le; i &lt; &tau; and 0 &le; j &lt; &mu;, is the metatask execution time, and is called the <font color="#FF0000">makespan</font> . </p>
-<p>Each heuristic is attempting to minimize the makespan, i.e., finish execution of the metatask as soon as possible.</p>
-<h3 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h3><table>
-<thead>
-<tr>
-<th align="center">算法</th>
-<th align="left"><p align="middle">描述</p></th>
-<th align="left"><p align="middle">优点</p></th>
-<th align="left"><p align="middle">缺点</p></th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">Opportunistic Load Balancing (OLB)</td>
-<td align="left">OLB算法会将负载随机交给一个可用的节点，不管任务执行的时间。动机是尽量保持所有的机器忙碌。</td>
-<td align="left"><p align="middle">简单</p></td>
-<td align="left">poor makespan</td>
-</tr>
-<tr>
-<td align="center">Minimum Execution Time (MET)</td>
-<td align="left">MET会将任务分配给对于该任务，有着最小执行时间的机器，不管机器何时可用。动机是尽量将任务分配给最适合它的机器。</td>
-<td align="left"></td>
-<td align="left">会造成严重的负载不均衡</td>
-</tr>
-<tr>
-<td align="center">Minimum Completion Time (MCT)</td>
-<td align="left">MCT会将任务分配给对于该任务，有着最小完成时间的机器。</td>
-<td align="left"></td>
-<td align="left"></td>
-</tr>
-<tr>
-<td align="center">Min-min</td>
-<td align="left">U：unmapped tasks；M={min<sub>0&le;j&lt;&mu;</sub>(ct(t<sub>i</sub> , m<sub>j</sub>)), for each t<sub>i</sub> &in;U}；M中最小的任务分配给对应的机器，之后将该任务移除，重复该步骤直到U为空。</td>
-<td align="left">good makespan</td>
-<td align="left">执行长任务而带来延迟。比如：当有很多短任务和一个很长的任务，会由于最后执行长任务而带来极大的开销</td>
-</tr>
-<tr>
-<td align="center">Max-min</td>
-<td align="left">U：unmapped tasks；M={min<sub>0&le;j&lt;&mu;</sub>(ct(t<sub>i</sub> , m<sub>j</sub>)), for each t<sub>i</sub> &in;U}；<br>M中最大的任务分配给对应的机器，之后将该任务移除，重复该步骤直到U为空。</td>
-<td align="left">最小化由于执行长任务而带来的延迟。比如：当有很多短任务和一个很长的任务，Min-Min会由于最后执行长任务而带来极大的开销，这时Max-Min算法会更优。</td>
-<td align="left">其他时候调度策略都不够好。短任务的等待时间过长。</td>
-</tr>
-<tr>
-<td align="center">Duplex</td>
-<td align="left">会同时执行Min-Min和Max-Min，然后选择更好的一个</td>
-<td align="left"></td>
-<td align="left"></td>
-</tr>
-<tr>
-<td align="center">Round-Robin(RR)</td>
-<td align="left">Round-Robin 算法将负载均匀的发放给各个节点。当使用这个算法时，调度器会循环的将VM分配给节点。比如：3个节点，第一个请求到达时，分配给第一个节点，第二个请求到达时，分配给第二个节点，第三个请求到达时分配给第三个节点，第四个请求到达时又分配给第一个节点，以此类推。</td>
-<td align="left">能均匀的利用所有的资源，保障了公平性</td>
-<td align="left">没有考虑任务的执行时间和资源使用情况。</td>
-</tr>
-<tr>
-<td align="center">Power Save Algorithm</td>
-<td align="left">在调度器分配了VM后，检查是否有空闲的节点，有的话就关掉。等到有请求需要分配到该节点时，再打开该节点。</td>
-<td align="left">考虑能耗问题</td>
-<td align="left"></td>
-</tr>
-<tr>
-<td align="center">Genetic Algorithms (GA)</td>
-<td align="left">initial population genetation;<br>evaluation;<br>while(stopping criteria not met){<br>&emsp;selection;<br>&emsp;crossover;<br>&emsp;mutation;<br>&emsp;evaluation;<br>}<br>output best solution;<br>具体算法可以参考<a href="/p/e830ed97.html" title="Genetic Algorithm">Genetic Algorithm</a></td>
-<td align="left">Genetic Algorithms (GAs) are a technique used for searching large solution spaces.  GA usually found the best mappings of all 11 heuristics.</td>
-<td align="left">调度时间长</td>
-</tr>
-<tr>
-<td align="center">Simulated Annealing (SA)</td>
-<td align="left">具体算法可以参考<a href="/p/ba79e3d5.html" title="Simulated Annealing">Simulated Annealing</a></td>
-<td align="left"></td>
-<td align="left">可能会找到比Min-Min和GA更差的解决办法；调度时间较长</td>
-</tr>
-<tr>
-<td align="center">Genetic Simulated Annealing (GSA)</td>
-<td align="left">a combination of the GA and SA techniques . In general, GSA follows procedures similar to the GA outlined above. However, for the selection process, GSA uses the SA cooling schedule and system temperature and a simplified SA decision process for accepting or rejecting a new chromosome.</td>
-<td align="left"></td>
-<td align="left">调度时间长</td>
-</tr>
-<tr>
-<td align="center">Tabu</td>
-<td align="left"><img src="/p/bcc3e70e/tabu.PNG" class title="图1 tabu"><br>具体算法可以参考<a href="/p/5b9a6a68.html" title="Tabu">Tabu</a></td>
-<td align="left"></td>
-<td align="left">调度时间较长</td>
-</tr>
-<tr>
-<td align="center">A*</td>
-<td align="left">具体算法可以参考<a href="/p/7300a56d.html" title="A*">A*</a></td>
-<td align="left"></td>
-<td align="left">调度时间很长</td>
-</tr>
-</tbody></table>
-<h3 id="总体评价："><a href="#总体评价：" class="headerlink" title="总体评价："></a>总体评价：</h3><ul>
-<li>基本没有考虑能耗情况，所有的节点都是一开始就准备好，一直开启；</li>
-<li>假设很多也已经不符合现在的情况，比如：现在一个节点都是多线程任务，很少一个机器一个时间只有一个任务执行；</li>
-<li>很少考虑节点是否有充足的资源，这可能是因为一个时间一个机器只有一个任务，也就是说，在一个时间，机器所有的资源都会给到该任务，所以不考虑，但是，在多进程的环境下，资源问题也需要考虑；</li>
-<li>不支持热迁移</li>
-<li>这些算法都是静态的算法，有些还是批处理的，提前会知道很多信息。</li>
-</ul>
-<h2 id="论文算法"><a href="#论文算法" class="headerlink" title="论文算法"></a>论文算法</h2><h3 id="AN-ADAPTIVE-ALGORITHM-FOR-DYNAMIC-PRIORITY-BASED-VIRTUAL-MACHINE-SCHEDULING-IN-CLOUD-2"><a href="#AN-ADAPTIVE-ALGORITHM-FOR-DYNAMIC-PRIORITY-BASED-VIRTUAL-MACHINE-SCHEDULING-IN-CLOUD-2" class="headerlink" title="AN ADAPTIVE ALGORITHM FOR DYNAMIC PRIORITY BASED VIRTUAL MACHINE SCHEDULING IN CLOUD[2]"></a>AN ADAPTIVE ALGORITHM FOR DYNAMIC PRIORITY BASED VIRTUAL MACHINE SCHEDULING IN CLOUD<sup>[2]</sup></h3><h4 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input: None</span><br><span class="line">Output: None</span><br><span class="line">Algorithm sched_priority</span><br><span class="line">&#123; </span><br><span class="line">	If(P1 is not set)</span><br><span class="line">		P1&#x3D;max available resource node</span><br><span class="line">		If(P1 is turned OFF)</span><br><span class="line">			Turn P1 ON</span><br><span class="line">	If(load factor of P1&lt;0.8)</span><br><span class="line">		Assign VM to P1</span><br><span class="line">	Else if(P2 is set AND load factor of P2&lt;0.8)</span><br><span class="line">		Swap P1 and P2;</span><br><span class="line">		Assign VM to P1;</span><br><span class="line">	Else</span><br><span class="line">		P2&#x3D;P1</span><br><span class="line">		P1&#x3D;current max available resource node </span><br><span class="line"> </span><br><span class="line">		If(P1 is turned OFF)</span><br><span class="line">			Turn P1 ON</span><br><span class="line">		Assign VM to P1;</span><br><span class="line">	Turn OFF all unused nodes;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>在初始状态下，P1和P2都是没有设置的。当一个请求到达时，会判断是否设置了P1，如果没有设置P1，则将P1设置为拥有最多空闲资源的节点，如果此时该节点没有开启，则将该节点开启；之后判断P1的负载因子是否小于0.8，如果小于0.8，说明P1还能够放其他资源，就将资源放入P1对应的节点中；如果P1的负载因子大于0.8，P2被设置了且负载因子小于0.8，则交换P1和P2，将资源交给P1对应的节点；如果P2没有被设置，或者负载因子也大于0.8，则将P2设置为P1的节点，并将P1设置为当前拥有空闲资源最多的节点。最后，关掉那些没有使用的空闲节点。</p>
-<h4 id="评析"><a href="#评析" class="headerlink" title="评析"></a>评析</h4><p>优点：考虑了能源问题，在有空闲节点时，能够关闭掉那些空闲的节点；可拓展性较好；给了伪代码；<br>缺点：实验简单，虚拟机的数量过少，只有10个虚拟机，实验过程省略了；缺少热迁移的考虑，即缺少任务整合的部分，那么，是否可以在此基础上增加一个任务整合的模块？即当某个主机的负载低于某个阈值，比如10%时，将主机的内容迁移到其他主机上，并将该主机关闭；资源分很多种，比如：内存，vcpu等等，不同类型一次申请的量可能不同，可能在某一负载下只能满足其中部分，不能满足全部；。</p>
-<h3 id="Dynamic-Round-Robin-DRR-3"><a href="#Dynamic-Round-Robin-DRR-3" class="headerlink" title="Dynamic Round-Robin (DRR)[3]"></a>Dynamic Round-Robin (DRR)<sup>[3]</sup></h3><p>DRR是在传统RR的基础上，增加了两条规则：第一，在一个虚拟机结束时，该主机将不会接受新的虚拟机，这种状态称为“退休状态”，等该主机的所有VM都结束，关闭该主机；第二，如果主机在“退休状态”呆了足够长的时间，就将主机的所有VM热迁移到其他主机，然后将主机关闭。</p>
-<h4 id="评析-1"><a href="#评析-1" class="headerlink" title="评析"></a>评析</h4><p>优点：考虑了能耗；支持live migration；<br>缺点：没有源代码；实验部分阐述过于简单，没有说明实验的环境，数据量大小，甚至过程都省略了；没有参考文献；如果同时有很多主机的虚拟机都同时结束了，那么这些主机都不能接受新的虚拟机，那么当新的虚拟机到来时，就只能轮询少量的虚拟机，这可能会使少部分的虚拟机过度使用；传统Round-Robin的问题也会发生在这里，比如：故障处理；如果虚拟机退出时，该主机有很多的虚拟机，迁移的开销就会很高。</p>
-<h3 id="Power-Aware-Load-Balancing-for-Cloud-Computing（PALB）-4"><a href="#Power-Aware-Load-Balancing-for-Cloud-Computing（PALB）-4" class="headerlink" title="Power Aware Load Balancing for Cloud Computing（PALB）[4]"></a>Power Aware Load Balancing for Cloud Computing（PALB）<sup>[4]</sup></h3><h4 id="伪代码-1"><a href="#伪代码-1" class="headerlink" title="伪代码"></a>伪代码</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">balance:</span><br><span class="line">	for all active compute nodes j ∈ [m] do</span><br><span class="line">		n[j] &#x3D; current utilization of compute node j</span><br><span class="line">	end for</span><br><span class="line">	if all n[j] &gt; 75% utilization &#x2F;&#x2F;all available nodes are active</span><br><span class="line">		boot vm on most underutilized n[j]</span><br><span class="line">	end if</span><br><span class="line">	else</span><br><span class="line">		boot vm on most utilized n[j], which can also fulfill requirements</span><br><span class="line">	end else</span><br><span class="line">upscale:</span><br><span class="line">	if each n[j] &gt; 75% utilization</span><br><span class="line">		if n[j] &lt; m</span><br><span class="line">			boot compute node n[j+1]</span><br><span class="line">		end if</span><br><span class="line">	end if</span><br><span class="line">downscale:</span><br><span class="line">	if vmi idle &gt; 6 hours or user initiated shutdown</span><br><span class="line">		shutdown vmi</span><br><span class="line">	end if</span><br><span class="line">	if n[j] has no active vm</span><br><span class="line">		shutdown n[j]</span><br><span class="line">	end if</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="说明-1"><a href="#说明-1" class="headerlink" title="说明"></a>说明</h4><p>该算法的目标是在维持节点可用性的同时，降低能耗。该算法主要有三个过程：balance，upscale，downscale。</p>
-<ul>
-<li>balance过程确定虚拟机应该安装的位置。首先获取当前所有活跃节点的利用率，当所有结点的利用率都大于75%时，将虚拟机分配到利用率最低的节点，否则将虚拟机分配到利用率最高的，且可以满足需求的节点。</li>
-<li>upscale过程是当所有虚拟机节点的利用率都大于75%时，创建一个新的虚拟机</li>
-<li>downscale过程是当虚拟机长时间闲置时，关闭虚拟机，而当一个主机没有活跃的虚拟机时，关闭主机。</li>
-</ul>
-<h4 id="评析-2"><a href="#评析-2" class="headerlink" title="评析"></a>评析</h4><p>优点：实验做得比较详细，说明了实验环境和步骤；考虑了能源因素，能够将长时间未使用的虚拟机关掉，将未使用的主机关掉；资源利用率高；考虑了异质的问题<br>缺点：为考虑热迁移，即如果一个主机的负载过低，将主机的虚拟机迁移，之后关闭虚拟机；在虚拟机运行的时候，并不是满负载的，对于申请时要求的资源小于实际使用的资源的情况缺少考虑；实验部分虚拟机个数有点少，只测试了20个和30个虚拟机。</p>
-<h3 id="Load-Balanced-Min-Min-Algorithm-LBMM-5"><a href="#Load-Balanced-Min-Min-Algorithm-LBMM-5" class="headerlink" title="Load Balanced Min-Min Algorithm(LBMM)[5]"></a>Load Balanced Min-Min Algorithm(LBMM)<sup>[5]</sup></h3><h4 id="伪代码-2"><a href="#伪代码-2" class="headerlink" title="伪代码"></a>伪代码</h4><p><strong>CT<sub>i</sub><sub>j</sub></strong>: completion time of task i on machines j </p>
-<p><strong>ET<sub>i</sub><sub>j</sub></strong>: expected execution time of job i on resource j  </p>
-<p><strong>Rj</strong>: ready time or availability time of resource j after  completing the previously assigned jobs.</p>
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">for all tasks Ti </span><br><span class="line">	for all resources </span><br><span class="line">		Cij&#x3D;Eij+rj </span><br><span class="line">	do until all tasks are mapped </span><br><span class="line"> 		for each task find the earliest completion time and the resource that obtains it </span><br><span class="line">		find the task Tk with the minimum earliest completion time </span><br><span class="line">		assign task Tk to the resource Rl that gives the earliest completion time </span><br><span class="line">		delete task Tk from list</span><br><span class="line">		update ready time of resource Rl</span><br><span class="line">		update Cil for all i </span><br><span class="line">	end do </span><br><span class="line">&#x2F;&#x2F; rescheduling to balance the load</span><br><span class="line">sort the resources in the order of completion time</span><br><span class="line">for all resources R</span><br><span class="line">	Compute makespan &#x3D; max(CT(R))</span><br><span class="line">End for</span><br><span class="line">for all resources</span><br><span class="line">	for all tasks</span><br><span class="line">		find the task Ti that has minimum ET in Rj</span><br><span class="line">		find the MCT of task Ti</span><br><span class="line">		if MCT &lt; makespan</span><br><span class="line">			Reschedule the task Ti to the resource that produces it </span><br><span class="line">			Update the ready time of both resources</span><br><span class="line">		End if</span><br><span class="line">	End for</span><br><span class="line">End for</span><br><span class="line">&#x2F;&#x2F;Where MCT represents Maximum Completion Time</span><br></pre></td></tr></table></figure>
-
-<h4 id="说明-2"><a href="#说明-2" class="headerlink" title="说明"></a>说明</h4><p>这个算法是为了解决在Min-Min算法长任务滞后带来的问题。该算法主要分成两个部分，第一部分使用传统的Min-Min算法得到一般的解决方案；第二部分对第一部分的解决方案进行重新调度，首先将所有的节点根据完成时间进行排序，然后对每个节点中的每个任务进行调度，如果再次调度后可以得到更小的最大完成时间，则将任务进行调度，并更新信息。</p>
-<h4 id="评析-3"><a href="#评析-3" class="headerlink" title="评析"></a>评析</h4><p>优点：在原来Min-Min的基础上增加了重新调度的过程，降低了makespan<br>缺点：没有摆脱传统算法的限制，直接使用传统算法的假设，因此，传统算法的缺点这个方法仍然有；实验过于简单，最后资源的实验说的很含糊</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Braun T D ,  Siegel H J ,  Beck N , et al. A Comparison of Eleven Static Heuristics for Mapping a Class of Independent Tasks onto Heterogeneous Distributed Computing Systems[J]. Journal of Parallel &amp; Distributed Computing, 2001, 61(6):810-837.</p>
-<p>[2] Subramanian S ,  Krishna N G ,  Kumar K M , et al. An Adaptive Algorithm for Dynamic Priority Based Virtual Machine Scheduling in Cloud[J]. International Journal of Computer Science Issues, 2012, 9(6).</p>
-<p>[3] Lin C C ,  Liu P ,  Wu J J . Energy-Aware Virtual Machine Dynamic Provision and Scheduling for Cloud Computing[J]. IEEE, 2011.</p>
-<p>[4] Galloway J M ,  Smith K L ,  Vrbsky S S . Power Aware Load Balancing for Cloud Computing[J]. lecture notes in engineering &amp; computer science, 2011.</p>
-<p>[5] Kokilavani T ,  Amalarethinam D G . Load Balanced MinMin Algorithm for Static MetaTask Scheduling in Grid Computing[J]. International Journal of Computer Applications, 2011, 20(2):42-48.</p>
-]]></content>
-      <tags>
-        <tag>资源调度</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>sky computing</title>
     <url>/p/ac1fc4f3.html</url>
     <content><![CDATA[<p>Ion Stoica and Scott Shenker. 2021. From Cloud Computing to Sky Computing. In Workshop on Hot Topics in Operating Systems (HotOS ’21), May 31-June 2, 2021, Ann Arbor, MI, USA. ACM, New York, NY, USA, 7 pages. <a href="https://doi.org/10.1145/3458336.3465302">https://doi.org/10.1145/3458336.3465302</a></p>
@@ -890,14 +738,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Tabu</title>
-    <url>/p/5b9a6a68.html</url>
-    <content><![CDATA[]]></content>
-      <tags>
-        <tag>资源调度</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>学习网站</title>
     <url>/p/52e318f2.html</url>
     <content><![CDATA[<h2 id="Go"><a href="#Go" class="headerlink" title="Go"></a>Go</h2><span id="more"></span>
@@ -918,17 +758,6 @@
 ]]></content>
       <tags>
         <tag>学习网站</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Genetic Algorithm</title>
-    <url>/p/e830ed97.html</url>
-    <content><![CDATA[<h3 id="术语"><a href="#术语" class="headerlink" title="术语"></a>术语</h3><p>Genetic Algorithms 遗传算法</p>
-<p>chromosome 染色体</p>
-<p>Gene 基因</p>
-]]></content>
-      <tags>
-        <tag>资源调度</tag>
       </tags>
   </entry>
   <entry>
@@ -975,27 +804,6 @@
 ]]></content>
       <tags>
         <tag>linux</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Simulated Annealing</title>
-    <url>/p/ba79e3d5.html</url>
-    <content><![CDATA[]]></content>
-      <tags>
-        <tag>资源调度</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>SGX 知识总结（一）</title>
-    <url>/p/8cd79317.html</url>
-    <content><![CDATA[<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><span id="more"></span>
-
-<a href="/p/undefined.html" title="SGX访问控制">SGX访问控制</a>
-<a href="/p/43899435.html" title="SGX数据结构">SGX数据结构</a>
-<a href="/p/ccbadbc2.html" title="SGX创建过程">SGX创建过程</a>
-]]></content>
-      <tags>
-        <tag>SGX</tag>
       </tags>
   </entry>
   <entry>
@@ -1095,7 +903,7 @@ FI;
 <li>检查 DS:RCX.BASEADDR 和 DS:RCX.SIZE 是否合法，不合法则 #GP(0)；<font color="#FF0000">注解：SIZE 至少两页面，且大小必须为 2 的幂，单位为字节；</font></li>
 <li>检查 DS:RCX.ATTRIBUTES 中不包含 CR_SGX_ATTRIBUTES_MASK 不支持的属性；</li>
 <li>检查 CONFIGID 和 CONFIGSVN 是否为 0 或 DS:TMP_SECS.ATTRIBUTES.KSS 不为 0，是则 #GP(0)；</li>
-<li>将 DS:RCX 设置为 Uninitialized，初始化 DS:RCX，计算 DS:RCX.MRENCLAVE；伪代码如下：
+<li><font color="#FF0000">将 DS:RCX 设置为 Uninitialized，初始化 DS:RCX，计算 DS:RCX.MRENCLAVE；伪代码如下：</font>
 
 
 <pre><code>Clear DS:TMP_SECS to Uninitialized;
@@ -1125,7 +933,7 @@ DS:TMP_SECS.VIRTCHILDCNT := 0;
 &lt;&lt; store translation of DS:RCX produced by paging in SECS(DS:RCX).ENCLAVECONTEXT &gt;&gt;
 </code></pre>
 </li>
-<li>更新 EPCM(DS:RCX)，注意 RWX 字段都为 0，说明 SECS 页面不能被应用直接读/写/执行；伪代码如下：
+<li><font color="#FF0000">更新 EPCM(DS:RCX)，注意 RWX 字段都为 0，说明 SECS 页面不能被应用直接读/写/执行；伪代码如下：</font>
     
 
 <pre><code>EPCM(DS:TMP_SECS).PT := PT_SECS;
@@ -1145,18 +953,9 @@ EPCM(DS:RCX).VALID := 1;
 
 <h2 id="EADD"><a href="#EADD" class="headerlink" title="EADD"></a>EADD</h2><h3 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h3><p>指令：ENCLS[ECREATE]</p>
 <p>参数：EAX = 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）</p>
+<p>当 SECS 被成功创建，enclave 页面通过 EADD 加入到 enclave。这包括将空闲的 EPC 页面转为 PT_REG 或 PT_TCS 类型。当调用 EADD 后，处理器会更新 EPCM 条目中的页面类型，enclave 访问页面的线性地址，页面的访问权限。它会将页面链接到输入的 SECS。EPCM 条目信息会被硬件利用去管理页面的访问控制。EADD 会记录 EPCM 的信息到 SECS 中存储的加密日志，并从 non-enclave 内存页面拷贝 4KB 数据到分配的 EPC 页面。</p>
+<p>该函数从 non-enclave 内存页面拷贝数据到 EPC 页面，将 EPC 页面链接到 SECS 页面，最后存储线性地址和安全属性到 EPCM。enclave 偏移和安全属性会被计算测度并扩展到 SECS.MRENCLAVE。该指令只能在特权级为 0 时执行。</p>
 <h3 id="权限-1"><a href="#权限-1" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-1"><a href="#并发限制-1" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-1"><a href="#算法描述-1" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EEXTEND"><a href="#EEXTEND" class="headerlink" title="EEXTEND"></a>EEXTEND</h2><h3 id="简介-2"><a href="#简介-2" class="headerlink" title="简介"></a>简介</h3><h3 id="权限-2"><a href="#权限-2" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-2"><a href="#并发限制-2" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-2"><a href="#算法描述-2" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EINIT"><a href="#EINIT" class="headerlink" title="EINIT"></a>EINIT</h2><h3 id="简介-3"><a href="#简介-3" class="headerlink" title="简介"></a>简介</h3><h3 id="权限-3"><a href="#权限-3" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-3"><a href="#并发限制-3" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-3"><a href="#算法描述-3" class="headerlink" title="算法描述"></a>算法描述</h3></table></table>]]></content>
-      <tags>
-        <tag>SGX</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>SGX数据结构</title>
-    <url>/p/43899435.html</url>
-    <content><![CDATA[<p>本文内容源自《Intel Software Developer’s Manual: Volumn 3》2023 年 3 月版本。</p>
-<span id="more"></span>
-
-<h2 id="SECS"><a href="#SECS" class="headerlink" title="SECS"></a>SECS</h2>]]></content>
       <tags>
         <tag>SGX</tag>
       </tags>
@@ -1200,5 +999,346 @@ EPCM(DS:RCX).VALID := 1;
 <img src="/p/69e7e367/2.png" class title="图1 SGX 指令的显式访问和隐式访问">
 
 <img src="/p/69e7e367/1.png" class title="图2 SGX 指令的显式访问和隐式访问">]]></content>
+  </entry>
+  <entry>
+    <title>SGX数据结构</title>
+    <url>/p/43899435.html</url>
+    <content><![CDATA[<p>本文内容源自《Intel Software Developer’s Manual: Volumn 3》2023 年 3 月版本。</p>
+<span id="more"></span>
+
+<h2 id="SECS"><a href="#SECS" class="headerlink" title="SECS"></a>SECS</h2>]]></content>
+      <tags>
+        <tag>SGX</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SGX 知识总结（一）</title>
+    <url>/p/8cd79317.html</url>
+    <content><![CDATA[<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><span id="more"></span>
+
+<a href="#">Post not found: SGX访问控制 SGX访问控制</a>
+<a href="#">Post not found: SGX数据结构 SGX数据结构</a>
+<a href="#">Post not found: SGX创建过程 SGX创建过程</a>
+]]></content>
+      <tags>
+        <tag>SGX</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Genetic Algorithm</title>
+    <url>/p/e830ed97.html</url>
+    <content><![CDATA[<h3 id="术语"><a href="#术语" class="headerlink" title="术语"></a>术语</h3><p>Genetic Algorithms 遗传算法</p>
+<p>chromosome 染色体</p>
+<p>Gene 基因</p>
+]]></content>
+      <tags>
+        <tag>资源调度</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>A*</title>
+    <url>/p/7300a56d.html</url>
+    <content><![CDATA[]]></content>
+      <tags>
+        <tag>资源调度</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>资源调度算法调研（一）</title>
+    <url>/p/bcc3e70e.html</url>
+    <content><![CDATA[<h2 id="传统算法-1"><a href="#传统算法-1" class="headerlink" title="传统算法[1]"></a>传统算法<sup>[1]</sup></h2><span id="more"></span>
+
+<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p><font color="#FF0000">metatask</font>: a collection of independent tasks with no intertask data dependencies;</p>
+<p><font color="#FF0000">&tau;</font>: The size of the metatask (i.e., the number of tasks to execute);</p>
+<p><font color="#FF0000">&mu;</font>: the number of machines in the HC suite;</p>
+<p>&tau; and &mu; are static and known beforehand.</p>
+<p>It is assumed that an accurate estimate of the expected execution time for each task on each machine is known prior to execution and contained within a &tau;*&mu; ETC (expected time to compute) matrix;</p>
+<p>It is also assumed that each machine executes a single task at a time.</p>
+<p><font color="#FF0000">Machine availability time, mat(m<sub>j</sub>)</font>：the earliest time machine m<sub>j</sub> can complete the execution of all the tasks that have previously been assigned to it (based on the ETC entries for those tasks). </p>
+<p><font color="#FF0000">The completion time for a new task t<sub>i</sub> on machine m<sub>j</sub> , ct(t<sub>i</sub> , m<sub>j</sub>)</font>: the machine availability time for m<sub>j</sub> plus the execution time of task t<sub>i</sub> on machine m<sub>j</sub> , i.e., ct(t<sub>i</sub> , m<sub>j</sub>)= mat(m<sub>j</sub>)+ETC(t<sub>i</sub> , m<sub>j</sub>). </p>
+<p>The performance criterion used to compare the results of the heuristics is the maximum value of ct(t<sub>i</sub> , m<sub>j</sub>), for  0 &le; i &lt; &tau; and 0 &le; j &lt; &mu;. The maximum ct(t<sub>i</sub> , m<sub>j</sub>) value, over 0 &le; i &lt; &tau; and 0 &le; j &lt; &mu;, is the metatask execution time, and is called the <font color="#FF0000">makespan</font> . </p>
+<p>Each heuristic is attempting to minimize the makespan, i.e., finish execution of the metatask as soon as possible.</p>
+<h3 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h3><table>
+<thead>
+<tr>
+<th align="center">算法</th>
+<th align="left"><p align="middle">描述</p></th>
+<th align="left"><p align="middle">优点</p></th>
+<th align="left"><p align="middle">缺点</p></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Opportunistic Load Balancing (OLB)</td>
+<td align="left">OLB算法会将负载随机交给一个可用的节点，不管任务执行的时间。动机是尽量保持所有的机器忙碌。</td>
+<td align="left"><p align="middle">简单</p></td>
+<td align="left">poor makespan</td>
+</tr>
+<tr>
+<td align="center">Minimum Execution Time (MET)</td>
+<td align="left">MET会将任务分配给对于该任务，有着最小执行时间的机器，不管机器何时可用。动机是尽量将任务分配给最适合它的机器。</td>
+<td align="left"></td>
+<td align="left">会造成严重的负载不均衡</td>
+</tr>
+<tr>
+<td align="center">Minimum Completion Time (MCT)</td>
+<td align="left">MCT会将任务分配给对于该任务，有着最小完成时间的机器。</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center">Min-min</td>
+<td align="left">U：unmapped tasks；M={min<sub>0&le;j&lt;&mu;</sub>(ct(t<sub>i</sub> , m<sub>j</sub>)), for each t<sub>i</sub> &in;U}；M中最小的任务分配给对应的机器，之后将该任务移除，重复该步骤直到U为空。</td>
+<td align="left">good makespan</td>
+<td align="left">执行长任务而带来延迟。比如：当有很多短任务和一个很长的任务，会由于最后执行长任务而带来极大的开销</td>
+</tr>
+<tr>
+<td align="center">Max-min</td>
+<td align="left">U：unmapped tasks；M={min<sub>0&le;j&lt;&mu;</sub>(ct(t<sub>i</sub> , m<sub>j</sub>)), for each t<sub>i</sub> &in;U}；<br>M中最大的任务分配给对应的机器，之后将该任务移除，重复该步骤直到U为空。</td>
+<td align="left">最小化由于执行长任务而带来的延迟。比如：当有很多短任务和一个很长的任务，Min-Min会由于最后执行长任务而带来极大的开销，这时Max-Min算法会更优。</td>
+<td align="left">其他时候调度策略都不够好。短任务的等待时间过长。</td>
+</tr>
+<tr>
+<td align="center">Duplex</td>
+<td align="left">会同时执行Min-Min和Max-Min，然后选择更好的一个</td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center">Round-Robin(RR)</td>
+<td align="left">Round-Robin 算法将负载均匀的发放给各个节点。当使用这个算法时，调度器会循环的将VM分配给节点。比如：3个节点，第一个请求到达时，分配给第一个节点，第二个请求到达时，分配给第二个节点，第三个请求到达时分配给第三个节点，第四个请求到达时又分配给第一个节点，以此类推。</td>
+<td align="left">能均匀的利用所有的资源，保障了公平性</td>
+<td align="left">没有考虑任务的执行时间和资源使用情况。</td>
+</tr>
+<tr>
+<td align="center">Power Save Algorithm</td>
+<td align="left">在调度器分配了VM后，检查是否有空闲的节点，有的话就关掉。等到有请求需要分配到该节点时，再打开该节点。</td>
+<td align="left">考虑能耗问题</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center">Genetic Algorithms (GA)</td>
+<td align="left">initial population genetation;<br>evaluation;<br>while(stopping criteria not met){<br>&emsp;selection;<br>&emsp;crossover;<br>&emsp;mutation;<br>&emsp;evaluation;<br>}<br>output best solution;<br>具体算法可以参考<a href="#">Post not found: 遗传算法 Genetic Algorithm</a></td>
+<td align="left">Genetic Algorithms (GAs) are a technique used for searching large solution spaces.  GA usually found the best mappings of all 11 heuristics.</td>
+<td align="left">调度时间长</td>
+</tr>
+<tr>
+<td align="center">Simulated Annealing (SA)</td>
+<td align="left">具体算法可以参考<a href="/p/ba79e3d5.html" title="Simulated Annealing">Simulated Annealing</a></td>
+<td align="left"></td>
+<td align="left">可能会找到比Min-Min和GA更差的解决办法；调度时间较长</td>
+</tr>
+<tr>
+<td align="center">Genetic Simulated Annealing (GSA)</td>
+<td align="left">a combination of the GA and SA techniques . In general, GSA follows procedures similar to the GA outlined above. However, for the selection process, GSA uses the SA cooling schedule and system temperature and a simplified SA decision process for accepting or rejecting a new chromosome.</td>
+<td align="left"></td>
+<td align="left">调度时间长</td>
+</tr>
+<tr>
+<td align="center">Tabu</td>
+<td align="left"><img src="/p/bcc3e70e/tabu.PNG" class title="图1 tabu"><br>具体算法可以参考<a href="/p/5b9a6a68.html" title="Tabu">Tabu</a></td>
+<td align="left"></td>
+<td align="left">调度时间较长</td>
+</tr>
+<tr>
+<td align="center">A*</td>
+<td align="left">具体算法可以参考<a href="#">Post not found: A-算法 A*</a></td>
+<td align="left"></td>
+<td align="left">调度时间很长</td>
+</tr>
+</tbody></table>
+<h3 id="总体评价："><a href="#总体评价：" class="headerlink" title="总体评价："></a>总体评价：</h3><ul>
+<li>基本没有考虑能耗情况，所有的节点都是一开始就准备好，一直开启；</li>
+<li>假设很多也已经不符合现在的情况，比如：现在一个节点都是多线程任务，很少一个机器一个时间只有一个任务执行；</li>
+<li>很少考虑节点是否有充足的资源，这可能是因为一个时间一个机器只有一个任务，也就是说，在一个时间，机器所有的资源都会给到该任务，所以不考虑，但是，在多进程的环境下，资源问题也需要考虑；</li>
+<li>不支持热迁移</li>
+<li>这些算法都是静态的算法，有些还是批处理的，提前会知道很多信息。</li>
+</ul>
+<h2 id="论文算法"><a href="#论文算法" class="headerlink" title="论文算法"></a>论文算法</h2><h3 id="AN-ADAPTIVE-ALGORITHM-FOR-DYNAMIC-PRIORITY-BASED-VIRTUAL-MACHINE-SCHEDULING-IN-CLOUD-2"><a href="#AN-ADAPTIVE-ALGORITHM-FOR-DYNAMIC-PRIORITY-BASED-VIRTUAL-MACHINE-SCHEDULING-IN-CLOUD-2" class="headerlink" title="AN ADAPTIVE ALGORITHM FOR DYNAMIC PRIORITY BASED VIRTUAL MACHINE SCHEDULING IN CLOUD[2]"></a>AN ADAPTIVE ALGORITHM FOR DYNAMIC PRIORITY BASED VIRTUAL MACHINE SCHEDULING IN CLOUD<sup>[2]</sup></h3><h4 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Input: None</span><br><span class="line">Output: None</span><br><span class="line">Algorithm sched_priority</span><br><span class="line">&#123; </span><br><span class="line">	If(P1 is not set)</span><br><span class="line">		P1&#x3D;max available resource node</span><br><span class="line">		If(P1 is turned OFF)</span><br><span class="line">			Turn P1 ON</span><br><span class="line">	If(load factor of P1&lt;0.8)</span><br><span class="line">		Assign VM to P1</span><br><span class="line">	Else if(P2 is set AND load factor of P2&lt;0.8)</span><br><span class="line">		Swap P1 and P2;</span><br><span class="line">		Assign VM to P1;</span><br><span class="line">	Else</span><br><span class="line">		P2&#x3D;P1</span><br><span class="line">		P1&#x3D;current max available resource node </span><br><span class="line"> </span><br><span class="line">		If(P1 is turned OFF)</span><br><span class="line">			Turn P1 ON</span><br><span class="line">		Assign VM to P1;</span><br><span class="line">	Turn OFF all unused nodes;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h4><p>在初始状态下，P1和P2都是没有设置的。当一个请求到达时，会判断是否设置了P1，如果没有设置P1，则将P1设置为拥有最多空闲资源的节点，如果此时该节点没有开启，则将该节点开启；之后判断P1的负载因子是否小于0.8，如果小于0.8，说明P1还能够放其他资源，就将资源放入P1对应的节点中；如果P1的负载因子大于0.8，P2被设置了且负载因子小于0.8，则交换P1和P2，将资源交给P1对应的节点；如果P2没有被设置，或者负载因子也大于0.8，则将P2设置为P1的节点，并将P1设置为当前拥有空闲资源最多的节点。最后，关掉那些没有使用的空闲节点。</p>
+<h4 id="评析"><a href="#评析" class="headerlink" title="评析"></a>评析</h4><p>优点：考虑了能源问题，在有空闲节点时，能够关闭掉那些空闲的节点；可拓展性较好；给了伪代码；<br>缺点：实验简单，虚拟机的数量过少，只有10个虚拟机，实验过程省略了；缺少热迁移的考虑，即缺少任务整合的部分，那么，是否可以在此基础上增加一个任务整合的模块？即当某个主机的负载低于某个阈值，比如10%时，将主机的内容迁移到其他主机上，并将该主机关闭；资源分很多种，比如：内存，vcpu等等，不同类型一次申请的量可能不同，可能在某一负载下只能满足其中部分，不能满足全部；。</p>
+<h3 id="Dynamic-Round-Robin-DRR-3"><a href="#Dynamic-Round-Robin-DRR-3" class="headerlink" title="Dynamic Round-Robin (DRR)[3]"></a>Dynamic Round-Robin (DRR)<sup>[3]</sup></h3><p>DRR是在传统RR的基础上，增加了两条规则：第一，在一个虚拟机结束时，该主机将不会接受新的虚拟机，这种状态称为“退休状态”，等该主机的所有VM都结束，关闭该主机；第二，如果主机在“退休状态”呆了足够长的时间，就将主机的所有VM热迁移到其他主机，然后将主机关闭。</p>
+<h4 id="评析-1"><a href="#评析-1" class="headerlink" title="评析"></a>评析</h4><p>优点：考虑了能耗；支持live migration；<br>缺点：没有源代码；实验部分阐述过于简单，没有说明实验的环境，数据量大小，甚至过程都省略了；没有参考文献；如果同时有很多主机的虚拟机都同时结束了，那么这些主机都不能接受新的虚拟机，那么当新的虚拟机到来时，就只能轮询少量的虚拟机，这可能会使少部分的虚拟机过度使用；传统Round-Robin的问题也会发生在这里，比如：故障处理；如果虚拟机退出时，该主机有很多的虚拟机，迁移的开销就会很高。</p>
+<h3 id="Power-Aware-Load-Balancing-for-Cloud-Computing（PALB）-4"><a href="#Power-Aware-Load-Balancing-for-Cloud-Computing（PALB）-4" class="headerlink" title="Power Aware Load Balancing for Cloud Computing（PALB）[4]"></a>Power Aware Load Balancing for Cloud Computing（PALB）<sup>[4]</sup></h3><h4 id="伪代码-1"><a href="#伪代码-1" class="headerlink" title="伪代码"></a>伪代码</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">balance:</span><br><span class="line">	for all active compute nodes j ∈ [m] do</span><br><span class="line">		n[j] &#x3D; current utilization of compute node j</span><br><span class="line">	end for</span><br><span class="line">	if all n[j] &gt; 75% utilization &#x2F;&#x2F;all available nodes are active</span><br><span class="line">		boot vm on most underutilized n[j]</span><br><span class="line">	end if</span><br><span class="line">	else</span><br><span class="line">		boot vm on most utilized n[j], which can also fulfill requirements</span><br><span class="line">	end else</span><br><span class="line">upscale:</span><br><span class="line">	if each n[j] &gt; 75% utilization</span><br><span class="line">		if n[j] &lt; m</span><br><span class="line">			boot compute node n[j+1]</span><br><span class="line">		end if</span><br><span class="line">	end if</span><br><span class="line">downscale:</span><br><span class="line">	if vmi idle &gt; 6 hours or user initiated shutdown</span><br><span class="line">		shutdown vmi</span><br><span class="line">	end if</span><br><span class="line">	if n[j] has no active vm</span><br><span class="line">		shutdown n[j]</span><br><span class="line">	end if</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="说明-1"><a href="#说明-1" class="headerlink" title="说明"></a>说明</h4><p>该算法的目标是在维持节点可用性的同时，降低能耗。该算法主要有三个过程：balance，upscale，downscale。</p>
+<ul>
+<li>balance过程确定虚拟机应该安装的位置。首先获取当前所有活跃节点的利用率，当所有结点的利用率都大于75%时，将虚拟机分配到利用率最低的节点，否则将虚拟机分配到利用率最高的，且可以满足需求的节点。</li>
+<li>upscale过程是当所有虚拟机节点的利用率都大于75%时，创建一个新的虚拟机</li>
+<li>downscale过程是当虚拟机长时间闲置时，关闭虚拟机，而当一个主机没有活跃的虚拟机时，关闭主机。</li>
+</ul>
+<h4 id="评析-2"><a href="#评析-2" class="headerlink" title="评析"></a>评析</h4><p>优点：实验做得比较详细，说明了实验环境和步骤；考虑了能源因素，能够将长时间未使用的虚拟机关掉，将未使用的主机关掉；资源利用率高；考虑了异质的问题<br>缺点：为考虑热迁移，即如果一个主机的负载过低，将主机的虚拟机迁移，之后关闭虚拟机；在虚拟机运行的时候，并不是满负载的，对于申请时要求的资源小于实际使用的资源的情况缺少考虑；实验部分虚拟机个数有点少，只测试了20个和30个虚拟机。</p>
+<h3 id="Load-Balanced-Min-Min-Algorithm-LBMM-5"><a href="#Load-Balanced-Min-Min-Algorithm-LBMM-5" class="headerlink" title="Load Balanced Min-Min Algorithm(LBMM)[5]"></a>Load Balanced Min-Min Algorithm(LBMM)<sup>[5]</sup></h3><h4 id="伪代码-2"><a href="#伪代码-2" class="headerlink" title="伪代码"></a>伪代码</h4><p><strong>CT<sub>i</sub><sub>j</sub></strong>: completion time of task i on machines j </p>
+<p><strong>ET<sub>i</sub><sub>j</sub></strong>: expected execution time of job i on resource j  </p>
+<p><strong>Rj</strong>: ready time or availability time of resource j after  completing the previously assigned jobs.</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">for all tasks Ti </span><br><span class="line">	for all resources </span><br><span class="line">		Cij&#x3D;Eij+rj </span><br><span class="line">	do until all tasks are mapped </span><br><span class="line"> 		for each task find the earliest completion time and the resource that obtains it </span><br><span class="line">		find the task Tk with the minimum earliest completion time </span><br><span class="line">		assign task Tk to the resource Rl that gives the earliest completion time </span><br><span class="line">		delete task Tk from list</span><br><span class="line">		update ready time of resource Rl</span><br><span class="line">		update Cil for all i </span><br><span class="line">	end do </span><br><span class="line">&#x2F;&#x2F; rescheduling to balance the load</span><br><span class="line">sort the resources in the order of completion time</span><br><span class="line">for all resources R</span><br><span class="line">	Compute makespan &#x3D; max(CT(R))</span><br><span class="line">End for</span><br><span class="line">for all resources</span><br><span class="line">	for all tasks</span><br><span class="line">		find the task Ti that has minimum ET in Rj</span><br><span class="line">		find the MCT of task Ti</span><br><span class="line">		if MCT &lt; makespan</span><br><span class="line">			Reschedule the task Ti to the resource that produces it </span><br><span class="line">			Update the ready time of both resources</span><br><span class="line">		End if</span><br><span class="line">	End for</span><br><span class="line">End for</span><br><span class="line">&#x2F;&#x2F;Where MCT represents Maximum Completion Time</span><br></pre></td></tr></table></figure>
+
+<h4 id="说明-2"><a href="#说明-2" class="headerlink" title="说明"></a>说明</h4><p>这个算法是为了解决在Min-Min算法长任务滞后带来的问题。该算法主要分成两个部分，第一部分使用传统的Min-Min算法得到一般的解决方案；第二部分对第一部分的解决方案进行重新调度，首先将所有的节点根据完成时间进行排序，然后对每个节点中的每个任务进行调度，如果再次调度后可以得到更小的最大完成时间，则将任务进行调度，并更新信息。</p>
+<h4 id="评析-3"><a href="#评析-3" class="headerlink" title="评析"></a>评析</h4><p>优点：在原来Min-Min的基础上增加了重新调度的过程，降低了makespan<br>缺点：没有摆脱传统算法的限制，直接使用传统算法的假设，因此，传统算法的缺点这个方法仍然有；实验过于简单，最后资源的实验说的很含糊</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Braun T D ,  Siegel H J ,  Beck N , et al. A Comparison of Eleven Static Heuristics for Mapping a Class of Independent Tasks onto Heterogeneous Distributed Computing Systems[J]. Journal of Parallel &amp; Distributed Computing, 2001, 61(6):810-837.</p>
+<p>[2] Subramanian S ,  Krishna N G ,  Kumar K M , et al. An Adaptive Algorithm for Dynamic Priority Based Virtual Machine Scheduling in Cloud[J]. International Journal of Computer Science Issues, 2012, 9(6).</p>
+<p>[3] Lin C C ,  Liu P ,  Wu J J . Energy-Aware Virtual Machine Dynamic Provision and Scheduling for Cloud Computing[J]. IEEE, 2011.</p>
+<p>[4] Galloway J M ,  Smith K L ,  Vrbsky S S . Power Aware Load Balancing for Cloud Computing[J]. lecture notes in engineering &amp; computer science, 2011.</p>
+<p>[5] Kokilavani T ,  Amalarethinam D G . Load Balanced MinMin Algorithm for Static MetaTask Scheduling in Grid Computing[J]. International Journal of Computer Applications, 2011, 20(2):42-48.</p>
+]]></content>
+      <tags>
+        <tag>资源调度</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Tabu</title>
+    <url>/p/5b9a6a68.html</url>
+    <content><![CDATA[]]></content>
+      <tags>
+        <tag>资源调度</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Simulated Annealing</title>
+    <url>/p/ba79e3d5.html</url>
+    <content><![CDATA[]]></content>
+      <tags>
+        <tag>资源调度</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Unikernel简述</title>
+    <url>/p/486c1af5.html</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>unikernel知识总结</title>
+    <url>/p/c8f61804.html</url>
+    <content><![CDATA[<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><span id="more"></span>
+
+<a href="#">Post not found: Unikernel简述 Unikernel简述</a>
+
+<a href="#">Post not found: Unikraft Unikraft</a>]]></content>
+      <tags>
+        <tag>unikernel，unikraft</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Unikraft</title>
+    <url>/p/8e98bdb9.html</url>
+    <content><![CDATA[<h2 id="什么是-Unikraft"><a href="#什么是-Unikraft" class="headerlink" title="什么是 Unikraft"></a>什么是 Unikraft</h2><span id="more"></span>
+<p>参考文献：</p>
+<h2 id="Unikraft-安装"><a href="#Unikraft-安装" class="headerlink" title="Unikraft 安装"></a>Unikraft 安装</h2><p>源代码地址：<br><a href="https://github.com/unikraft/unikraft">https://github.com/unikraft/unikraft</a></p>
+<p>安装 kraft： </p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">curl --proto &#39;&#x3D;https&#39; --tlsv1.2 -sSf https:&#x2F;&#x2F;get.kraftkit.sh | sh</span><br></pre></td></tr></table></figure>
+
+<p>参考网页：<br><a href="https://github.com/unikraft/kraftkit">https://github.com/unikraft/kraftkit</a><br><a href="https://unikraft.org/docs/getting-started">https://unikraft.org/docs/getting-started</a></p>
+<h2 id="Unikraft-调试"><a href="#Unikraft-调试" class="headerlink" title="Unikraft 调试"></a>Unikraft 调试</h2><p><a href="https://www.youtube.com/watch?v=ANm0diPrWUE">https://www.youtube.com/watch?v=ANm0diPrWUE</a><br><a href="https://users.ece.utexas.edu/~adnan/gdb-refcard.pdf">https://users.ece.utexas.edu/~adnan/gdb-refcard.pdf</a></p>
+<p>qemu-system-x86_64  -s -S -kernel build/helloworld_qemu-x86_64 -nographic</p>
+<p>gdb –eval-command=”target remote :1234” build/helloworld_qemu-x86_64.dbg</p>
+<h2 id="Unikraft-qemu-x86-64启动流程"><a href="#Unikraft-qemu-x86-64启动流程" class="headerlink" title="Unikraft qemu-x86-64启动流程"></a>Unikraft qemu-x86-64启动流程</h2><p>源码版本：0.13.1</p>
+<h3 id="寻找入口函数"><a href="#寻找入口函数" class="headerlink" title="寻找入口函数"></a>寻找入口函数</h3><p>方法 1：阅读 plat/kvm/Linker.uk：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">ifeq (x86_64,$(CONFIG_UK_ARCH))</span><br><span class="line">ifeq ($(CONFIG_KVM_BOOT_PROTO_MULTIBOOT),y)</span><br><span class="line">KVM_LDFLAGS-y +&#x3D; -Wl,-m,elf_x86_64</span><br><span class="line">KVM_LDFLAGS-y +&#x3D; -Wl,--entry&#x3D;_multiboot_entry</span><br><span class="line">ELF64_TO_32 &#x3D; y</span><br><span class="line">else ifeq ($(CONFIG_KVM_BOOT_PROTO_LXBOOT),y)</span><br><span class="line">KVM_LDFLAGS-y +&#x3D; -Wl,--entry&#x3D;_lxboot_entry</span><br><span class="line">else ifeq ($(CONFIG_KVM_BOOT_PROTO_EFI_STUB),y)</span><br><span class="line">KVM_LDFLAGS-y +&#x3D; -Wl,--entry&#x3D;uk_efi_entry64</span><br><span class="line">KVM_LDFLAGS-y +&#x3D; -Wl,-m,elf_x86_64</span><br><span class="line">endif</span><br></pre></td></tr></table></figure>
+
+<p>从这里可以看出，当使用 multiboot 作为启动协议时，入口函数为 _multiboot_entry。</p>
+<p>方法 2：阅读 elf 文件。<br>以 helloworld 为例，使用以下命令：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">readelf -a build&#x2F;helloworld_qemu-x86_64.dbg</span><br></pre></td></tr></table></figure>
+<p>查看 Entry point address 选项：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Entry point address:               0x125f88</span><br></pre></td></tr></table></figure>
+<p>可知入口地址为 0x125f88。再进行反汇编：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">objdump -ld -C -S build&#x2F;helloworld_qemu-x86_64.dbg &gt; helloworld.txt</span><br></pre></td></tr></table></figure>
+<p>查看 helloworld.txt 文件，并找到地址为 0x125f88 的函数：_multiboot_entry。</p>
+<h3 id="multiboot"><a href="#multiboot" class="headerlink" title="multiboot"></a>multiboot</h3><p><a href="https://www.gnu.org/software/grub/manual/multiboot/multiboot.html">https://www.gnu.org/software/grub/manual/multiboot/multiboot.html</a></p>
+<h3 id="qemu-x86-64-启动源码阅读"><a href="#qemu-x86-64-启动源码阅读" class="headerlink" title="qemu-x86-64 启动源码阅读"></a>qemu-x86-64 启动源码阅读</h3><p>由于使用 multiboot 启动，所以启动时的状态为：</p>
+<ul>
+<li>EAX包含一个魔数；</li>
+<li>EBX包含 multiboot 信息的32位物理地址；</li>
+<li>Flat 4GiB CS 和 DS 段，其中 ES、FS、GS 和 SS 设置为 DS；</li>
+<li>A20 已启用，启用保护模式，禁用分页，禁用中断。<br>注意：本博客暂不考虑重定向代码。<h4 id="multiboot-entry"><a href="#multiboot-entry" class="headerlink" title="_multiboot_entry"></a>_multiboot_entry</h4>从 plat/kvm/x86/multiboot.S 的 _multiboot_entry 开始阅读。<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;* 与 multiboot 协议相关。*&#x2F;</span><br><span class="line">#define MULTIBOOT_FLAGS (MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEMORY_INFO)</span><br><span class="line"></span><br><span class="line">.section .data.boot</span><br><span class="line"></span><br><span class="line">.align 4</span><br><span class="line">multiboot_header:</span><br><span class="line">	.long MULTIBOOT_HEADER_MAGIC</span><br><span class="line">	.long MULTIBOOT_FLAGS</span><br><span class="line">	.long -(MULTIBOOT_HEADER_MAGIC+MULTIBOOT_FLAGS) &#x2F;* checksum *&#x2F;</span><br><span class="line"></span><br><span class="line">&#x2F;**</span><br><span class="line">* Stack and entry function to use during CPU initialization</span><br><span class="line">*&#x2F;</span><br><span class="line">.section .bss</span><br><span class="line">.space 4096 &#x2F;* bss 段大小 *&#x2F;</span><br><span class="line">lcpu_bootstack:</span><br><span class="line"></span><br><span class="line">.section .rodata</span><br><span class="line">lcpu_boot_startup_args:</span><br><span class="line">	ur_data quad, multiboot_entry, 8 &#x2F;* multiboot_entry 作为完成 lcpu_start64 后的初始化函数 *&#x2F;</span><br><span class="line">	ur_data quad, lcpu_bootstack, 8</span><br><span class="line"></span><br><span class="line">.code32</span><br><span class="line">.section .text.32.boot</span><br><span class="line">ENTRY(_multiboot_entry)</span><br><span class="line"></span><br><span class="line">	&#x2F;* only multiboot is supported for now *&#x2F;</span><br><span class="line">	cmpl $MULTIBOOT_BOOTLOADER_MAGIC, %eax &#x2F;* 判断是否是 multiboot 启动，不是则直接退出。*&#x2F;</span><br><span class="line">	jne no_multiboot</span><br><span class="line"></span><br><span class="line">	&#x2F;* Hardcoding for now I guess... *&#x2F;</span><br><span class="line">	movl $0x00100000, %edi</span><br><span class="line">	movl $0x00000000, %esi</span><br><span class="line">	movl $0x00100000, %edx</span><br><span class="line">	do_uk_reloc32 0</span><br><span class="line">	</span><br><span class="line">	&#x2F;* startup args for boot CPU *&#x2F;</span><br><span class="line">	ur_mov lcpu_boot_startup_args, %edi, 4, _phys &#x2F;* 为后续完成 lcpu_start64 后跳转做准备 *&#x2F;</span><br><span class="line">	movl %ebx, %esi &#x2F;* multiboot info *&#x2F;</span><br><span class="line">	ur_mov lcpu_start32, %ebx, 4, _phys</span><br><span class="line">	jmp *%ebx &#x2F;* 执行 lcpu_start32 *&#x2F;</span><br><span class="line"></span><br><span class="line">no_multiboot:</span><br><span class="line">	cli</span><br><span class="line">1:</span><br><span class="line">	hlt</span><br><span class="line">	jmp 1b</span><br><span class="line">END(_multiboot_entry)</span><br></pre></td></tr></table></figure>
+注意在执行完  _multiboot_entry 之后，esi 里存储的是包含 multiboot 信息的32位物理地址，edi 里存储的是 lcpu_boot_startup_args 的地址，ebx 里存储的是 lcpu_start32 的函数地址。所以函数会跳转到 lcpu_start32。</li>
+</ul>
+<h4 id="lcpu-start32"><a href="#lcpu-start32" class="headerlink" title="lcpu_start32"></a>lcpu_start32</h4><p>lcpu_start32 打开 PAE，IA-32e，设置页表，cr0，GDT，将程序跳转到 64 位环境执行。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.code32</span><br><span class="line">.section .text.boot.32</span><br><span class="line">ENTRY(lcpu_start32) &#x2F;* 打开 PAE，IA-32e，设置页表，cr0，GDT *&#x2F;</span><br><span class="line">	&#x2F;* Enable physical address extension (PAE) *&#x2F;</span><br><span class="line">	movl $CR4_BOOT32_SETTINGS, %eax</span><br><span class="line">	movl %eax, %cr4</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Switch to IA-32e mode (long mode) *&#x2F; &#x2F;* IA-32e 是 64 位*&#x2F;</span><br><span class="line">	xorl %edx, %edx</span><br><span class="line">	movl $EFER_BOOT32_SETTINGS, %eax</span><br><span class="line">	movl $X86_MSR_EFER, %ecx</span><br><span class="line">	wrmsr</span><br><span class="line">	&#x2F;* 页表采用的是 4 级分页，需要提前设置 CR0.PG，CR4.PAE，IA32_EFER.LME 为 1，CR4.LA57 为 0.*&#x2F;</span><br><span class="line">	&#x2F;* Set boot page table and enable paging *&#x2F; &#x2F;* x86_bpt_pml4 里面是页表 *&#x2F;</span><br><span class="line">	ur_mov x86_bpt_pml4, %eax, 4, _phys</span><br><span class="line">	movl %eax, %cr3</span><br><span class="line">	</span><br><span class="line">	&#x2F;* Protected mode, Write Protect, Paging *&#x2F;</span><br><span class="line">	movl $CR0_BOOT32_SETTINGS, %eax</span><br><span class="line">	movl %eax, %cr0</span><br><span class="line"></span><br><span class="line">	&#x2F;* Load 64-bit GDT and jump to 64-bit code segment *&#x2F;</span><br><span class="line">	ur_mov gdt64_ptr, %eax, 4</span><br><span class="line">	lgdt (%eax)</span><br><span class="line"></span><br><span class="line">	&#x2F;* Again, we use the same strategy, only this time we generate an actual</span><br><span class="line">	* uk_reloc entry to be automatically resolved by the early relocator,</span><br><span class="line">	* instead of relying on the code that relocates the start16 section</span><br><span class="line">	* before starting the Application Processors, since execution of</span><br><span class="line">	* lcpu_start32 comes before that.</span><br><span class="line">	*&#x2F;</span><br><span class="line">	ur_mov jump_to64, %eax, 4</span><br><span class="line">	movl %eax, -6(%eax)</span><br><span class="line">	ljmp $(gdt64_cs - gdt64), $START32_PLACEHOLDER</span><br><span class="line">.code64</span><br><span class="line">jump_to64:</span><br><span class="line">	&#x2F;* Set up remaining segment registers *&#x2F;</span><br><span class="line">	movl $(gdt64_ds - gdt64), %eax</span><br><span class="line">	movl %eax, %es</span><br><span class="line">	movl %eax, %ss</span><br><span class="line">	movl %eax, %ds</span><br><span class="line">	xorl %eax, %eax</span><br><span class="line">	movl %eax, %fs</span><br><span class="line">	movl %eax, %gs</span><br><span class="line">	leaq lcpu_start64(%rip), %rcx</span><br><span class="line">	jmp *%rcx</span><br><span class="line">END(lcpu_start32)</span><br></pre></td></tr></table></figure>
+<p>分析页表 x86_bpt_pml4。<br>首先需要了解 64 位内存分页。该部分采用的是 4 级分页。转换过程参考：<a href="https://zhuanlan.zhihu.com/p/652983618%E3%80%82">https://zhuanlan.zhihu.com/p/652983618。</a></p>
+<p>通过阅读 x86_bpt_pml4 源码，可以得到页表的示意图如下图所示。</p>
+<img src="/p/8e98bdb9/%E9%A1%B5%E8%A1%A8.jpg" class title="图1 页表">
+
+<h4 id="lcpu-start64"><a href="#lcpu-start64" class="headerlink" title="lcpu_start64"></a>lcpu_start64</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">.code64</span><br><span class="line">.section .text.boot.64</span><br><span class="line">ENTRY(lcpu_start64) &#x2F;* 将 lcpu 状态设为 init，设置栈，打开 FPU，SSE，XSAVE，AVX，FS，GS，PKU，跳转到 multiboot_entry *&#x2F;</span><br><span class="line">	&#x2F;* Save the startup args pointer *&#x2F;</span><br><span class="line">	movq	%rdi, %r8	&#x2F;* r8 存储的是 lcpu_boot_startup_args 地址。*&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* Request basic CPU features and APIC ID</span><br><span class="line">	 * TODO: This APIC ID is limited to 256. Better get from leaf 0x1f</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	movl	$1, %eax</span><br><span class="line">	cpuid</span><br><span class="line">	shrl	$24, %ebx</span><br><span class="line"></span><br><span class="line">	&#x2F;* Use APIC_ID * LCPU_SIZE for indexing the cpu structure *&#x2F;</span><br><span class="line">	movl	$LCPU_SIZE, %eax</span><br><span class="line">	imul	%ebx, %eax</span><br><span class="line"></span><br><span class="line">	&#x2F;* Compute pointer into CPU struct array and store it in RBP</span><br><span class="line">	 * We do not use the frame pointer, yet</span><br><span class="line">	 *&#x2F;&#x2F;* lcpus 为数组，用来存储所有逻辑 cpu 的元数据。*&#x2F;</span><br><span class="line">	leaq	lcpus(%rip), %rbp</span><br><span class="line">	addq	%rax, %rbp</span><br><span class="line"></span><br><span class="line">	&#x2F;* Put CPU into init state *&#x2F; &#x2F;* lcpu 状态设为 init 状态*&#x2F;</span><br><span class="line">	movl	$LCPU_STATE_INIT, LCPU_STATE_OFFSET(%rbp)</span><br><span class="line"></span><br><span class="line">	&#x2F;* Enable FPU, SSE, (XSAVE feature), (AVX), FS and GS base, (memory protection keys (PKU)). Request extended CPU features.()表示需要配置相应启动参数。*&#x2F;</span><br><span class="line">	......</span><br><span class="line"></span><br><span class="line">	&#x2F;* Check if we have startup arguments supplied *&#x2F;</span><br><span class="line">	test	%r8, %r8</span><br><span class="line">	jz	no_args</span><br><span class="line"></span><br><span class="line">	&#x2F;* Initialize the CPU configuration with the supplied startup args *&#x2F;</span><br><span class="line">	movq	LCPU_SARGS_ENTRY_OFFSET(%r8), %rax	&#x2F;* multiboot_entry 函数地址 *&#x2F;</span><br><span class="line">	movq	LCPU_SARGS_STACKP_OFFSET(%r8), %rsp &#x2F;*bss 栈地址*&#x2F;</span><br><span class="line"></span><br><span class="line">	jmp	jump_to_entry</span><br><span class="line"></span><br><span class="line">no_args:</span><br><span class="line">	&#x2F;* Load the stack pointer and the entry address from the CPU struct *&#x2F;</span><br><span class="line">	movq	LCPU_ENTRY_OFFSET(%rbp), %rax</span><br><span class="line">	movq	LCPU_STACKP_OFFSET(%rbp), %rsp</span><br><span class="line"></span><br><span class="line">jump_to_entry:</span><br><span class="line">	&#x2F;* According to System V AMD64 the stack pointer must be aligned to</span><br><span class="line">	 * 16-bytes. In other words, the value (RSP+8) must be a multiple of</span><br><span class="line">	 * 16 when control is transferred to the function entry point (i.e.,</span><br><span class="line">	 * the compiler expects a misalignment due to the return address having</span><br><span class="line">	 * been pushed onto the stack).</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	andq	$~0xf, %rsp</span><br><span class="line">	subq	$0x8, %rsp</span><br><span class="line"></span><br><span class="line">	movq	%rbp, %rdi	&#x2F;*rdi 为第一个参数，即 rbp，rbp 存储的为该逻辑 cpu 在 lcpus 数组中的地址*&#x2F;</span><br><span class="line">#if !__OMIT_FRAMEPOINTER__</span><br><span class="line">	&#x2F;* Reset frame pointer *&#x2F;</span><br><span class="line">	xorq	%rbp, %rbp</span><br><span class="line">#endif &#x2F;* !__OMIT_FRAMEPOINTER__ *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* Arguments for entry function</span><br><span class="line">	 * arg0 @ RDI &#x3D; this CPU, arg1 @ RSI &#x3D; boot parameters (if available)</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	jmp	*%rax	&#x2F;* 转移到 multiboot_entry*&#x2F;</span><br><span class="line">	&#x2F;* rsi 在 multiboot.S 中赋值*&#x2F;</span><br><span class="line">fail:</span><br><span class="line">	movl	$LCPU_STATE_HALTED, LCPU_STATE_OFFSET(%rbp)</span><br><span class="line"></span><br><span class="line">fail_loop:</span><br><span class="line">	cli</span><br><span class="line">1:</span><br><span class="line">	hlt</span><br><span class="line">	jmp	1b</span><br><span class="line">END(lcpu_start64)</span><br></pre></td></tr></table></figure>
+
+<p>执行完 lcpu_start64，转向 multiboot_entry 执行。</p>
+<h4 id="multiboot-entry-1"><a href="#multiboot-entry-1" class="headerlink" title="multiboot_entry"></a>multiboot_entry</h4><p>当执行 hello-world 程序时，参数 mi 的值：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">(gdb) p&#x2F;x *mi</span><br><span class="line">$1 &#x3D; &#123;flags &#x3D; 0x24f, mem_lower &#x3D; 0x27f, mem_upper &#x3D; 0x1fb80, boot_device &#x3D; 0x8000ffff, cmdline &#x3D; 0x185000, mods_count &#x3D; 0x0, mods_addr &#x3D; 0x185000,</span><br><span class="line">  u &#x3D; &#123;aout_sym &#x3D; &#123;tabsize &#x3D; 0x0, strsize &#x3D; 0x0, addr &#x3D; 0x0, reserved &#x3D; 0x0&#125;, elf_sec &#x3D; &#123;num &#x3D; 0x0, size &#x3D; 0x0, addr &#x3D; 0x0, shndx &#x3D; 0x0&#125;&#125;,</span><br><span class="line">  mmap_length &#x3D; 0x90, mmap_addr &#x3D; 0x9000, drives_length &#x3D; 0x0, drives_addr &#x3D; 0x0, config_table &#x3D; 0x0, boot_loader_name &#x3D; 0x18501e, apm_table &#x3D; 0x0,</span><br><span class="line">  vbe_control_info &#x3D; 0x0, vbe_mode_info &#x3D; 0x0, vbe_mode &#x3D; 0x0, vbe_interface_seg &#x3D; 0x0, vbe_interface_off &#x3D; 0x0, vbe_interface_len &#x3D; 0x0,</span><br><span class="line">  framebuffer_addr &#x3D; 0x0, framebuffer_pitch &#x3D; 0x0, framebuffer_width &#x3D; 0x0, framebuffer_height &#x3D; 0x0, framebuffer_bpp &#x3D; 0x0, framebuffer_type &#x3D; 0x0, &#123;&#123;</span><br><span class="line">      framebuffer_palette_addr &#x3D; 0x0, framebuffer_palette_num_colors &#x3D; 0x0&#125;, &#123;framebuffer_red_field_position &#x3D; 0x0, framebuffer_red_mask_size &#x3D; 0x0,</span><br><span class="line">      framebuffer_green_field_position &#x3D; 0x0, framebuffer_green_mask_size &#x3D; 0x0, framebuffer_blue_field_position &#x3D; 0x0,</span><br><span class="line">      framebuffer_blue_mask_size &#x3D; 0x0&#125;&#125;&#125;</span><br><span class="line"></span><br><span class="line">(gdb) p (char*)mi-&gt;cmdline</span><br><span class="line">$2 &#x3D; 0x185000 &quot;build&#x2F;helloworld_qemu-x86_64 &quot;</span><br><span class="line"></span><br><span class="line">(gdb) p (char*)mi-&gt;boot_loader_name</span><br><span class="line">$3 &#x3D; 0x18501e &quot;qemu&quot;</span><br></pre></td></tr></table></figure>
+<p>参数 lcpu 值为：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">(gdb) p&#x2F;x *lcpu</span><br><span class="line">$4 &#x3D; &#123;state &#x3D; 0x1, idx &#x3D; 0x0, id &#x3D; 0x0, &#123;s_args &#x3D; &#123;entry &#x3D; 0x0, stackp &#x3D; 0x0&#125;, error_code &#x3D; 0x0&#125;, arch &#x3D; &#123;&lt;No data fields&gt;&#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面阅读 multiboot_entry 函数，调试信息为执行 hello-world 程序的信息。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">void multiboot_entry(struct lcpu *lcpu, struct multiboot_info *mi)</span><br><span class="line">&#123;</span><br><span class="line">	struct ukplat_bootinfo *bi;</span><br><span class="line">	struct ukplat_memregion_desc mrd &#x3D; &#123;0&#125;;</span><br><span class="line">	multiboot_memory_map_t *m;</span><br><span class="line">	multiboot_module_t *mods;</span><br><span class="line">	__sz offset, cmdline_len;</span><br><span class="line">	__paddr_t start, end;</span><br><span class="line">	__u32 i;</span><br><span class="line">	int rc;</span><br><span class="line">	&#x2F;* uk_boootinfo 节内容通过 support&#x2F;scripts&#x2F;mkbootinfo.py（91-101行）完成初始化。*&#x2F;</span><br><span class="line">	bi &#x3D; ukplat_bootinfo_get();</span><br><span class="line">	&#x2F;**</span><br><span class="line">	(gdb) p&#x2F;x *bi</span><br><span class="line">	$1 &#x3D; &#123;magic &#x3D; 0xb007b0b0, version &#x3D; 0x1, _pad0 &#x3D; &#123;0x0, 0x0, 0x0&#125;, bootloader &#x3D; &#123;0x0 &lt;repeats 16 times&gt;&#125;, bootprotocol &#x3D; &#123;</span><br><span class="line">    0x0 &lt;repeats 16 times&gt;&#125;, cmdline &#x3D; 0x0, cmdline_len &#x3D; 0x0, dtb &#x3D; 0x0, efi_st &#x3D; 0x0, mrds &#x3D; &#123;capacity &#x3D; 0x80, count &#x3D; 0x4,</span><br><span class="line">    mrds &#x3D; 0x12f2e8 &lt;bi_bootinfo_sec+80&gt;&#125;&#125;</span><br><span class="line">	(gdb) p&#x2F;x *(bi-&gt;mrds.mrds)@4</span><br><span class="line">	$2 &#x3D; &#123;&#123;pbase &#x3D; 0x100000, vbase &#x3D; 0x100000, len &#x3D; 0x27000, type &#x3D; 0x4, flags &#x3D; 0x5&#125;, &#123;pbase &#x3D; 0x127000, vbase &#x3D; 0x127000,</span><br><span class="line">    len &#x3D; 0x8000, type &#x3D; 0x4, flags &#x3D; 0x1&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x56000, type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;</span><br><span class="line">    pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x0, type &#x3D; 0x4, flags &#x3D; 0x3&#125;&#125;</span><br><span class="line">	*&#x2F;</span><br><span class="line">	if (unlikely(!bi))</span><br><span class="line">		multiboot_crash(&quot;Incompatible or corrupted bootinfo&quot;, -EINVAL);</span><br><span class="line"></span><br><span class="line">	&#x2F;* We have to call this here as the very early do_uk_reloc32 relocator</span><br><span class="line">	 * does not also relocate the UKPLAT_MEMRT_KERNEL mrd&#39;s like its C</span><br><span class="line">	 * equivalent, do_uk_reloc, does.</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	do_uk_reloc_kmrds(0, 0);</span><br><span class="line"></span><br><span class="line">	&#x2F;* Ensure that the memory map contains the legacy high mem area *&#x2F;&#x2F;* bi-&gt;mrds 中插入 HI_MEM 和 BIOS_ROM。*&#x2F;</span><br><span class="line">	rc &#x3D; ukplat_memregion_list_insert_legacy_hi_mem(&amp;bi-&gt;mrds);</span><br><span class="line">	&#x2F;*</span><br><span class="line">  	(gdb) p&#x2F;x bi-&gt;mrds</span><br><span class="line">	$3 &#x3D; &#123;capacity &#x3D; 0x80, count &#x3D; 0x6, mrds &#x3D; 0x12f2e8 &lt;bi_bootinfo_sec+80&gt;&#125;</span><br><span class="line">	(gdb) p&#x2F;x *(bi-&gt;mrds.mrds)@6</span><br><span class="line">	$4 &#x3D; &#123;&#123;pbase &#x3D; 0xa0000, vbase &#x3D; 0xa0000, len &#x3D; 0x40000, type &#x3D; 0x2, flags &#x3D; 0x23&#125;, &#123;pbase &#x3D; 0xe0000, vbase &#x3D; 0xe0000,</span><br><span class="line">      len &#x3D; 0x20000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x100000, vbase &#x3D; 0x100000, len &#x3D; 0x27000, type &#x3D; 0x4, flags &#x3D; 0x5&#125;, &#123;</span><br><span class="line">      pbase &#x3D; 0x127000, vbase &#x3D; 0x127000, len &#x3D; 0x8000, type &#x3D; 0x4, flags &#x3D; 0x1&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x56000,</span><br><span class="line">      type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x0, type &#x3D; 0x4, flags &#x3D; 0x3&#125;&#125;</span><br><span class="line">	*&#x2F;</span><br><span class="line">	if (unlikely(rc))</span><br><span class="line">		multiboot_crash(&quot;Could not insert legacy memory region&quot;, rc);</span><br><span class="line"></span><br><span class="line">	&#x2F;* Add the cmdline *&#x2F; &#x2F;* 将 mi-&gt;cmdline 相关信息存到 bi-&gt;mrds，bi-&gt;cmdline 和 bi-&gt;cmdline_len。*&#x2F;</span><br><span class="line">	if (mi-&gt;flags &amp; MULTIBOOT_INFO_CMDLINE) &#123;</span><br><span class="line">		if (mi-&gt;cmdline) &#123; &#x2F;* 当使用 hellowaorld 时，mi-&gt;cmdline 为 build&#x2F;helloworld_qemu-x86_64 *&#x2F;</span><br><span class="line">			cmdline_len &#x3D; strlen((const char *)(__uptr)mi-&gt;cmdline);</span><br><span class="line">			mrd.pbase &#x3D; mi-&gt;cmdline;</span><br><span class="line">			mrd.vbase &#x3D; mi-&gt;cmdline; &#x2F;* 1:1 mapping *&#x2F;</span><br><span class="line">			mrd.len   &#x3D; cmdline_len;</span><br><span class="line">			mrd.type  &#x3D; UKPLAT_MEMRT_CMDLINE;</span><br><span class="line">			mrd.flags &#x3D; UKPLAT_MEMRF_READ | UKPLAT_MEMRF_MAP;</span><br><span class="line"></span><br><span class="line">			mrd_insert(bi, &amp;mrd);</span><br><span class="line"></span><br><span class="line">			bi-&gt;cmdline &#x3D; mi-&gt;cmdline;</span><br><span class="line">			bi-&gt;cmdline_len &#x3D; cmdline_len;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	&#x2F;*</span><br><span class="line">	(gdb) p (char *)(bi-&gt;cmdline)</span><br><span class="line">	$8 &#x3D; 0x185000 &quot;build&#x2F;helloworld_qemu-x86_64 &quot;</span><br><span class="line">	(gdb) p&#x2F;x (bi-&gt;cmdline_len)</span><br><span class="line">	$9 &#x3D; 0x1d</span><br><span class="line">	(gdb) p&#x2F;x bi-&gt;mrds</span><br><span class="line">	$10 &#x3D; &#123;capacity &#x3D; 0x80, count &#x3D; 0x7, mrds &#x3D; 0x12f2e8 &lt;bi_bootinfo_sec+80&gt;&#125;</span><br><span class="line">	(gdb) p&#x2F;x *(bi-&gt;mrds.mrds)@7</span><br><span class="line">	$11 &#x3D; &#123;&#123;pbase &#x3D; 0xa0000, vbase &#x3D; 0xa0000, len &#x3D; 0x40000, type &#x3D; 0x2, flags &#x3D; 0x23&#125;, &#123;pbase &#x3D; 0xe0000, vbase &#x3D; 0xe0000,</span><br><span class="line">    	len &#x3D; 0x20000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x100000, vbase &#x3D; 0x100000, len &#x3D; 0x27000, type &#x3D; 0x4, flags &#x3D; 0x5&#125;, &#123;</span><br><span class="line">    	pbase &#x3D; 0x127000, vbase &#x3D; 0x127000, len &#x3D; 0x8000, type &#x3D; 0x4, flags &#x3D; 0x1&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x56000,</span><br><span class="line">    	type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x0, type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x185000,</span><br><span class="line">    	vbase &#x3D; 0x185000, len &#x3D; 0x1d, type &#x3D; 0x10, flags &#x3D; 0x21&#125;&#125;</span><br><span class="line">	*&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* Copy boot loader *&#x2F; &#x2F;*更新 bi-&gt;bootloader，bi-&gt;bootprotocol。*&#x2F;</span><br><span class="line">	if (mi-&gt;flags &amp; MULTIBOOT_INFO_BOOT_LOADER_NAME) &#123;</span><br><span class="line">		if (mi-&gt;boot_loader_name) &#123; &#x2F;* 当使用 build&#x2F;helloworld_qemu-x86_64 时，mi-&gt;boot_loader_name 为 qemu。*&#x2F;</span><br><span class="line">			strncpy(bi-&gt;bootloader,</span><br><span class="line">				(const char *)(__uptr)mi-&gt;boot_loader_name,</span><br><span class="line">				sizeof(bi-&gt;bootloader) - 1);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	&#x2F;*</span><br><span class="line">	(gdb) p (char*)(bi-&gt;bootloader)</span><br><span class="line">	$12 &#x3D; 0x12f2a0 &lt;bi_bootinfo_sec+8&gt; &quot;qemu&quot;</span><br><span class="line">	*&#x2F;</span><br><span class="line">	memcpy(bi-&gt;bootprotocol, &quot;multiboot&quot;, sizeof(&quot;multiboot&quot;));</span><br><span class="line">	&#x2F;*</span><br><span class="line">	(gdb) p (char*)(bi-&gt;bootprotocol)</span><br><span class="line">	$14 &#x3D; 0x12f2b0 &lt;bi_bootinfo_sec+24&gt; &quot;multiboot&quot;</span><br><span class="line">	*&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* Add modules from the multiboot info to the memory region list *&#x2F; &#x2F;* 将 mod 相关信息加载到 bi-&gt;mrds。*&#x2F;</span><br><span class="line">	if (mi-&gt;flags &amp; MULTIBOOT_INFO_MODS) &#123;</span><br><span class="line">		mods &#x3D; (multiboot_module_t *)(__uptr)mi-&gt;mods_addr;</span><br><span class="line">		for (i &#x3D; 0; i &lt; mi-&gt;mods_count; i++) &#123;</span><br><span class="line">			mrd.pbase &#x3D; mods[i].mod_start;</span><br><span class="line">			mrd.vbase &#x3D; mods[i].mod_start; &#x2F;* 1:1 mapping *&#x2F;</span><br><span class="line">			mrd.len   &#x3D; mods[i].mod_end - mods[i].mod_start;</span><br><span class="line">			mrd.type  &#x3D; UKPLAT_MEMRT_INITRD;</span><br><span class="line">			mrd.flags &#x3D; UKPLAT_MEMRF_READ | UKPLAT_MEMRF_MAP;</span><br><span class="line"></span><br><span class="line">#ifdef CONFIG_UKPLAT_MEMRNAME</span><br><span class="line">			strncpy(mrd.name, (char *)(__uptr)mods[i].cmdline,</span><br><span class="line">				sizeof(mrd.name) - 1);</span><br><span class="line">#endif &#x2F;* CONFIG_UKPLAT_MEMRNAME *&#x2F;</span><br><span class="line"></span><br><span class="line">			mrd_insert(bi, &amp;mrd);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">#ifdef CONFIG_UKPLAT_MEMRNAME</span><br><span class="line">	memset(mrd.name, 0, sizeof(mrd.name));</span><br><span class="line">#endif &#x2F;* CONFIG_UKPLAT_MEMRNAME *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* Add map ranges from the multiboot info to the memory region list</span><br><span class="line">	 * CAUTION: These could generally overlap with regions already in the</span><br><span class="line">	 * list. We thus split new free regions accordingly to remove allocated</span><br><span class="line">	 * ranges. For all other ranges, we assume RESERVED type and that they</span><br><span class="line">	 * do NOT overlap with other allocated ranges (e.g., modules).</span><br><span class="line">	 *&#x2F; &#x2F;*将 multiboot info 映射加入到 bi-&gt;mrds。multiboot info 信息从第二页开始。*&#x2F;</span><br><span class="line">	&#x2F;*</span><br><span class="line">	(gdb) p&#x2F;x *(multiboot_memory_map_t*)(mi-&gt;mmap_addr)@6</span><br><span class="line">	$20 &#x3D; &#123;&#123;size &#x3D; 0x14, addr &#x3D; 0x0, len &#x3D; 0x9fc00, type &#x3D; 0x1&#125;, &#123;size &#x3D; 0x14, addr &#x3D; 0x9fc00, len &#x3D; 0x400, type &#x3D; 0x2&#125;, &#123;size &#x3D; 0x14,</span><br><span class="line">    addr &#x3D; 0xf0000, len &#x3D; 0x10000, type &#x3D; 0x2&#125;, &#123;size &#x3D; 0x14, addr &#x3D; 0x100000, len &#x3D; 0x7ee0000, type &#x3D; 0x1&#125;, &#123;size &#x3D; 0x14,</span><br><span class="line">    addr &#x3D; 0x7fe0000, len &#x3D; 0x20000, type &#x3D; 0x2&#125;, &#123;size &#x3D; 0x14, addr &#x3D; 0xfffc0000, len &#x3D; 0x40000, type &#x3D; 0x2&#125;&#125;</span><br><span class="line">	*&#x2F;</span><br><span class="line">	if (mi-&gt;flags &amp; MULTIBOOT_INFO_MEM_MAP) &#123;</span><br><span class="line">		for (offset &#x3D; 0; offset &lt; mi-&gt;mmap_length;</span><br><span class="line">		     offset +&#x3D; m-&gt;size + sizeof(m-&gt;size)) &#123;</span><br><span class="line">			m &#x3D; (void *)(__uptr)(mi-&gt;mmap_addr + offset);</span><br><span class="line"></span><br><span class="line">			start &#x3D; MAX(m-&gt;addr, __PAGE_SIZE);</span><br><span class="line">			end   &#x3D; m-&gt;addr + m-&gt;len;</span><br><span class="line">			if (unlikely(end &lt;&#x3D; start || end - start &lt; PAGE_SIZE))</span><br><span class="line">				continue;</span><br><span class="line"></span><br><span class="line">			mrd.pbase &#x3D; start;</span><br><span class="line">			mrd.vbase &#x3D; start; &#x2F;* 1:1 mapping *&#x2F;</span><br><span class="line">			mrd.len   &#x3D; end - start;</span><br><span class="line"></span><br><span class="line">			if (m-&gt;type &#x3D;&#x3D; MULTIBOOT_MEMORY_AVAILABLE) &#123;</span><br><span class="line">				mrd.type  &#x3D; UKPLAT_MEMRT_FREE;</span><br><span class="line">				mrd.flags &#x3D; UKPLAT_MEMRF_READ |</span><br><span class="line">					    UKPLAT_MEMRF_WRITE;</span><br><span class="line">			&#125; else &#123;</span><br><span class="line">				mrd.type  &#x3D; UKPLAT_MEMRT_RESERVED;</span><br><span class="line">				mrd.flags &#x3D; UKPLAT_MEMRF_READ |</span><br><span class="line">					    UKPLAT_MEMRF_MAP;</span><br><span class="line"></span><br><span class="line">				&#x2F;* We assume that reserved regions cannot</span><br><span class="line">				 * overlap with loaded modules.</span><br><span class="line">				 *&#x2F;</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			mrd_insert(bi, &amp;mrd);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	&#x2F;*</span><br><span class="line">	(gdb) p&#x2F;x bi-&gt;mrds</span><br><span class="line">	$22 &#x3D; &#123;capacity &#x3D; 0x80, count &#x3D; 0xc, mrds &#x3D; 0x12f2e8 &lt;bi_bootinfo_sec+80&gt;&#125;</span><br><span class="line">	(gdb) p&#x2F;x *(bi-&gt;mrds.mrds)@12</span><br><span class="line">	$24 &#x3D; &#123;&#123;pbase &#x3D; 0x1000, vbase &#x3D; 0x1000, len &#x3D; 0x9ec00, type &#x3D; 0x1, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0xa0000, vbase &#x3D; 0xa0000, len &#x3D; 0x40000,</span><br><span class="line">    type &#x3D; 0x2, flags &#x3D; 0x23&#125;, &#123;pbase &#x3D; 0xf0000, vbase &#x3D; 0xf0000, len &#x3D; 0x10000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0xe0000,</span><br><span class="line">    vbase &#x3D; 0xe0000, len &#x3D; 0x20000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x100000, vbase &#x3D; 0x100000, len &#x3D; 0x7ee0000, type &#x3D; 0x1,</span><br><span class="line">    flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x100000, vbase &#x3D; 0x100000, len &#x3D; 0x27000, type &#x3D; 0x4, flags &#x3D; 0x5&#125;, &#123;pbase &#x3D; 0x127000,</span><br><span class="line">    vbase &#x3D; 0x127000, len &#x3D; 0x8000, type &#x3D; 0x4, flags &#x3D; 0x1&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x56000, type &#x3D; 0x4,</span><br><span class="line">    flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x0, type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x185000, vbase &#x3D; 0x185000,</span><br><span class="line">    len &#x3D; 0x1d, type &#x3D; 0x10, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x7fe0000, vbase &#x3D; 0x7fe0000, len &#x3D; 0x20000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;</span><br><span class="line">    pbase &#x3D; 0xfffc0000, vbase &#x3D; 0xfffc0000, len &#x3D; 0x40000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;&#125;</span><br><span class="line">	*&#x2F;</span><br><span class="line">	&#x2F;* 对 bi-&gt;mrds 进行整理，合并*&#x2F;</span><br><span class="line">	rc &#x3D; ukplat_memregion_list_coalesce(&amp;bi-&gt;mrds);</span><br><span class="line">	&#x2F;*</span><br><span class="line">	(gdb) p&#x2F;x bi-&gt;mrds</span><br><span class="line">	$25 &#x3D; &#123;capacity &#x3D; 0x80, count &#x3D; 0xb, mrds &#x3D; 0x12f2e8 &lt;bi_bootinfo_sec+80&gt;&#125;</span><br><span class="line">	(gdb) p&#x2F;x *(bi-&gt;mrds.mrds)@11</span><br><span class="line">	$26 &#x3D; &#123;&#123;pbase &#x3D; 0x1000, vbase &#x3D; 0x1000, len &#x3D; 0x9ec00, type &#x3D; 0x1, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0xa0000, vbase &#x3D; 0xa0000, len &#x3D; 0x40000,</span><br><span class="line">    type &#x3D; 0x2, flags &#x3D; 0x23&#125;, &#123;pbase &#x3D; 0xe0000, vbase &#x3D; 0xe0000, len &#x3D; 0x20000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x100000,</span><br><span class="line">    vbase &#x3D; 0x100000, len &#x3D; 0x27000, type &#x3D; 0x4, flags &#x3D; 0x5&#125;, &#123;pbase &#x3D; 0x127000, vbase &#x3D; 0x127000, len &#x3D; 0x8000, type &#x3D; 0x4,</span><br><span class="line">    flags &#x3D; 0x1&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x56000, type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x12f000,</span><br><span class="line">    vbase &#x3D; 0x12f000, len &#x3D; 0x0, type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x185000, vbase &#x3D; 0x185000, len &#x3D; 0x1d, type &#x3D; 0x10,</span><br><span class="line">    flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x18501d, vbase &#x3D; 0x18501d, len &#x3D; 0x7e5afe3, type &#x3D; 0x1, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x7fe0000,</span><br><span class="line">    vbase &#x3D; 0x7fe0000, len &#x3D; 0x20000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0xfffc0000, vbase &#x3D; 0xfffc0000, len &#x3D; 0x40000,</span><br><span class="line">    type &#x3D; 0x2, flags &#x3D; 0x21&#125;&#125;</span><br><span class="line">	*&#x2F;</span><br><span class="line">	if (unlikely(rc))</span><br><span class="line">		multiboot_crash(&quot;Could not coalesce memory regions&quot;, rc);</span><br><span class="line"></span><br><span class="line">	rc &#x3D; ukplat_memregion_alloc_sipi_vect();</span><br><span class="line">	if (unlikely(rc))</span><br><span class="line">		multiboot_crash(&quot;Could not insert SIPI vector region&quot;, rc);</span><br><span class="line"></span><br><span class="line">	_ukplat_entry(lcpu, bi);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>综上所述，multiboot_entry 完成了 bi 初始化，并转到 _ukplat_entry 执行。</p>
+<h4 id="ukplat-entry"><a href="#ukplat-entry" class="headerlink" title="_ukplat_entry"></a>_ukplat_entry</h4><p>下面阅读 _ukplat_entry 函数，调试信息为执行 hello-world 程序的信息。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">void _ukplat_entry(struct lcpu *lcpu, struct ukplat_bootinfo *bi)</span><br><span class="line">&#123;</span><br><span class="line">	int rc;</span><br><span class="line">	void *bstack;</span><br><span class="line"></span><br><span class="line">	_libkvmplat_init_console();</span><br><span class="line"></span><br><span class="line">	&#x2F;* Initialize trap vector table *&#x2F;</span><br><span class="line">	traps_table_init();</span><br><span class="line"></span><br><span class="line">	&#x2F;* Initialize LCPU of bootstrap processor *&#x2F;</span><br><span class="line">	rc &#x3D; lcpu_init(lcpu);</span><br><span class="line">	&#x2F;*</span><br><span class="line">	(gdb) p&#x2F;x *lcpu</span><br><span class="line">	$1 &#x3D; &#123;state &#x3D; 0x3, idx &#x3D; 0x0, id &#x3D; 0x0, &#123;s_args &#x3D; &#123;entry &#x3D; 0x0, stackp &#x3D; 0x0&#125;, error_code &#x3D; 0x0&#125;, arch &#x3D; &#123;&lt;No data fields&gt;&#125;&#125;</span><br><span class="line">	*&#x2F;</span><br><span class="line">	if (unlikely(rc))</span><br><span class="line">		UK_CRASH(&quot;Bootstrap processor init failed: %d\n&quot;, rc);</span><br><span class="line"></span><br><span class="line">	&#x2F;* Initialize IRQ controller *&#x2F;</span><br><span class="line">	intctrl_init();</span><br><span class="line"></span><br><span class="line">	&#x2F;* Initialize command line *&#x2F;&#x2F;* 将 bi-&gt;cmdline 加入到 bi-&gt;mrds*&#x2F;</span><br><span class="line">	rc &#x3D; cmdline_init(bi);</span><br><span class="line">	&#x2F;*</span><br><span class="line">	(gdb) p&#x2F;x bi-&gt;mrds</span><br><span class="line">	$2 &#x3D; &#123;capacity &#x3D; 0x80, count &#x3D; 0xc, mrds &#x3D; 0x12f2e8 &lt;bi_bootinfo_sec+80&gt;&#125;</span><br><span class="line">	(gdb) p&#x2F;x *(bi-&gt;mrds.mrds)@12</span><br><span class="line">	$3 &#x3D; &#123;&#123;pbase &#x3D; 0x1000, vbase &#x3D; 0x1000, len &#x3D; 0x1000, type &#x3D; 0x4, flags &#x3D; 0x23&#125;, &#123;pbase &#x3D; 0x2000, vbase &#x3D; 0x2000, len &#x3D; 0x9dc00,</span><br><span class="line">    type &#x3D; 0x1, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0xa0000, vbase &#x3D; 0xa0000, len &#x3D; 0x40000, type &#x3D; 0x2, flags &#x3D; 0x23&#125;, &#123;pbase &#x3D; 0xe0000,</span><br><span class="line">    vbase &#x3D; 0xe0000, len &#x3D; 0x20000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x100000, vbase &#x3D; 0x100000, len &#x3D; 0x27000, type &#x3D; 0x4,</span><br><span class="line">    flags &#x3D; 0x5&#125;, &#123;pbase &#x3D; 0x127000, vbase &#x3D; 0x127000, len &#x3D; 0x8000, type &#x3D; 0x4, flags &#x3D; 0x1&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000,</span><br><span class="line">    len &#x3D; 0x56000, type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x0, type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;</span><br><span class="line">    pbase &#x3D; 0x185000, vbase &#x3D; 0x185000, len &#x3D; 0x1d, type &#x3D; 0x10, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x18501d, vbase &#x3D; 0x18501d,</span><br><span class="line">    len &#x3D; 0x7e5afe3, type &#x3D; 0x1, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x7fe0000, vbase &#x3D; 0x7fe0000, len &#x3D; 0x20000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;</span><br><span class="line">    pbase &#x3D; 0xfffc0000, vbase &#x3D; 0xfffc0000, len &#x3D; 0x40000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;&#125;</span><br><span class="line">	*&#x2F;</span><br><span class="line">	if (unlikely(rc))</span><br><span class="line">		UK_CRASH(&quot;Cmdline init failed: %d\n&quot;, rc);</span><br><span class="line"></span><br><span class="line">	&#x2F;* Allocate boot stack *&#x2F;</span><br><span class="line">	bstack &#x3D; ukplat_memregion_alloc(__STACK_SIZE, UKPLAT_MEMRT_STACK,</span><br><span class="line">					UKPLAT_MEMRF_READ |</span><br><span class="line">					UKPLAT_MEMRF_WRITE |</span><br><span class="line">					UKPLAT_MEMRF_MAP);</span><br><span class="line">	&#x2F;*</span><br><span class="line">	(gdb) p&#x2F;x bi-&gt;mrds</span><br><span class="line">	$4 &#x3D; &#123;capacity &#x3D; 0x80, count &#x3D; 0xd, mrds &#x3D; 0x12f2e8 &lt;bi_bootinfo_sec+80&gt;&#125;</span><br><span class="line">	(gdb) p&#x2F;x *(bi-&gt;mrds.mrds)@13</span><br><span class="line">	$5 &#x3D; &#123;&#123;pbase &#x3D; 0x1000, vbase &#x3D; 0x1000, len &#x3D; 0x1000, type &#x3D; 0x4, flags &#x3D; 0x23&#125;, &#123;pbase &#x3D; 0x2000, vbase &#x3D; 0x2000, len &#x3D; 0x10000,</span><br><span class="line">    type &#x3D; 0x40, flags &#x3D; 0x23&#125;, &#123;pbase &#x3D; 0x12000, vbase &#x3D; 0x12000, len &#x3D; 0x8dc00, type &#x3D; 0x1, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0xa0000,</span><br><span class="line">    vbase &#x3D; 0xa0000, len &#x3D; 0x40000, type &#x3D; 0x2, flags &#x3D; 0x23&#125;, &#123;pbase &#x3D; 0xe0000, vbase &#x3D; 0xe0000, len &#x3D; 0x20000, type &#x3D; 0x2,</span><br><span class="line">    flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x100000, vbase &#x3D; 0x100000, len &#x3D; 0x27000, type &#x3D; 0x4, flags &#x3D; 0x5&#125;, &#123;pbase &#x3D; 0x127000,</span><br><span class="line">    vbase &#x3D; 0x127000, len &#x3D; 0x8000, type &#x3D; 0x4, flags &#x3D; 0x1&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x56000, type &#x3D; 0x4,</span><br><span class="line">    flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x12f000, vbase &#x3D; 0x12f000, len &#x3D; 0x0, type &#x3D; 0x4, flags &#x3D; 0x3&#125;, &#123;pbase &#x3D; 0x185000, vbase &#x3D; 0x185000,</span><br><span class="line">    len &#x3D; 0x1d, type &#x3D; 0x10, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0x18501d, vbase &#x3D; 0x18501d, len &#x3D; 0x7e5afe3, type &#x3D; 0x1, flags &#x3D; 0x3&#125;, &#123;</span><br><span class="line">    pbase &#x3D; 0x7fe0000, vbase &#x3D; 0x7fe0000, len &#x3D; 0x20000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;, &#123;pbase &#x3D; 0xfffc0000, vbase &#x3D; 0xfffc0000,</span><br><span class="line">    len &#x3D; 0x40000, type &#x3D; 0x2, flags &#x3D; 0x21&#125;&#125;</span><br><span class="line">	*&#x2F;</span><br><span class="line">	if (unlikely(!bstack))</span><br><span class="line">		UK_CRASH(&quot;Boot stack alloc failed\n&quot;);</span><br><span class="line"></span><br><span class="line">	bstack &#x3D; (void *)((__uptr)bstack + __STACK_SIZE);</span><br><span class="line"></span><br><span class="line">	&#x2F;* Initialize memory *&#x2F; &#x2F;* 保证 bi-&gt;mrds 中的数据全部都在 bpt_unmap_mrd 的映射范围内。*&#x2F;</span><br><span class="line">	rc &#x3D; ukplat_mem_init();</span><br><span class="line">	if (unlikely(rc))</span><br><span class="line">		UK_CRASH(&quot;Mem init failed: %d\n&quot;, rc);</span><br><span class="line"></span><br><span class="line">	&#x2F;* Print boot information *&#x2F;</span><br><span class="line">	ukplat_bootinfo_print();</span><br><span class="line"></span><br><span class="line">#if defined(CONFIG_HAVE_SMP) &amp;&amp; defined(CONFIG_UKPLAT_ACPI)</span><br><span class="line">	rc &#x3D; acpi_init();</span><br><span class="line">	if (likely(rc &#x3D;&#x3D; 0)) &#123;</span><br><span class="line">		rc &#x3D; lcpu_mp_init(CONFIG_UKPLAT_LCPU_RUN_IRQ,</span><br><span class="line">				  CONFIG_UKPLAT_LCPU_WAKEUP_IRQ,</span><br><span class="line">				  NULL);</span><br><span class="line">		if (unlikely(rc))</span><br><span class="line">			uk_pr_err(&quot;SMP init failed: %d\n&quot;, rc);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">		uk_pr_err(&quot;ACPI init failed: %d\n&quot;, rc);</span><br><span class="line">	&#125;</span><br><span class="line">#endif &#x2F;* CONFIG_HAVE_SMP &amp;&amp; CONFIG_UKPLAT_ACPI *&#x2F;</span><br><span class="line"></span><br><span class="line">#ifdef CONFIG_HAVE_SYSCALL</span><br><span class="line">	_init_syscall();</span><br><span class="line">#endif &#x2F;* CONFIG_HAVE_SYSCALL *&#x2F;</span><br><span class="line"></span><br><span class="line">#if CONFIG_HAVE_X86PKU</span><br><span class="line">	_check_ospke();</span><br><span class="line">#endif &#x2F;* CONFIG_HAVE_X86PKU *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* Switch away from the bootstrap stack *&#x2F;</span><br><span class="line">	uk_pr_info(&quot;Switch from bootstrap stack to stack @%p\n&quot;, bstack);</span><br><span class="line">	&#x2F;*更换栈为 bstack，并执行 _ukplat_entry2。*&#x2F;</span><br><span class="line">	lcpu_arch_jump_to(bstack, _ukplat_entry2);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">static void __noreturn _ukplat_entry2(void)</span><br><span class="line">&#123;</span><br><span class="line">	&#x2F;* It&#39;s not possible to unwind past this function, because the stack</span><br><span class="line">	 * pointer was overwritten in lcpu_arch_jump_to. Therefore, mark the</span><br><span class="line">	 * previous instruction pointer as undefined, so that debuggers or</span><br><span class="line">	 * profilers stop unwinding here.</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	ukarch_cfi_unwind_end();</span><br><span class="line"></span><br><span class="line">	ukplat_entry_argp(NULL, cmdline, cmdline_len);</span><br><span class="line"></span><br><span class="line">	ukplat_lcpu_halt();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>_ukplat_entry2 转到 ukplat_entry_argp 运行。</p>
+<h4 id="ukplat-entry-argp-和-ukplat-entry"><a href="#ukplat-entry-argp-和-ukplat-entry" class="headerlink" title="ukplat_entry_argp 和 ukplat_entry"></a>ukplat_entry_argp 和 ukplat_entry</h4><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&#x2F;* defined in &lt;uk&#x2F;plat.h&gt; *&#x2F;</span><br><span class="line">void ukplat_entry_argp(char *arg0, char *argb, __sz argb_len)</span><br><span class="line">&#123;</span><br><span class="line">	static char *argv[CONFIG_LIBUKBOOT_MAXNBARGS];</span><br><span class="line">	int argc &#x3D; 0;</span><br><span class="line"></span><br><span class="line">	if (arg0) &#123;</span><br><span class="line">		argv[0] &#x3D; arg0;</span><br><span class="line">		argc +&#x3D; 1;</span><br><span class="line">	&#125;</span><br><span class="line">	if (argb &amp;&amp; argb_len) &#123;</span><br><span class="line">		argc +&#x3D; uk_argnparse(argb, argb_len, arg0 ? &amp;argv[1] : &amp;argv[0],</span><br><span class="line">				     arg0 ? (CONFIG_LIBUKBOOT_MAXNBARGS - 1)</span><br><span class="line">					  : CONFIG_LIBUKBOOT_MAXNBARGS);</span><br><span class="line">	&#125;</span><br><span class="line">	ukplat_entry(argc, argv);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>转到 ukplat_entry 运行。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">void ukplat_entry(int argc, char *argv[])</span><br><span class="line">&#123;</span><br><span class="line">#if CONFIG_LIBPOSIX_ENVIRON</span><br><span class="line">	char **envp;</span><br><span class="line">#endif &#x2F;* CONFIG_LIBPOSIX_ENVIRON *&#x2F;</span><br><span class="line">	int rc &#x3D; 0;</span><br><span class="line">#if CONFIG_LIBUKALLOC</span><br><span class="line">	struct uk_alloc *a &#x3D; NULL;</span><br><span class="line">#endif</span><br><span class="line">#if !CONFIG_LIBUKBOOT_NOALLOC</span><br><span class="line">	void *tls &#x3D; NULL;</span><br><span class="line">#endif</span><br><span class="line">#if CONFIG_LIBUKSCHED</span><br><span class="line">	struct uk_sched *s &#x3D; NULL;</span><br><span class="line">#endif</span><br><span class="line">	uk_ctor_func_t *ctorfn;</span><br><span class="line">	uk_init_func_t *initfn;</span><br><span class="line">	int i;</span><br><span class="line"></span><br><span class="line">	uk_pr_info(&quot;Unikraft constructor table at %p - %p\n&quot;,</span><br><span class="line">		   &amp;uk_ctortab_start[0], &amp;uk_ctortab_end);</span><br><span class="line">	&#x2F;*</span><br><span class="line">	* UK_CTOR_PRIO(_init_ectx_store, 0);</span><br><span class="line">	* static struct pci_bus_handler ph &#x3D; &#123;</span><br><span class="line">	*	.b.init &#x3D; pci_init,</span><br><span class="line">	*	.b.probe &#x3D; pci_probe,</span><br><span class="line">	*	.drv_list &#x3D; UK_LIST_HEAD_INIT(ph.drv_list),</span><br><span class="line">	*	.dev_list &#x3D; UK_LIST_HEAD_INIT(ph.dev_list),</span><br><span class="line">	* &#125;;</span><br><span class="line">	* UK_BUS_REGISTER(&amp;ph.b);</span><br><span class="line">	* UK_BUS_REGISTER(&amp;virtio_bus);</span><br><span class="line">	*&#x2F;&#x2F;* 将 pci 和 virtio 添加到总线。*&#x2F;</span><br><span class="line">	uk_ctortab_foreach(ctorfn, uk_ctortab_start, uk_ctortab_end) &#123;</span><br><span class="line">		UK_ASSERT(*ctorfn);</span><br><span class="line">		uk_pr_debug(&quot;Call constructor: %p())...\n&quot;, *ctorfn);</span><br><span class="line">		(*ctorfn)();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	......</span><br><span class="line"></span><br><span class="line">#if !CONFIG_LIBUKBOOT_NOALLOC</span><br><span class="line">	uk_pr_info(&quot;Initialize memory allocator...\n&quot;);</span><br><span class="line">	&#x2F;* 初始化内存分配器。并将 bi-&gt;mrds 中的内存区域加入到内存分配中管理。*&#x2F;</span><br><span class="line">	a &#x3D; heap_init();</span><br><span class="line">	if (unlikely(!a))</span><br><span class="line">		UK_CRASH(&quot;Failed to initialize memory allocator\n&quot;);</span><br><span class="line">	else &#123;</span><br><span class="line">		&#x2F;* 将 a 设置为默认内存分配器。*&#x2F;</span><br><span class="line">		rc &#x3D; ukplat_memallocator_set(a);</span><br><span class="line">		if (unlikely(rc !&#x3D; 0))</span><br><span class="line">			UK_CRASH(&quot;Could not set the platform memory allocator\n&quot;);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	&#x2F;* Allocate a TLS for this execution context *&#x2F;</span><br><span class="line">	tls &#x3D; uk_memalign(a,</span><br><span class="line">			  ukarch_tls_area_align(),</span><br><span class="line">			  ukarch_tls_area_size());</span><br><span class="line">	if (!tls)</span><br><span class="line">		UK_CRASH(&quot;Failed to allocate and initialize TLS\n&quot;);</span><br><span class="line"></span><br><span class="line">	&#x2F;* Copy from TLS master template *&#x2F;</span><br><span class="line">	ukarch_tls_area_init(tls);</span><br><span class="line">	&#x2F;* Activate TLS *&#x2F;</span><br><span class="line">	ukplat_tlsp_set(ukarch_tls_tlsp(tls));</span><br><span class="line">#endif &#x2F;* !CONFIG_LIBUKBOOT_NOALLOC *&#x2F;</span><br><span class="line"></span><br><span class="line">#if CONFIG_LIBUKALLOC</span><br><span class="line">	uk_pr_info(&quot;Initialize IRQ subsystem...\n&quot;);</span><br><span class="line">	&#x2F;* 关闭 IRQ。*&#x2F;</span><br><span class="line">	rc &#x3D; ukplat_irq_init(a);</span><br><span class="line">	if (unlikely(rc !&#x3D; 0))</span><br><span class="line">		UK_CRASH(&quot;Could not initialize the platform IRQ subsystem\n&quot;);</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">	&#x2F;* On most platforms the timer depend on an initialized IRQ subsystem *&#x2F;</span><br><span class="line">	uk_pr_info(&quot;Initialize platform time...\n&quot;);</span><br><span class="line">	ukplat_time_init();</span><br><span class="line"></span><br><span class="line">#if !CONFIG_LIBUKBOOT_NOSCHED</span><br><span class="line">	uk_pr_info(&quot;Initialize scheduling...\n&quot;);</span><br><span class="line">#if CONFIG_LIBUKBOOT_INITSCHEDCOOP</span><br><span class="line">	s &#x3D; uk_schedcoop_create(a);&#x2F;*创建 idle 线程。*&#x2F;</span><br><span class="line">#endif</span><br><span class="line">	if (unlikely(!s))</span><br><span class="line">		UK_CRASH(&quot;Failed to initialize scheduling\n&quot;);</span><br><span class="line">	uk_sched_start(s); &#x2F;* 创建 init 线程。*&#x2F;</span><br><span class="line">#endif &#x2F;* !CONFIG_LIBUKBOOT_NOSCHED *&#x2F;</span><br><span class="line"></span><br><span class="line">	&#x2F;* Enable interrupts before starting the application *&#x2F;</span><br><span class="line">	ukplat_lcpu_enable_irq();</span><br><span class="line"></span><br><span class="line">	&#x2F;**</span><br><span class="line">	 * Run init table</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	&#x2F;** init.h 中定义了相关宏。</span><br><span class="line">	 * uk_initcall_class_prio(uk_bus_lib_init, UK_BUS_INIT_CLASS, UK_BUS_INIT_PRIO);</span><br><span class="line">	*&#x2F;</span><br><span class="line">	uk_pr_info(&quot;Init Table @ %p - %p\n&quot;,</span><br><span class="line">		   &amp;uk_inittab_start[0], &amp;uk_inittab_end);</span><br><span class="line">	uk_inittab_foreach(initfn, uk_inittab_start, uk_inittab_end) &#123;</span><br><span class="line">		UK_ASSERT(*initfn);</span><br><span class="line">		uk_pr_debug(&quot;Call init function: %p()...\n&quot;, *initfn);</span><br><span class="line">		rc &#x3D; (*initfn)();</span><br><span class="line">		if (rc &lt; 0) &#123;</span><br><span class="line">			uk_pr_err(&quot;Init function at %p returned error %d\n&quot;,</span><br><span class="line">				  *initfn, rc);</span><br><span class="line">			rc &#x3D; UKPLAT_CRASH;</span><br><span class="line">			goto exit;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">#ifdef CONFIG_LIBUKSP</span><br><span class="line">	uk_stack_chk_guard_setup();</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">	print_banner(stdout);</span><br><span class="line">	fflush(stdout);</span><br><span class="line"></span><br><span class="line">	&#x2F;*</span><br><span class="line">	 * Application</span><br><span class="line">	 *</span><br><span class="line">	 * We are calling the application constructors right before calling</span><br><span class="line">	 * the application&#39;s main(). All of our Unikraft systems, VFS,</span><br><span class="line">	 * networking stack is initialized at this point. This way we closely</span><br><span class="line">	 * mimic what a regular user application (e.g., BSD, Linux) would expect</span><br><span class="line">	 * from its OS being initialized.</span><br><span class="line">	 *&#x2F;</span><br><span class="line">	uk_pr_info(&quot;Pre-init table at %p - %p\n&quot;,</span><br><span class="line">		   &amp;__preinit_array_start[0], &amp;__preinit_array_end);</span><br><span class="line">	uk_ctortab_foreach(ctorfn,</span><br><span class="line">			   __preinit_array_start, __preinit_array_end) &#123;</span><br><span class="line">		if (!*ctorfn)</span><br><span class="line">			continue;</span><br><span class="line"></span><br><span class="line">		uk_pr_debug(&quot;Call pre-init constructor: %p()...\n&quot;, *ctorfn);</span><br><span class="line">		(*ctorfn)();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	uk_pr_info(&quot;Constructor table at %p - %p\n&quot;,</span><br><span class="line">		   &amp;__init_array_start[0], &amp;__init_array_end);</span><br><span class="line">	uk_ctortab_foreach(ctorfn, __init_array_start, __init_array_end) &#123;</span><br><span class="line">		if (!*ctorfn)</span><br><span class="line">			continue;</span><br><span class="line"></span><br><span class="line">		uk_pr_debug(&quot;Call constructor: %p()...\n&quot;, *ctorfn);</span><br><span class="line">		(*ctorfn)();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">#if CONFIG_LIBPOSIX_ENVIRON</span><br><span class="line">	envp &#x3D; environ;</span><br><span class="line">	if (envp) &#123;</span><br><span class="line">		uk_pr_info(&quot;Environment variables:\n&quot;);</span><br><span class="line">		while (*envp) &#123;</span><br><span class="line">			uk_pr_info(&quot;\t%s\n&quot;, *envp);</span><br><span class="line">			envp++;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">#endif &#x2F;* CONFIG_LIBPOSIX_ENVIRON *&#x2F;</span><br><span class="line"></span><br><span class="line">	uk_pr_info(&quot;Calling main(%d, [&quot;, argc);</span><br><span class="line">	for (i &#x3D; 0; i &lt; argc; ++i) &#123;</span><br><span class="line">		uk_pr_info(&quot;&#39;%s&#39;&quot;, argv[i]);</span><br><span class="line">		if ((i + 1) &lt; argc)</span><br><span class="line">			uk_pr_info(&quot;, &quot;);</span><br><span class="line">	&#125;</span><br><span class="line">	uk_pr_info(&quot;])\n&quot;);</span><br><span class="line">	&#x2F;* 执行自定义 main 函数。*&#x2F;</span><br><span class="line">	rc &#x3D; main(argc, argv);</span><br><span class="line">	uk_pr_info(&quot;main returned %d, halting system\n&quot;, rc);</span><br><span class="line">	rc &#x3D; (rc !&#x3D; 0) ? UKPLAT_CRASH : UKPLAT_HALT;</span><br><span class="line"></span><br><span class="line">exit:</span><br><span class="line">	ukplat_terminate(rc); &#x2F;* does not return *&#x2F;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+]]></content>
+  </entry>
+  <entry>
+    <title>virtio介绍</title>
+    <url>/p/9e9d1546.html</url>
+    <content><![CDATA[<p>本部分内容摘自《Viitual I/O Device(VIRTIO) Version 1.2》</p>
+<span id="more"></span>
+
+<p>本系列文档描述了“virtio”系列设备的规格。这些设备存在于虚拟环境中，但从设计上来说，对于虚拟机中的客户机来说，它们看起来就像物理设备，本文档也将它们视为物理设备。 这种相似性允许客户机使用标准驱动程序和发现机制。</p>
+<p>virtio 和此规范的目的是虚拟环境和客户机应该为虚拟设备提供<font color="#FF0000">直接（Straightforward）、高效（Efficient）、标准（Standard）和可扩展（Extensible）</font>的机制，而不是针对每个环境或每个操作系统的精品机制。</p>
+<ul>
+<li>直接：Virtio 设备使用正常的中断和 DMA 总线机制，任何设备驱动程序作者都应该熟悉这些机制。没有奇特的翻页或 COW 机制：它只是一个普通的设备。</li>
+<li>高效：Virtio 设备由用于输入和输出的描述符环组成，这些描述符的布局整齐，以避免驱动程序和设备写入相同缓存行时产生缓存影响。</li>
+<li>标准：除了支持设备所连接的总线之外，Virtio 对其运行环境不做任何假设。在本规范中，virtio 设备是通过 MMIO、通道 I/O 和 PCI 总线传输实现的。</li>
+<li>可扩展：Virtio 设备包含在设备设置期间由客户机操作系统确认的功能位。 这允许向前和向后兼容：设备提供它所知道的所有功能，并且驱动程序承认它理解并希望使用的功能。</li>
+</ul>
+<h2 id="术语"><a href="#术语" class="headerlink" title="术语"></a>术语</h2><p><font color="#FF0000">MUST, REQUIRED, SHALL</font> mean that the definition is an absolute requirement of the specification.</p>
+<p><font color="#FF0000">MUST NOT, SHALL NOT</font> mean that the definition is an absolute prohibition of the specification.</p>
+<p><font color="#FF0000">SHOULD, RECOMMENDED</font> mean that there may exist valid reasons in particular circumstances to ignore a particular item, but the full implications must be understood and carefully weighed before choosing a different course.</p>
+<p><font color="#FF0000">SHOULD NOT, NOT RECOMMENDED</font> mean that there may exist valid reasons in particular circumstances when the particular behavior is acceptable or even useful, but the full implications should be understood and the case carefully weighed before implementing any behavior described with this label.</p>
+<p><font color="#FF0000">MAY, OPTIONAL</font> mean that an item is truly optional.  One vendor may choose to include the item because a particular marketplace requires it or because the vendor feels that it enhances the product while another vendor may omit the same item. An implementation which does not include a particular option MUST be prepared to interoperate with another implementation which does include the option, though perhaps with reduced functionality. In the same vein an implementation which does include a particular option MUST be prepared to interoperate with another implementation which does not include the option (except, of course, for the feature the option provides.)</p>
+<h3 id="旧版接口术语"><a href="#旧版接口术语" class="headerlink" title="旧版接口术语"></a>旧版接口术语</h3><p>本规范 1.0 版之前的规范草案定义了驱动程序和设备之间类似但不同的接口。由于这些已广泛部署，因此本规范包含 OPTIONAL 功能，以简化从这些早期草案接口的过渡。<br>具体来说，设备和驱动程序 MAY 支持：</p>
+<ul>
+<li>旧版接口（Legacy Interface）：是本规范早期草案（1.0 之前）指定的接口；</li>
+<li>旧版设备（Legacy Device）：是在该规范发布之前实现的设备，并在主机端实现遗留接口；</li>
+<li>旧版驱动（Legacy Driver）：是在该规范发布之前实现的驱动程序，并在客户机端实现遗留接口；</li>
+</ul>
+<p>旧版设备和旧版驱动程序不符合此规范。为了简化从这些早期草案接口的转换，设备 MAY 实现：</p>
+<ul>
+<li>过渡设备（Transitional Device）：支持符合此规范的驱动程序并允许旧驱动程序的设备。</li>
+</ul>
+<p>同样，驱动程序 MAY 实现：</p>
+<ul>
+<li>过渡驱动（Transitional Driver）：支持符合此规范的设备和传统设备的驱动程序。</li>
+</ul>
+<p>注意：旧接口不是必要的；即，除非需要向后兼容，否则不要实现它们！<br>不具有传统兼容性的设备或驱动程序分别称为非过渡设备和驱动程序。</p>
+<h2 id="结构规范"><a href="#结构规范" class="headerlink" title="结构规范"></a>结构规范</h2>]]></content>
+      <tags>
+        <tag>virtio</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>virtio知识总结</title>
+    <url>/p/3476b7a1.html</url>
+    <content><![CDATA[<p>本部分内容摘自《Viitual I/O Device(VIRTIO) Version 1.2》</p>
+<span id="more"></span>
+
+<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><a href="#">Post not found: virtio介绍 virtio介绍</a>]]></content>
+      <tags>
+        <tag>virtio</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SGX简介</title>
+    <url>/p/640bec68.html</url>
+    <content><![CDATA[<h2 id="1、什么是-SGX？"><a href="#1、什么是-SGX？" class="headerlink" title="1、什么是 SGX？"></a>1、什么是 SGX？</h2><h2 id="2、为什么要使用-SGX？"><a href="#2、为什么要使用-SGX？" class="headerlink" title="2、为什么要使用 SGX？"></a>2、为什么要使用 SGX？</h2><h2 id="3、SGX-基本原理"><a href="#3、SGX-基本原理" class="headerlink" title="3、SGX 基本原理"></a>3、SGX 基本原理</h2><h2 id="4、"><a href="#4、" class="headerlink" title="4、"></a>4、</h2>]]></content>
+      <tags>
+        <tag>SGX</tag>
+      </tags>
   </entry>
 </search>

@@ -28,7 +28,7 @@
 <meta property="og:description" content="本文内容源自《Intel Software Developer’s Manual: Volumn 3》2023 年 3 月版本。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-07-04T06:55:02.000Z">
-<meta property="article:modified_time" content="2023-07-04T14:39:02.360Z">
+<meta property="article:modified_time" content="2023-07-14T13:26:20.263Z">
 <meta property="article:author" content="Little_Q">
 <meta property="article:tag" content="SGX">
 <meta name="twitter:card" content="summary">
@@ -211,10 +211,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2023-07-04 14:55:02 / 修改时间：22:39:02" itemprop="dateCreated datePublished" datetime="2023-07-04T14:55:02+08:00">2023-07-04</time>
+              <time title="创建时间：2023-07-04 14:55:02" itemprop="dateCreated datePublished" datetime="2023-07-04T14:55:02+08:00">2023-07-04</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-07-14 21:26:20" itemprop="dateModified" datetime="2023-07-14T21:26:20+08:00">2023-07-14</time>
+              </span>
 
           
 
@@ -321,7 +327,7 @@ FI;
 <li>检查 DS:RCX.BASEADDR 和 DS:RCX.SIZE 是否合法，不合法则 #GP(0)；<font color="#FF0000">注解：SIZE 至少两页面，且大小必须为 2 的幂，单位为字节；</font></li>
 <li>检查 DS:RCX.ATTRIBUTES 中不包含 CR_SGX_ATTRIBUTES_MASK 不支持的属性；</li>
 <li>检查 CONFIGID 和 CONFIGSVN 是否为 0 或 DS:TMP_SECS.ATTRIBUTES.KSS 不为 0，是则 #GP(0)；</li>
-<li>将 DS:RCX 设置为 Uninitialized，初始化 DS:RCX，计算 DS:RCX.MRENCLAVE；伪代码如下：
+<li><font color="#FF0000">将 DS:RCX 设置为 Uninitialized，初始化 DS:RCX，计算 DS:RCX.MRENCLAVE；伪代码如下：</font>
 
 
 <pre><code>Clear DS:TMP_SECS to Uninitialized;
@@ -351,7 +357,7 @@ DS:TMP_SECS.VIRTCHILDCNT := 0;
 &lt;&lt; store translation of DS:RCX produced by paging in SECS(DS:RCX).ENCLAVECONTEXT &gt;&gt;
 </code></pre>
 </li>
-<li>更新 EPCM(DS:RCX)，注意 RWX 字段都为 0，说明 SECS 页面不能被应用直接读/写/执行；伪代码如下：
+<li><font color="#FF0000">更新 EPCM(DS:RCX)，注意 RWX 字段都为 0，说明 SECS 页面不能被应用直接读/写/执行；伪代码如下：</font>
     
 
 <pre><code>EPCM(DS:TMP_SECS).PT := PT_SECS;
@@ -371,6 +377,8 @@ EPCM(DS:RCX).VALID := 1;
 
 <h2 id="EADD"><a href="#EADD" class="headerlink" title="EADD"></a>EADD</h2><h3 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h3><p>指令：ENCLS[ECREATE]</p>
 <p>参数：EAX = 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）</p>
+<p>当 SECS 被成功创建，enclave 页面通过 EADD 加入到 enclave。这包括将空闲的 EPC 页面转为 PT_REG 或 PT_TCS 类型。当调用 EADD 后，处理器会更新 EPCM 条目中的页面类型，enclave 访问页面的线性地址，页面的访问权限。它会将页面链接到输入的 SECS。EPCM 条目信息会被硬件利用去管理页面的访问控制。EADD 会记录 EPCM 的信息到 SECS 中存储的加密日志，并从 non-enclave 内存页面拷贝 4KB 数据到分配的 EPC 页面。</p>
+<p>该函数从 non-enclave 内存页面拷贝数据到 EPC 页面，将 EPC 页面链接到 SECS 页面，最后存储线性地址和安全属性到 EPCM。enclave 偏移和安全属性会被计算测度并扩展到 SECS.MRENCLAVE。该指令只能在特权级为 0 时执行。</p>
 <h3 id="权限-1"><a href="#权限-1" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-1"><a href="#并发限制-1" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-1"><a href="#算法描述-1" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EEXTEND"><a href="#EEXTEND" class="headerlink" title="EEXTEND"></a>EEXTEND</h2><h3 id="简介-2"><a href="#简介-2" class="headerlink" title="简介"></a>简介</h3><h3 id="权限-2"><a href="#权限-2" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-2"><a href="#并发限制-2" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-2"><a href="#算法描述-2" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EINIT"><a href="#EINIT" class="headerlink" title="EINIT"></a>EINIT</h2><h3 id="简介-3"><a href="#简介-3" class="headerlink" title="简介"></a>简介</h3><h3 id="权限-3"><a href="#权限-3" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-3"><a href="#并发限制-3" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-3"><a href="#算法描述-3" class="headerlink" title="算法描述"></a>算法描述</h3></table></table>
     </div>
 
@@ -487,14 +495,14 @@ EPCM(DS:RCX).VALID := 1;
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">33</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-count">14</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
