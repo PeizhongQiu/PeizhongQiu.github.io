@@ -118,7 +118,7 @@ RCX 参数是目标 SECS 页面地址，该地址指向一个空白的 EPC 页�
 <li>检查 DS:RCX.BASEADDR 和 DS:RCX.SIZE 是否合法，不合法则 #GP(0)；<font color=#FF0000>注解：SIZE 至少两页面，且大小必须为 2 的幂，单位为字节；</font></li>
 <li>检查 DS:RCX.ATTRIBUTES 中不包含 CR_SGX_ATTRIBUTES_MASK 不支持的属性；</li>
 <li>检查 CONFIGID 和 CONFIGSVN 是否为 0 或 DS:TMP_SECS.ATTRIBUTES.KSS 不为 0，是则 #GP(0)；</li>
-<li>将 DS:RCX 设置为 Uninitialized，初始化 DS:RCX，计算 DS:RCX.MRENCLAVE；伪代码如下：
+<li><font color=#FF0000>将 DS:RCX 设置为 Uninitialized，初始化 DS:RCX，计算 DS:RCX.MRENCLAVE；伪代码如下：</font>
 
 
     Clear DS:TMP_SECS to Uninitialized;
@@ -149,7 +149,7 @@ RCX 参数是目标 SECS 页面地址，该地址指向一个空白的 EPC 页�
 
     
 </li>
-<li>更新 EPCM(DS:RCX)，注意 RWX 字段都为 0，说明 SECS 页面不能被应用直接读/写/执行；伪代码如下：
+<li><font color=#FF0000>更新 EPCM(DS:RCX)，注意 RWX 字段都为 0，说明 SECS 页面不能被应用直接读/写/执行；伪代码如下：</font>
     
 
     EPCM(DS:TMP_SECS).PT := PT_SECS;
@@ -173,6 +173,12 @@ RCX 参数是目标 SECS 页面地址，该地址指向一个空白的 EPC 页�
 指令：ENCLS[ECREATE]
 
 参数：EAX = 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）
+
+当 SECS 被成功创建，enclave 页面通过 EADD 加入到 enclave。这包括将空闲的 EPC 页面转为 PT_REG 或 PT_TCS 类型。当调用 EADD 后，处理器会更新 EPCM 条目中的页面类型，enclave 访问页面的线性地址，页面的访问权限。它会将页面链接到输入的 SECS。EPCM 条目信息会被硬件利用去管理页面的访问控制。EADD 会记录 EPCM 的信息到 SECS 中存储的加密日志，并从 non-enclave 内存页面拷贝 4KB 数据到分配的 EPC 页面。
+
+该函数从 non-enclave 内存页面拷贝数据到 EPC 页面，将 EPC 页面链接到 SECS 页面，最后存储线性地址和安全属性到 EPCM。enclave 偏移和安全属性会被计算测度并扩展到 SECS.MRENCLAVE。该指令只能在特权级为 0 时执行。
+
+
 ### 权限
 
 
