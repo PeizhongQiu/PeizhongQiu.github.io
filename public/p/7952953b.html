@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 6.3.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -292,22 +292,22 @@
 <p>回调函数返回形如write(data)的可被调用的对象。这个对象是为了兼容现有的一些特殊框架而设计的，一般不使用。</p>
 </li>
 </ul>
-<h4 id="Paste-文件"><a href="#Paste-文件" class="headerlink" title="Paste 文件"></a>Paste 文件</h4><p>  Openstack使用Paste的Deploy组件完成WSGI Server和WSGI Application的构建，每个项目源码的etc目录下都有一个Paste文件，如Nova的etc/nova/api-paste.ini，在部署时，这些文件被拷贝到系统/etc/&lt;project&gt;/目录下。</p>
+<h4 id="Paste-文件"><a href="#Paste-文件" class="headerlink" title="Paste 文件"></a>Paste 文件</h4><p>  Openstack使用Paste的Deploy组件完成WSGI Server和WSGI Application的构建，每个项目源码的etc目录下都有一个Paste文件，如Nova的etc&#x2F;nova&#x2F;api-paste.ini，在部署时，这些文件被拷贝到系统&#x2F;etc&#x2F;&lt;project&gt;&#x2F;目录下。</p>
 <p>Paste配置文件分为多个section，每个section以type:name命名。</p>
 <ul>
-<li><p>type = composite</p>
+<li><p>type &#x3D; composite</p>
 <p>这个section会把URL请求发到对应的应用程序中，并由use指定具体的分发方式。</p>
 </li>
-<li><p>type = app</p>
+<li><p>type &#x3D; app</p>
 <p>一个app就是一个具体的WSGI 应用程序，这个app对应的python代码可以由use来指定。另一种指定方法是明确指定对应的python代码，这时必须给出代码应该符合的格式。</p>
 </li>
-<li><p>type = filter-app</p>
+<li><p>type &#x3D; filter-app</p>
 <p>在接收到一个请求后，会先调用fliter-app中的use所指定的app进行过滤，如果请求没有被过滤，就会被转发到next所指定的app上进行下一步的处理。</p>
 </li>
-<li><p>type = filter</p>
+<li><p>type &#x3D; filter</p>
 <p>跟上一个的区别是没有next。</p>
 </li>
-<li><p>type = pipeline</p>
+<li><p>type &#x3D; pipeline</p>
 <p>由一系列filter组成，filter链条的末尾是一个app。pipeline类型对filter-app做了简化。</p>
 </li>
 </ul>

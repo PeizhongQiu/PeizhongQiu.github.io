@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 6.3.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -244,7 +244,7 @@
 <li>Enclave 创建服务使用 EINIT 叶函数完成 enclave 的创建过程，结束 enclave 测度计算并创建 enclave 实体。在 EINIT 执行之前，不允许执行 enclave 内部代码。</li>
 </ol>
 <h2 id="ECREATE"><a href="#ECREATE" class="headerlink" title="ECREATE"></a>ECREATE</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>指令：ENCLS[ECREATE]</p>
-<p>参数：EAX = 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）</p>
+<p>参数：EAX &#x3D; 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）</p>
 <p>ENCLS[ECREATE] 是 enclave 构建进程执行的第一条指令。ECREATE 拷贝外部的 SECS 到 EPC 页面中，之后内部的 SECS 不能被软件获取。</p>
 <p>ECREATE 会初始化受保护的 SECS，并检查未使用的字段是否为0，并将其对应的 EPC 页面设置为 VALID 状态。 </p>
 <p>应用提交的源 SECS 需要设置以下字段：BASEADDR，SIZE，ATTRIBUTES，CONFIGID，CONFIGSVN。SIZE 至少两个页面，BASEADDR 与 SIZE 边界对齐。</p>
@@ -306,6 +306,7 @@ Deliver VMEXIT;
 <li>检查 XFRM 是否合法，且 DS:RCX.ATTRIBUTES.XFRM 最后两位为 3，不是则 #GP(0)；</li>
 <li>检查 CET_ATTRIBUTES 是否合法，不是则 #GP(0)；判断伪代码如下（TMP_SECS 即 ECX）：
 
+    
 <pre><code>IF ((DS:TMP_SECS.ATTRIBUTES.CET = 0 and DS:TMP_SECS.CET_ATTRIBUTES ≠ 0) ||
 (DS:TMP_SECS.ATTRIBUTES.CET = 0 and DS:TMP_SECS.CET_LEG_BITMAP_OFFSET ≠ 0) || 
 (CPUID.(EAX=7, ECX=0):EDX[CET_IBT] = 0 and DS:TMP_SECS.CET_LEG_BITMAP_OFFSET ≠ 0) || 
@@ -376,7 +377,7 @@ EPCM(DS:RCX).VALID := 1;
 </ol>
 
 <h2 id="EADD"><a href="#EADD" class="headerlink" title="EADD"></a>EADD</h2><h3 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h3><p>指令：ENCLS[ECREATE]</p>
-<p>参数：EAX = 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）</p>
+<p>参数：EAX &#x3D; 00H（输入）；RBX: PAGEINFO 地址（输入）；RCX: 目标 SECS 页面地址（输入）</p>
 <p>当 SECS 被成功创建，enclave 页面通过 EADD 加入到 enclave。这包括将空闲的 EPC 页面转为 PT_REG 或 PT_TCS 类型。当调用 EADD 后，处理器会更新 EPCM 条目中的页面类型，enclave 访问页面的线性地址，页面的访问权限。它会将页面链接到输入的 SECS。EPCM 条目信息会被硬件利用去管理页面的访问控制。EADD 会记录 EPCM 的信息到 SECS 中存储的加密日志，并从 non-enclave 内存页面拷贝 4KB 数据到分配的 EPC 页面。</p>
 <p>该函数从 non-enclave 内存页面拷贝数据到 EPC 页面，将 EPC 页面链接到 SECS 页面，最后存储线性地址和安全属性到 EPCM。enclave 偏移和安全属性会被计算测度并扩展到 SECS.MRENCLAVE。该指令只能在特权级为 0 时执行。</p>
 <h3 id="权限-1"><a href="#权限-1" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-1"><a href="#并发限制-1" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-1"><a href="#算法描述-1" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EEXTEND"><a href="#EEXTEND" class="headerlink" title="EEXTEND"></a>EEXTEND</h2><h3 id="简介-2"><a href="#简介-2" class="headerlink" title="简介"></a>简介</h3><h3 id="权限-2"><a href="#权限-2" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-2"><a href="#并发限制-2" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-2"><a href="#算法描述-2" class="headerlink" title="算法描述"></a>算法描述</h3><h2 id="EINIT"><a href="#EINIT" class="headerlink" title="EINIT"></a>EINIT</h2><h3 id="简介-3"><a href="#简介-3" class="headerlink" title="简介"></a>简介</h3><h3 id="权限-3"><a href="#权限-3" class="headerlink" title="权限"></a>权限</h3><h3 id="并发限制-3"><a href="#并发限制-3" class="headerlink" title="并发限制"></a>并发限制</h3><h3 id="算法描述-3"><a href="#算法描述-3" class="headerlink" title="算法描述"></a>算法描述</h3></table></table>

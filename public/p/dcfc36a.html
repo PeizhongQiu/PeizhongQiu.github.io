@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 6.3.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -255,10 +255,10 @@
 </ul>
 <h2 id="长行切割"><a href="#长行切割" class="headerlink" title="长行切割"></a>长行切割</h2><p>Makefile 使用基于行的语法，每个换行符都是特殊的，标志着声明的结束。虽然GNU对于一行的长度没有限制，但是为了可读性，需要将较长的行分割成多行。这可以使用 ’\‘ 。对于 “\“ + “\n” 的处理要看声明是否是recipe。如果不是，”\“ + “\n” 会被当做空格处理。另外，所有 “\“ + “\n” 附近的空格都会被压缩为一个空格，这包括 “\“ + “\n”  之前的空格，”\“ + “\n”  之后的行开头的空格和连续的 “\“ + “\n” 组合。</p>
 <p>如果不想要空格，可以使用 ”$\“ + “\n”。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var :&#x3D; one$\</span><br><span class="line">		word</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">var := one$\</span><br><span class="line">		word</span><br></pre></td></tr></table></figure>
 
 <p>等价于：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var :&#x3D; oneword</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var := oneword</span><br></pre></td></tr></table></figure>
 
 <h2 id="Makefile-文件名"><a href="#Makefile-文件名" class="headerlink" title="Makefile 文件名"></a>Makefile 文件名</h2><p>默认会依次找以下文件名：GNUmakefile，makefile，Makefile。</p>
 <p>建议使用 Makefile，因为与 README 这些文件靠的近。除非特殊指定 GNU make，要不然不要使用GNUmakefile。因为其他 make 版本不支持。</p>

@@ -2,19 +2,15 @@
 title: Unikraft
 abbrlink: 8e98bdb9
 date: 2023-10-08 23:22:09
-tags:
+tags: unikernel 
 ---
-
-## 什么是 Unikraft
+# Unikraft 安装
 <!-- more -->
-参考文献：
-
-## Unikraft 安装
 源代码地址：
 https://github.com/unikraft/unikraft
 
 安装 kraft： 
-```
+```shell
 curl --proto '=https' --tlsv1.2 -sSf https://get.kraftkit.sh | sh
 ```
 
@@ -22,19 +18,24 @@ curl --proto '=https' --tlsv1.2 -sSf https://get.kraftkit.sh | sh
 [https://github.com/unikraft/kraftkit](https://github.com/unikraft/kraftkit)
 https://unikraft.org/docs/getting-started
 
-## Unikraft 调试
+# Unikraft 调试
 [https://www.youtube.com/watch?v=ANm0diPrWUE](https://www.youtube.com/watch?v=ANm0diPrWUE)
 https://users.ece.utexas.edu/~adnan/gdb-refcard.pdf
-
+## KVM
+```shell
 qemu-system-x86_64  -s -S -kernel build/helloworld_qemu-x86_64 -nographic
-
 gdb --eval-command="target remote :1234" build/helloworld_qemu-x86_64.dbg
-
-## Unikraft qemu-x86-64启动流程
-源码版本：0.13.1
-### 寻找入口函数
-方法 1：阅读 plat/kvm/Linker.uk：
 ```
+
+## linuxu
+```shell
+gdb build/helloworld_linuxu-x86_64.dbg
+```
+# Unikraft qemu-x86-64 启动流程
+源码版本：0.14.0
+## 寻找入口函数
+方法 1：阅读 plat/kvm/Linker.uk：
+``` linker-script 
 ifeq (x86_64,$(CONFIG_UK_ARCH))
 ifeq ($(CONFIG_KVM_BOOT_PROTO_MULTIBOOT),y)
 KVM_LDFLAGS-y += -Wl,-m,elf_x86_64
@@ -52,32 +53,32 @@ endif
 
 方法 2：阅读 elf 文件。
 以 helloworld 为例，使用以下命令：
-```
+```shell
 readelf -a build/helloworld_qemu-x86_64.dbg
 ```
 查看 Entry point address 选项：
-```
+```shell
 Entry point address:               0x125f88
 ```
 可知入口地址为 0x125f88。再进行反汇编：
-```
+```shell
 objdump -ld -C -S build/helloworld_qemu-x86_64.dbg > helloworld.txt
 ```
 查看 helloworld.txt 文件，并找到地址为 0x125f88 的函数：\_multiboot_entry。
-### multiboot
+## multiboot
 
 https://www.gnu.org/software/grub/manual/multiboot/multiboot.html
 
-### qemu-x86-64 启动源码阅读
+## qemu-x86-64 启动源码阅读
 由于使用 multiboot 启动，所以启动时的状态为：
-- EAX包含一个魔数；
-- EBX包含 multiboot 信息的32位物理地址；
+- EAX 包含一个魔数；
+- EBX 包含 multiboot 信息的 32 位物理地址；
 - Flat 4GiB CS 和 DS 段，其中 ES、FS、GS 和 SS 设置为 DS；
 - A20 已启用，启用保护模式，禁用分页，禁用中断。
-注意：本博客暂不考虑重定向代码。
-#### \_multiboot_entry
+
+### \_multiboot_entry
 从 plat/kvm/x86/multiboot.S 的 \_multiboot_entry 开始阅读。
-```
+```asm
 /* 与 multiboot 协议相关。*/
 #define MULTIBOOT_FLAGS (MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEMORY_INFO)
 
@@ -128,11 +129,11 @@ no_multiboot:
 	jmp 1b
 END(_multiboot_entry)
 ```
-注意在执行完  \_multiboot_entry 之后，esi 里存储的是包含 multiboot 信息的32位物理地址，edi 里存储的是 lcpu_boot_startup_args 的地址，ebx 里存储的是 lcpu_start32 的函数地址。所以函数会跳转到 lcpu_start32。
+注意在执行完  \_multiboot_entry 之后，esi 里存储的是包含 multiboot 信息的 32 位物理地址，edi 里存储的是 lcpu_boot_startup_args 的地址，ebx 里存储的是 lcpu_start32 的函数地址。所以函数会跳转到 lcpu_start32。
 
-#### lcpu_start32
+### lcpu_start32
 lcpu_start32 打开 PAE，IA-32e，设置页表，cr0，GDT，将程序跳转到 64 位环境执行。
-```
+```asm
 .code32
 .section .text.boot.32
 ENTRY(lcpu_start32) /* 打开 PAE，IA-32e，设置页表，cr0，GDT */
@@ -185,11 +186,12 @@ END(lcpu_start32)
 首先需要了解 64 位内存分页。该部分采用的是 4 级分页。转换过程参考：https://zhuanlan.zhihu.com/p/652983618。
 
 通过阅读 x86_bpt_pml4 源码，可以得到页表的示意图如下图所示。
-{% asset_img  页表.jpg 图1 页表%}
 
-#### lcpu_start64
+{% asset_img  页表.jpg 图 1 页表%}
 
-```
+### lcpu_start64
+
+```asm
 .code64
 .section .text.boot.64
 ENTRY(lcpu_start64) /* 将 lcpu 状态设为 init，设置栈，打开 FPU，SSE，XSAVE，AVX，FS，GS，PKU，跳转到 multiboot_entry */
@@ -224,8 +226,8 @@ ENTRY(lcpu_start64) /* 将 lcpu 状态设为 init，设置栈，打开 FPU，SSE
 	jz	no_args
 
 	/* Initialize the CPU configuration with the supplied startup args */
-	movq	LCPU_SARGS_ENTRY_OFFSET(%r8), %rax	/* multiboot_entry 函数地址 */
-	movq	LCPU_SARGS_STACKP_OFFSET(%r8), %rsp /*bss 栈地址*/
+	movq	LCPU_SARGS_ENTRY_OFFSET(%r8), %rax	/* 将函数跳转地址设为 multiboot_entry 函数地址 */
+	movq	LCPU_SARGS_STACKP_OFFSET(%r8), %rsp /*将栈地址设为 bss 段地址*/
 
 	jmp	jump_to_entry
 
@@ -268,9 +270,9 @@ END(lcpu_start64)
 
 执行完 lcpu_start64，转向 multiboot_entry 执行。
 
-#### multiboot_entry
-当执行 hello-world 程序时，参数 mi 的值：
-```
+### multiboot_entry
+当执行 hello-world 程序时，参数 mi 的值如下所示。mi 各个参数的含义与 multiboot 协议有关，注意在 \_multiboot_entry 定义的 MULTIBOOT_FLAGS 值。
+```asm
 (gdb) p/x *mi
 $1 = {flags = 0x24f, mem_lower = 0x27f, mem_upper = 0x1fb80, boot_device = 0x8000ffff, cmdline = 0x185000, mods_count = 0x0, mods_addr = 0x185000,
   u = {aout_sym = {tabsize = 0x0, strsize = 0x0, addr = 0x0, reserved = 0x0}, elf_sec = {num = 0x0, size = 0x0, addr = 0x0, shndx = 0x0}},
@@ -287,15 +289,42 @@ $2 = 0x185000 "build/helloworld_qemu-x86_64 "
 (gdb) p (char*)mi->boot_loader_name
 $3 = 0x18501e "qemu"
 ```
-参数 lcpu 值为：
-```
+参数 lcpu 值如下所示。其中，idx 表示逻辑 cpu 的顺序索引，id 表示逻辑 cpu 的物理 id。
+```shell
 (gdb) p/x *lcpu
 $4 = {state = 0x1, idx = 0x0, id = 0x0, {s_args = {entry = 0x0, stackp = 0x0}, error_code = 0x0}, arch = {<No data fields>}}
 ```
+lcpu 的状态变化如下图所示。
+
+{% asset_img  lcpu.png 图 2 lcpu%}
 
 下面阅读 multiboot_entry 函数，调试信息为执行 hello-world 程序的信息。
+bi->mrds.mrds 的 type 和 flags 取值如下所示。另外，bi->mrds.mrds 按照 pbase 大小有序排列。
+```c
+/* Memory region types */
+#define UKPLAT_MEMRT_ANY		0xffff
 
+#define UKPLAT_MEMRT_FREE		0x0001	/* Uninitialized memory */
+#define UKPLAT_MEMRT_RESERVED		0x0002	/* In use by platform */
+#define UKPLAT_MEMRT_KERNEL		0x0004	/* Kernel binary segment */
+#define UKPLAT_MEMRT_INITRD		0x0008	/* Initramdisk */
+#define UKPLAT_MEMRT_CMDLINE		0x0010	/* Command line */
+#define UKPLAT_MEMRT_DEVICETREE		0x0020	/* Device tree */
+#define UKPLAT_MEMRT_STACK		0x0040	/* Thread stack */
+
+/* Memory region flags */
+#define UKPLAT_MEMRF_ALL		0xffff
+
+#define UKPLAT_MEMRF_PERMS		0x0007
+#define UKPLAT_MEMRF_READ		0x0001	/* Region is readable */
+#define UKPLAT_MEMRF_WRITE		0x0002	/* Region is writable */
+#define UKPLAT_MEMRF_EXECUTE		0x0004	/* Region is executable */
+
+#define UKPLAT_MEMRF_UNMAP		0x0010	/* Must be unmapped at boot */
+#define UKPLAT_MEMRF_MAP		0x0020	/* Must be mapped at boot */
 ```
+
+```c
 void multiboot_entry(struct lcpu *lcpu, struct multiboot_info *mi)
 {
 	struct ukplat_bootinfo *bi;
@@ -496,10 +525,10 @@ void multiboot_entry(struct lcpu *lcpu, struct multiboot_info *mi)
 ```
 综上所述，multiboot_entry 完成了 bi 初始化，并转到 _ukplat_entry 执行。
 
-#### _ukplat_entry
+### _ukplat_entry
 下面阅读 _ukplat_entry 函数，调试信息为执行 hello-world 程序的信息。
 
-```
+```c
 void _ukplat_entry(struct lcpu *lcpu, struct ukplat_bootinfo *bi)
 {
 	int rc;
@@ -601,7 +630,7 @@ void _ukplat_entry(struct lcpu *lcpu, struct ukplat_bootinfo *bi)
 
 ```
 
-```
+```c
 static void __noreturn _ukplat_entry2(void)
 {
 	/* It's not possible to unwind past this function, because the stack
@@ -619,9 +648,9 @@ static void __noreturn _ukplat_entry2(void)
 
 _ukplat_entry2 转到 ukplat_entry_argp 运行。
 
-#### ukplat_entry_argp 和 ukplat_entry 
+### ukplat_entry_argp 和 ukplat_entry 
 
-```
+```c
 /* defined in <uk/plat.h> */
 void ukplat_entry_argp(char *arg0, char *argb, __sz argb_len)
 {
@@ -641,9 +670,9 @@ void ukplat_entry_argp(char *arg0, char *argb, __sz argb_len)
 }
 ```
 
-转到 ukplat_entry 运行。
+转到 ukplat_entry 运行。为了方便调试，调试使用 sqlite 应用。
 
-```
+```c
 void ukplat_entry(int argc, char *argv[])
 {
 #if CONFIG_LIBPOSIX_ENVIRON
@@ -666,16 +695,15 @@ void ukplat_entry(int argc, char *argv[])
 	uk_pr_info("Unikraft constructor table at %p - %p\n",
 		   &uk_ctortab_start[0], &uk_ctortab_end);
 	/*
-	* UK_CTOR_PRIO(_init_ectx_store, 0);
-	* static struct pci_bus_handler ph = {
-	*	.b.init = pci_init,
-	*	.b.probe = pci_probe,
-	*	.drv_list = UK_LIST_HEAD_INIT(ph.drv_list),
-	*	.dev_list = UK_LIST_HEAD_INIT(ph.dev_list),
-	* };
-	* UK_BUS_REGISTER(&ph.b);
-	* UK_BUS_REGISTER(&virtio_bus);
-	*//* 将 pci 和 virtio 添加到总线。*/
+	(gdb) p/x &uk_ctortab_start
+	$9 = 0x2d9000
+	(gdb) p/x &uk_ctortab_end
+	$10 = 0x2d9050
+	(gdb) p *uk_ctortab_start@10
+	$12 = {0x10f9f0 <uk_libparam_params_libposix_environ_ctor>, 0x128ef0 <uk_libparam_params_libukboot_ctor>, 0x12b580 <uk_libparam_params_libuklibparam_ctor>,
+		0x141b40 <uk_libparam_params_libvfscore_ctor>, 0x277f00 <_init_ectx_store>, 0x138ab0 <vfscore_init>, 0x278e70 <libvirtio_9p_virtio_register_driver>,
+  		0x279ca0 <libvirtio_pci_pci_register_driver>, 0x2788d0 <libukbus_pci_uk_bus_register>, 0x279a00 <libvirtio_bus_uk_bus_register>}
+	*/
 	uk_ctortab_foreach(ctorfn, uk_ctortab_start, uk_ctortab_end) {
 		UK_ASSERT(*ctorfn);
 		uk_pr_debug("Call constructor: %p())...\n", *ctorfn);
@@ -738,8 +766,14 @@ void ukplat_entry(int argc, char *argv[])
 	/**
 	 * Run init table
 	 */
-	/** init.h 中定义了相关宏。
-	 * uk_initcall_class_prio(uk_bus_lib_init, UK_BUS_INIT_CLASS, UK_BUS_INIT_PRIO);
+	/* init.h 中定义了相关宏 */
+	/*
+	(gdb) p/x &uk_inittab_start
+	$13 = 0x2d9050
+	(gdb) p/x &uk_inittab_end
+	$14 = 0x2d9078
+	(gdb) p *uk_inittab_start@5
+	$15 = {0x131f60 <fdtable_init>, 0x129590 <uk_bus_lib_init>, 0x13e8f0 <pipe_mount_init>, 0x141b80 <vfscore_automount>, 0x110d40 <posix_process_init>}
 	*/
 	uk_pr_info("Init Table @ %p - %p\n",
 		   &uk_inittab_start[0], &uk_inittab_end);
@@ -771,6 +805,8 @@ void ukplat_entry(int argc, char *argv[])
 	 * mimic what a regular user application (e.g., BSD, Linux) would expect
 	 * from its OS being initialized.
 	 */
+	 /* preinit and init are used in C++ applications. 
+	  * Therefore they are empty for sqlite (which is C) */
 	uk_pr_info("Pre-init table at %p - %p\n",
 		   &__preinit_array_start[0], &__preinit_array_end);
 	uk_ctortab_foreach(ctorfn,
@@ -818,6 +854,788 @@ void ukplat_entry(int argc, char *argv[])
 exit:
 	ukplat_terminate(rc); /* does not return */
 }
+```
+#### uk_ctor
+
+```c
+/* 1、ctor 相关宏定义。*/
+/* unikraft/plat/common/include/uk/plat/common/common.lds.h */
+#define CTORTAB_SECTION							\
+	. = ALIGN(__PAGE_SIZE);						\
+	uk_ctortab_start = .;						\
+	.uk_ctortab :							\
+	{								\
+		KEEP(*(SORT_BY_NAME(.uk_ctortab[0-9])))			\
+	}								\
+	uk_ctortab_end = .;
+/* include/uk/ctors.h*/
+/**
+ * Register a Unikraft constructor function that is
+ * called during bootstrap (uk_ctortab)
+ *
+ * @param fn
+ *   Constructor function to be called
+ * @param prio
+ *   Priority level (0 (earliest) to 9 (latest))
+ *   Use the UK_PRIO_AFTER() helper macro for computing priority dependencies.
+ *   Note: Any other value for level will be ignored
+ */
+#define __UK_CTORTAB(fn, prio)				\
+	static const uk_ctor_func_t			\
+	__used __section(".uk_ctortab" #prio)		\
+	__uk_ctortab ## prio ## _ ## fn = (fn)
+
+#define _UK_CTORTAB(fn, prio)				\
+	__UK_CTORTAB(fn, prio)
+
+#define UK_CTOR_PRIO(fn, prio)				\
+	_UK_CTORTAB(fn, prio)
+
+#define UK_CTOR(fn) UK_CTOR_PRIO(fn, UK_PRIO_LATEST)
+
+/* 2、libparam 相关 ctor 宏定义。*/
+/* unikraft/lib/uklibparam/include/uk/libparam.h */
+/* __LIBNAME__ 是在编译阶段传递的参数。具体可以查看 unikraft/support/build/Makefile.rules 定义的 buildrule_cxx。*/
+#define UK_LIBPARAM_PARAMSECTION_NAME       \
+	UK_LIBPARAM_CONCAT(UK_LIBPARAM_PARAMSECTION_NAMEPREFIX, __LIBNAME__)
+#define UK_LIBPARAM_LIBDESC_CTOR \
+	UK_LIBPARAM_CONCAT(UK_LIBPARAM_PARAMSECTION_NAME, _ctor)
+static void UK_LIBPARAM_LIBDESC_CTOR(void)
+{
+	UK_LIBPARAM_LIBDESC.params_len =
+		(__sz)((__uptr) &UK_LIBPARAM_PARAMSECTION_ENDSYM -
+		       (__uptr) UK_LIBPARAM_PARAMSECTION_STARTSYM) /
+		      sizeof(void *);
+
+	if (UK_LIBPARAM_LIBDESC.params_len > 0) {
+		UK_LIBPARAM_LIBDESC.params = (struct uk_libparam_param **)
+					     UK_LIBPARAM_PARAMSECTION_STARTSYM;
+		_uk_libparam_libsec_register(&UK_LIBPARAM_LIBDESC);
+	}
+}
+UK_CTOR_PRIO(UK_LIBPARAM_LIBDESC_CTOR, 0); /* 注册库。*/
+
+/* 3、etcx 和 vsfcore 相关 ctor 定义。*/
+/* unikraft/arch/x86/ectx.c */
+UK_CTOR_PRIO(_init_ectx_store, 0);
+
+/* unikraft/lib/vfscore/main.c */
+UK_CTOR_PRIO(vfscore_init, 1);
+
+/* 4、 PCI 相关 ctor 定义。*/
+/* unikraft/plat/common/include/pci/pci_bus.h */
+#define PCI_REGISTER_DRIVER(b)                  \
+	_PCI_REGISTER_DRIVER(__LIBNAME__, b)
+#define PCI_REGISTER_CTOR(ctor)				\
+	UK_CTOR_PRIO(ctor, UK_PRIO_AFTER(UK_BUS_REGISTER_PRIO))
+#define _PCI_REGISTER_DRIVER(libname, b)				\
+	static void						\
+	_PCI_REGFNNAME(libname, _pci_register_driver)(void)		\
+	{								\
+		_pci_register_driver((b));				\
+	}								\
+	PCI_REGISTER_CTOR(_PCI_REGFNNAME(libname, _pci_register_driver))
+/* unikraft/plat/drivers/virtio/virtio_pci.c */
+PCI_REGISTER_DRIVER(&virtio_pci_drv);
+
+/* 5、 总线相关 ctor 定义。*/
+/* unikraft/lib/ukbus/include/uk/bus.h */
+#define UK_BUS_REGISTER(b) \
+	_UK_BUS_REGISTER(__LIBNAME__, b, 2)
+#define _UK_BUS_REGISTER_CTOR(CTOR, prio)  \
+	UK_CTOR_PRIO(CTOR, prio)
+
+#define _UK_BUS_REGISTER(libname, b, prio)			\
+	static void						\
+	_UK_BUS_REGFNNAME(libname, _uk_bus_register)(void)	\
+	{							\
+		_uk_bus_register((b));				\
+	}							\
+	_UK_BUS_REGISTER_CTOR(_UK_BUS_REGFNNAME(libname, _uk_bus_register), prio)
+
+/* unikraft/plat/common/pci_bus.c */
+UK_BUS_REGISTER(&ph.b);
+/* unikraft/plat/drivers/tap/tap.c */
+UK_BUS_REGISTER(&tap_bus);
+/* unikraft/plat/drivers/virtio/virtio_bus.c */
+UK_BUS_REGISTER(&virtio_bus);
+
+/* unikraft/plat/drivers/include/virtio/virtio_bus.h */
+#define VIRTIO_BUS_REGISTER_DRIVER(b)	\
+	_VIRTIO_BUS_REGISTER_DRIVER(__LIBNAME__, b)
+#define _VIRTIO_REGISTER_CTOR(ctor)	\
+	UK_CTOR_PRIO(ctor, UK_PRIO_AFTER(UK_BUS_REGISTER_PRIO))
+#define _VIRTIO_BUS_REGISTER_DRIVER(libname, b)				\
+	static void							\
+	_VIRTIO_BUS_REGFNAME(libname, _virtio_register_driver)(void)	\
+	{								\
+		_virtio_bus_register_driver((b));			\
+	}								\
+	_VIRTIO_REGISTER_CTOR(						\
+		_VIRTIO_BUS_REGFNAME(					\
+		libname, _virtio_register_driver))
+/* unikraft/plat/drivers/virtio/virtio_9p.c */
+VIRTIO_BUS_REGISTER_DRIVER(&v9p_drv);
+/* unikraft/plat/drivers/virtio/virtio_blk.c */
+VIRTIO_BUS_REGISTER_DRIVER(&vblk_drv);
+/* unikraft/plat/drivers/virtio/virtio_net.c */
+VIRTIO_BUS_REGISTER_DRIVER(&vnet_drv);
+```
+
+#### uk_inittab
+```c
+/* 1、uk_inittab 相关定义*/
+/* unikraft/include/uk/init.h */
+/**
+ * Register a Unikraft init function that is
+ * called during bootstrap (uk_inittab)
+ *
+ * @param fn
+ *   Initialization function to be called
+ * @param class
+ *   Initialization class (1 (earliest) to 6 (latest))
+ * @param prio
+ *   Priority level (0 (earliest) to 9 (latest)), must be a constant.
+ *   Use the UK_PRIO_AFTER() helper macro for computing priority dependencies.
+ *   Note: Any other value for level will be ignored
+ */
+#define __UK_INITTAB(fn, base, prio)					\
+	static const uk_init_func_t					\
+	__used __section(".uk_inittab" #base #prio)			\
+	__uk_inittab ## base ## prio ## _ ## fn = (fn)
+
+#define _UK_INITTAB(fn, base, prio)					\
+	__UK_INITTAB(fn, base, prio)
+
+#define uk_initcall_class_prio(fn, class, prio)				\
+	_UK_INITTAB(fn, class, prio)
+
+/**
+ * Define a library initialization. At this point in time some platform
+ * component may not be initialized, so it wise to initializes those component
+ * to initialized.
+ */
+#define UK_INIT_CLASS_EARLY 1
+#define uk_early_initcall_prio(fn, prio) \
+	uk_initcall_class_prio(fn, UK_INIT_CLASS_EARLY, prio)
+/**
+ * Define a stage for platform initialization. Platform at this point read
+ * all the device and device are initialized.
+ */
+#define UK_INIT_CLASS_PLAT 2
+#define uk_plat_initcall_prio(fn, prio) \
+	uk_initcall_class_prio(fn, UK_INIT_CLASS_PLAT, prio)
+/**
+ * Define a stage for performing library initialization. This library
+ * initialization is performed after the platform is completely initialized.
+ */
+#define UK_INIT_CLASS_LIB 3
+#define uk_lib_initcall_prio(fn, prio) \
+	uk_initcall_class_prio(fn, UK_INIT_CLASS_LIB, prio)
+/**
+ * Define a stage for filesystem initialization.
+ */
+#define UK_INIT_CLASS_ROOTFS 4
+#define uk_rootfs_initcall_prio(fn, prio) \
+	uk_initcall_class_prio(fn, UK_INIT_CLASS_ROOTFS, prio)
+/**
+ * Define a stage for device initialization
+ */
+#define UK_INIT_CLASS_SYS 5
+#define uk_sys_initcall_prio(fn, prio) \
+	uk_initcall_class_prio(fn, UK_INIT_CLASS_SYS, prio)
+/**
+ * Define a stage for application pre-initialization
+ */
+#define UK_INIT_CLASS_LATE 6
+#define uk_late_initcall_prio(fn, prio) \
+	uk_initcall_class_prio(fn, UK_INIT_CLASS_LATE, prio)
+
+/* 2、相关实现 */
+/* unikraft/lib/posix-socket/driver.c */
+#define POSIX_SOCKET_FAMILY_INIT_CLASS UK_INIT_CLASS_EARLY
+#define POSIX_SOCKET_FAMILY_INIT_PRIO 0
+#define POSIX_SOCKET_FAMILY_REGISTER_PRIO 2
+
+uk_initcall_class_prio(posix_socket_family_lib_init,
+		       POSIX_SOCKET_FAMILY_INIT_CLASS,
+		       POSIX_SOCKET_FAMILY_INIT_PRIO);
+
+/* unikraft/lib/ukbus/bus.c */
+uk_initcall_class_prio(uk_bus_lib_init, UK_BUS_INIT_CLASS, UK_BUS_INIT_PRIO);
+
+/* unikraft/lib/vfscore/fd.c */
+uk_early_initcall_prio(fdtable_init, UK_PRIO_EARLIEST);
+
+/* unikraft/lib/uklock/mutex.c */
+uk_lib_initcall_prio(mutex_metrics_ctor, 1);
+
+/* unikraft/lib/devfs/devfs_vnops.c */
+uk_rootfs_initcall_prio(devfs_automount, 5);
+
+/* unikraft/lib/vfscore/automount.c */
+uk_rootfs_initcall_prio(vfscore_automount, 4);
+
+/* unikraft/unikraft/lib/devfs/include/devfs/device.h */
+#define devfs_initcall(fn) uk_rootfs_initcall_prio(fn, 3)
+/* unikraft/lib/devfs/null.c */
+devfs_initcall(devfs_register_null);
+/* unikraft/unikraft/lib/devfs/stdout.c*/
+devfs_initcall(devfs_register_stdout);
+/* unikraft/unikraft/lib/ukswrand/dev.c */
+devfs_initcall(devfs_register);
+```
+#### memory
+
+```c
+static struct uk_alloc *heap_init()
+{
+	struct uk_alloc *a = NULL;
+	......
+	struct ukplat_memregion_desc *md;
+	......
+	/* 将 br->mrds 中的内容加入到内存分配器中 */
+	ukplat_memregion_foreach(&md, UKPLAT_MEMRT_FREE, 0, 0) {
+		uk_pr_debug("Trying %p-%p 0x%02x %s\n",
+			    (void *)md->vbase, (void *)(md->vbase + md->len),
+			    md->flags,
+#if CONFIG_UKPLAT_MEMRNAME
+			    md->name
+#else /* CONFIG_UKPLAT_MEMRNAME */
+			    ""
+#endif /* !CONFIG_UKPLAT_MEMRNAME */
+			    );
+
+		if (!a)
+			a = uk_alloc_init((void *)md->vbase, md->len);
+		else
+			uk_alloc_addmem(a, (void *)md->vbase, md->len);
+	}
+
+	return a;
+}
+```
+首先看一下 uk_alloc 数据结构：
+```c
+struct uk_alloc {
+	/* memory allocation */
+	uk_alloc_malloc_func_t malloc;
+	uk_alloc_calloc_func_t calloc;
+	uk_alloc_realloc_func_t realloc;
+	uk_alloc_posix_memalign_func_t posix_memalign;
+	uk_alloc_memalign_func_t memalign;
+	uk_alloc_free_func_t free;
+
+#if CONFIG_LIBUKALLOC_IFMALLOC
+	uk_alloc_free_func_t free_backend;
+	uk_alloc_malloc_func_t malloc_backend;
+#endif
+
+	/* page allocation interface */
+	uk_alloc_palloc_func_t palloc;
+	uk_alloc_pfree_func_t pfree;
+	/* optional interfaces, but recommended */
+	uk_alloc_getsize_func_t maxalloc; /* biggest alloc req. (bytes) */
+	uk_alloc_getsize_func_t availmem; /* total memory available (bytes) */
+	uk_alloc_getpsize_func_t pmaxalloc; /* biggest alloc req. (pages) */
+	uk_alloc_getpsize_func_t pavailmem; /* total pages available */
+	/* optional interface */
+	uk_alloc_addmem_func_t addmem;
+
+#if CONFIG_LIBUKALLOC_IFSTATS
+	struct uk_alloc_stats _stats;
+#endif
+
+	/* internal */
+	struct uk_alloc *next; /* 形成链表，使每个应用都能根据应用的需要分配内存 */
+	__u8 priv[]; /* 内存分配算法的元数据结构从这开始 */
+};
+```
+接下来看一下 uk_alloc_init 实现：
+```c
+#if CONFIG_LIBUKBOOT_INITBBUDDY
+#include <uk/allocbbuddy.h>
+#define uk_alloc_init uk_allocbbuddy_init
+#elif CONFIG_LIBUKBOOT_INITREGION
+#include <uk/allocregion.h>
+#define uk_alloc_init uk_allocregion_init
+#elif CONFIG_LIBUKBOOT_INITMIMALLOC
+#include <uk/mimalloc.h>
+#define uk_alloc_init uk_mimalloc_init
+#elif CONFIG_LIBUKBOOT_INITTLSF
+#include <uk/tlsf.h>
+#define uk_alloc_init uk_tlsf_init
+#elif CONFIG_LIBUKBOOT_INITTINYALLOC
+#include <uk/tinyalloc.h>
+#define uk_alloc_init uk_tinyalloc_init
+#endif
+```
+可以看到，uk_alloc_init 的具体实现根据 CONFIG_LIBUKBOOT_INIT* 配置。用户也可以自定义内存分配器。以 uk_allocbbuddy_init 为例：
+```c
+struct uk_alloc *uk_allocbbuddy_init(void *base, size_t len)
+{
+	struct uk_alloc *a;
+	struct uk_bbpalloc *b; /* uk_bbpalloc 为伙伴算法相关数据结构 */
+	size_t metalen;
+	uintptr_t min, max;
+	unsigned long i;
+
+	min = round_pgup((uintptr_t)base);
+	max = round_pgdown((uintptr_t)base + (uintptr_t)len);
+	UK_ASSERT(max > min);
+
+	/* Allocate space for allocator descriptor */
+	/* 由此分配可知，uk_alloc 和 uk_bbpalloc 相邻 */
+	metalen = round_pgup(sizeof(*a) + sizeof(*b));
+
+	/* enough space for allocator available? */
+	if (min + metalen > max) {
+		uk_pr_err("Not enough space for allocator: %"__PRIsz" B required but only %"__PRIuptr" B usable\n",
+			  metalen, (max - min));
+		return NULL;
+	}
+	/* 注意 a 和 b 的地址 */
+	a = (struct uk_alloc *)min;
+	uk_pr_info("Initialize binary buddy allocator %"__PRIuptr"\n",
+		   (uintptr_t)a);
+	min += metalen;
+	memset(a, 0, metalen);
+	b = (struct uk_bbpalloc *)&a->priv;
+	
+	for (i = 0; i < FREELIST_SIZE; i++) {
+		b->free_head[i] = &b->free_tail[i];
+		b->free_tail[i].pprev = &b->free_head[i];
+		b->free_tail[i].next = NULL;
+	}
+	b->memr_head = NULL;
+
+	/* initialize and register allocator interface */
+	/* 除此之外还有 uk_alloc_init_malloc，用来注册不执行 palloc() 或 pfree() 的内存分配器 */
+	uk_alloc_init_palloc(a, bbuddy_palloc, bbuddy_pfree,
+			     bbuddy_pmaxalloc, bbuddy_pavailmem,
+			     bbuddy_addmem);
+
+	if (max > min) {
+		/* add left memory - ignore return value */
+		bbuddy_addmem(a, (void *)(min),
+				 (size_t)(max - min));
+	}
+
+	return a;
+}
+/* Shortcut for doing a registration of an allocator that only
+ * implements palloc(), pfree(), pmaxalloc(), pavailmem(), addmem()
+ */
+#define uk_alloc_init_palloc(a, palloc_func, pfree_func, pmaxalloc_func, \
+			     pavailmem_func, addmem_func)		\
+	do {								\
+		(a)->malloc         = uk_malloc_ifpages;		\
+		(a)->calloc         = uk_calloc_compat;			\
+		(a)->realloc        = uk_realloc_ifpages;		\
+		(a)->posix_memalign = uk_posix_memalign_ifpages;	\
+		(a)->memalign       = uk_memalign_compat;		\
+		(a)->free           = uk_free_ifpages;			\
+		(a)->palloc         = (palloc_func);			\
+		(a)->pfree          = (pfree_func);			\
+		(a)->pavailmem      = (pavailmem_func);			\
+		(a)->availmem       = (pavailmem_func != NULL)		\
+				      ? uk_alloc_availmem_ifpages : NULL; \
+		(a)->pmaxalloc      = (pmaxalloc_func);			\
+		(a)->maxalloc       = (pmaxalloc_func != NULL)		\
+				      ? uk_alloc_maxalloc_ifpages : NULL; \
+		(a)->addmem         = (addmem_func);			\
+									\
+		uk_alloc_stats_reset((a));				\
+		uk_alloc_register((a));					\
+	} while (0)
+```
+
+#### tls
+tls 主要由三个部分组成：.tadata，.tbss，TCB。已初始化的线程局部变量在 .tdata 节中分配，未初始化的线程局部变量定义为 COMMON 符号。在 .tbss 节中进行分配。TCB 主要包含线程的相关数据，用户可以根据需要自定义 TCB。但是 TCB 至少要包含一个自指指针 tlsp，放在 TCB 的起始位置。
+
+{% asset_img  tls.png 图 3 tls%}
+```C
+__sz ukarch_tls_area_size(void)
+{
+	/* NOTE: X86_64 ABI requires that fs:%0 contains the address of itself,
+	 *       to allow certain optimizations. Hence, the overall size of an
+	 *       TLS allocation is the aligned up TLS area plus 8 bytes for this
+	 *       self-pointer.
+	 */
+	 /* _tls_start 位于 tls 起始位置，_tls_end 位于 .tbss 末尾 */
+	__sz static_tls_len =  ALIGN_UP((__uptr) _tls_end - (__uptr) _tls_start,
+					sizeof(void *));
+	return static_tls_len + TCB_SIZE;
+}
+#define TLS_SECTIONS							\
+	. = ALIGN(__PAGE_SIZE);						\
+	_tls_start = .;							\
+	.tdata :							\
+	{								\
+		*(.tdata)						\
+		*(.tdata.*)						\
+		*(.gnu.linkonce.td.*)					\
+	} UK_SEGMENT_TLS UK_SEGMENT_TLS_LOAD				\
+	_etdata = .;							\
+	.tbss :								\
+	{								\
+		*(.tbss)						\
+		*(.tbss.*)						\
+		*(.gnu.linkonce.tb.*)					\
+		*(.tcommon)						\
+	}								\
+	/*								\
+	 * NOTE: Because the .tbss section is zero-sized in the final	\
+	 *       ELF image, just setting _tls_end to the end of it	\
+	 *       does not give us the the size of the memory area once	\
+	 *       loaded, so we use SIZEOF to have it point to the end.	\
+	 *       _tls_end is only used to compute the .tbss size.	\
+	 */								\
+	_tls_end = . + SIZEOF(.tbss);
+```
+接着，看看 ukarch_tls_area_init 函数。
+```c
+void ukarch_tls_area_init(void *tls_area)
+{
+	const __sz tdata_len = (__uptr) _etdata  - (__uptr) _tls_start;
+	const __sz tbss_len  = (__uptr) _tls_end - (__uptr) _etdata;
+	const __sz padding   = ukarch_tls_area_size() - (tbss_len + tdata_len
+							 + TCB_SIZE);
+
+	......
+
+	/* .tdata */
+	memcpy((void *)((__uptr) tls_area),
+	       _tls_start, tdata_len);
+
+#if CONFIG_LIBCONTEXT_CLEAR_TBSS
+	/* clear .tbss and padding */
+	memset((void *)((__uptr) tls_area + tdata_len),
+	       0x0, tbss_len + padding);
+#endif /* CONFIG_LIBCONTEXT_CLEAR_TBSS */
+
+	/* x86_64 ABI requires that fs:%0 contains the address of itself. */
+	*((__uptr *) ukarch_tls_tlsp(tls_area))
+		= (__uptr) ukarch_tls_tlsp(tls_area);
+
+#if CONFIG_UKARCH_TLS_HAVE_TCB
+	ukarch_tls_tcb_init((void *) ukarch_tls_tlsp(tls_area));
+#endif /* CONFIG_UKARCH_TLS_HAVE_TCB */
+
+	uk_hexdumpCd(tls_area, ukarch_tls_area_size());
+}
+```
+最后，看看 ukplat_tlsp_set 函数：
+```c
+/* fs 作用：https://www.kernel.org/doc/html/next/x86/x86_64/fsgs.html */
+#define set_tls_pointer(ptr) wrmsrl(X86_MSR_FS_BASE, ptr)
+void ukplat_tlsp_set(__uptr tlsp)
+{
+	set_tls_pointer(tlsp);
+}
+```
+
+#### sched
+首先看看 uk_sched 数据结构内容：
+```c
+struct uk_sched {
+	uk_sched_yield_func_t yield;
+
+	uk_sched_thread_add_func_t      thread_add;
+	uk_sched_thread_remove_func_t   thread_remove;
+	uk_sched_thread_blocked_func_t  thread_blocked;
+	uk_sched_thread_woken_func_t    thread_woken;
+	uk_sched_idle_thread_func_t     idle_thread;
+
+	uk_sched_start_t sched_start;
+
+	/* internal */
+	bool is_started;
+	struct uk_thread_list thread_list;
+	struct uk_thread_list exited_threads;
+	struct uk_alloc *a;       /**< default allocator for struct uk_thread */
+	struct uk_alloc *a_stack; /**< default allocator for stacks */
+	struct uk_alloc *a_uktls; /**< default allocator for TLS+ectx */
+	struct uk_sched *next;
+};
+
+struct schedcoop {
+	struct uk_sched sched;
+	struct uk_thread_list run_queue;
+	struct uk_thread_list sleep_queue;
+
+	struct uk_thread idle;
+	__nsec idle_return_time;
+	__nsec ts_prev_switch;
+};
+```
+
+```c
+struct uk_sched *uk_schedcoop_create(struct uk_alloc *a)
+{
+	struct schedcoop *c = NULL;
+	int rc;
+
+	uk_pr_info("Initializing cooperative scheduler\n");
+	c = uk_zalloc(a, sizeof(struct schedcoop));
+	if (!c)
+		goto err_out;
+
+	UK_TAILQ_INIT(&c->run_queue);
+	UK_TAILQ_INIT(&c->sleep_queue);
+
+	/* Create idle thread */
+	rc = uk_thread_init_fn1(&c->idle,
+				idle_thread_fn, (void *) c,
+				a, STACK_SIZE,
+				a, false,
+				NULL,
+				"idle",
+				NULL,
+				NULL);
+	if (rc < 0)
+		goto err_free_c;
+
+	c->idle.sched = &c->sched;
+
+	uk_sched_init(&c->sched,
+			schedcoop_start,
+			schedcoop_schedule,
+			schedcoop_thread_add,
+			schedcoop_thread_remove,
+			schedcoop_thread_blocked,
+			schedcoop_thread_woken,
+			schedcoop_idle_thread,
+			a);
+
+	/* Add idle thread to the scheduler's thread list */
+	UK_TAILQ_INSERT_TAIL(&c->sched.thread_list, &c->idle, thread_list);
+
+	return &c->sched;
+
+err_free_c:
+	uk_free(a, c);
+err_out:
+	return NULL;
+}
+
+int uk_sched_start(struct uk_sched *s)
+{
+	struct uk_thread *main_thread;
+	uintptr_t tlsp;
+	int ret;
+
+	UK_ASSERT(s);
+	UK_ASSERT(s->sched_start);
+	UK_ASSERT(!s->is_started);
+	UK_ASSERT(!uk_thread_current()); /* No other thread runs */
+
+	/* Allocate an `uk_thread` instance for current context
+	 * NOTE: We assume that if we have a TLS pointer, it points to
+	 *       an TLS that is derived from the Unikraft TLS template.
+	 */
+	tlsp = ukplat_tlsp_get();
+	main_thread = uk_thread_create_bare(s->a,
+					    0x0, 0x0, tlsp, !(!tlsp), false,
+					    "init", NULL, NULL);
+	if (!main_thread) {
+		ret = -ENOMEM;
+		goto err_out;
+	}
+	main_thread->sched = s;
+
+	/* Because `main_thread` acts as container for storing the current
+	 * context, it does not have IP and SP set. We have to manually mark
+	 * the thread as RUNNABLE.
+	 */
+	uk_thread_set_runnable(main_thread);
+
+	/* Set main_thread as current scheduled thread */
+	ukplat_per_lcpu_current(__uk_sched_thread_current) = main_thread;
+
+	/* Add main to the scheduler's thread list */
+	UK_TAILQ_INSERT_TAIL(&s->thread_list, main_thread, thread_list);
+
+	/* Enable scheduler, like time slicing, etc. and notify that `s`
+	 * has an (already) scheduled thread
+	 */
+	ret = s->sched_start(s, main_thread);
+	if (ret < 0)
+		goto err_unset_thread_current;
+	s->is_started = true;
+	return 0;
+
+err_unset_thread_current:
+	ukplat_per_lcpu_current(__uk_sched_thread_current) = NULL;
+	uk_thread_release(main_thread);
+err_out:
+	return ret;
+}
+```
+# Unikraft linuxu 64 位启动流程
+## 寻找入口函数
+方法 1：阅读 unikraft/plat/linuxu/Linker.uk：
+```linker-script
+LINUXU_LDFLAGS-y += -Wl,-e,_liblinuxuplat_start
+```
+
+从这里可以看出，当入口函数为 \_liblinuxuplat_start。
+
+方法 2：阅读 elf 文件。
+以 helloworld 为例，使用以下命令：
+```shell
+readelf -a build/helloworld_linuxu-x86_64.dbg
+```
+查看 Entry point address 选项：
+```shell
+Entry point address:               0x401090
+```
+可知入口地址为 0x401090。再进行反汇编：
+```shell
+objdump -ld -C -S build/helloworld_linuxu-x86_64.dbg > helloworld.txt
+```
+查看 helloworld.txt 文件，并找到地址为 0x401090 的函数：\_liblinuxuplat_start。
+
+## _liblinuxuplat_start
+```asm
+.global _liblinuxuplat_start
+_liblinuxuplat_start:
+	xorl %ebp, %ebp		# mark the outmost frame (clear the frame pointer)
+
+	popq %rdi		# argc as first argument
+	movq %rsp, %rsi		# move argv to rsi, the second parameter in x86_64 abi
+
+	# ignore environ for now
+
+	andq $~15, %rsp		# align stack to 16-byte boundary
+
+	# Run _liblinuxuplat_entry(argc, argv)
+	callq *_liblinuxuplat_entry@GOTPCREL(%rip)
+
+	# Protection
+_liblinuxuplat_start_err:
+	jmp *_liblinuxuplat_start_err(%rip)
+```
+转到 _liblinuxuplat_entry 执行。
+## _liblinuxuplat_entry
+由于 linuxu 是在 linux 用户态执行，所以不用像 qemu 启动那样复杂，不用设置启动协议，设置页表等功能，可以直接使用原来内核的相关功能。
+```c
+void _liblinuxuplat_entry(int argc, char *argv[])
+{
+	/*
+	 * Initialize platform console
+	 */
+	_liblinuxuplat_init_console();
+
+	__linuxu_plat_heap_init();
+
+	__linuxu_plat_initrd_init();
+
+	/*
+	 * Enter Unikraft
+	 */
+	ukplat_entry(argc, argv);
+}
+```
+ukplat_entry 过程与 上面一致。
 
 
+简单分析 \_\_linuxu_plat_heap_init 和 \_\_linuxu_plat_initrd_init。
+```c
+#define MB2B		(1024 * 1024)
+static __u32 heap_size = CONFIG_LINUXU_DEFAULT_HEAPMB;
+static void __linuxu_plat_heap_init(void)
+{
+	void *pret;
+	__u32 len;
+	int rc;
+
+	len = heap_size * MB2B;
+	uk_pr_info("Allocate memory for heap (%u MiB)\n", heap_size);
+
+	/**
+	 * Allocate heap memory
+	 */
+	if (len > 0) {
+		pret = sys_mapmem(NULL, len);
+		if (PTRISERR(pret)) {
+			rc = PTR2ERR(pret);
+			uk_pr_err("Failed to allocate memory for heap: %d\n",
+				  rc);
+		} else {
+			/* 将新分配的内存加入到 bi->mrds */
+			rc = ukplat_memregion_list_insert(
+				&ukplat_bootinfo_get()->mrds,
+				&(struct ukplat_memregion_desc){
+					.vbase = (__vaddr_t)pret,
+					.pbase = (__paddr_t)pret,
+					.len   = len,
+					.type  = UKPLAT_MEMRT_FREE,
+					.flags = UKPLAT_MEMRF_READ |
+						 UKPLAT_MEMRF_WRITE |
+						 UKPLAT_MEMRF_MAP,
+				});
+			if (unlikely(rc < 0))
+				uk_pr_err("Failed to add heap memory region descriptor.");
+		}
+	}
+}
+
+static void __linuxu_plat_initrd_init(void)
+{
+	void *pret;
+	__u32 len;
+	int rc;
+	struct k_stat file_info;
+
+	if (!initrd) {
+		uk_pr_debug("No initrd present.\n");
+	} else {
+		uk_pr_debug("Mapping in initrd file: %s\n", initrd);
+		int initrd_fd = sys_open(initrd, K_O_RDONLY, 0);
+
+		if (initrd_fd < 0)
+			uk_pr_crit("Failed to open %s for initrd\n", initrd);
+
+		/**
+		 * Find initrd file size
+		 */
+		if (sys_fstat(initrd_fd, &file_info) < 0) {
+			uk_pr_crit("sys_fstat failed for initrd file\n");
+			sys_close(initrd_fd);
+		}
+		len = file_info.st_size;
+		/**
+		 * Allocate initrd memory
+		 */
+		if (len > 0) {
+			pret = sys_mmap(NULL, len,
+					PROT_READ | PROT_WRITE | PROT_EXEC,
+					MAP_PRIVATE, initrd_fd, 0);
+			if (PTRISERR(pret)) {
+				rc = PTR2ERR(pret);
+				uk_pr_crit("Failed to memory-map initrd: %d\n",
+					   rc);
+				sys_close(initrd_fd);
+			}
+			/* 将为 initrd 分配的内存加入到 bi->mrds */
+			rc = ukplat_memregion_list_insert(
+				&ukplat_bootinfo_get()->mrds,
+				&(struct ukplat_memregion_desc){
+					.vbase = (__vaddr_t)pret,
+					.pbase = (__paddr_t)pret,
+					.len   = len,
+					.type  = UKPLAT_MEMRT_INITRD,
+					.flags = UKPLAT_MEMRF_READ |
+						 UKPLAT_MEMRF_WRITE |
+						 UKPLAT_MEMRF_MAP,
+				});
+			if (unlikely(rc < 0))
+				uk_pr_err("Failed to add initrd memory region descriptor.");
+		} else {
+			uk_pr_info("Ignoring empty initrd file.\n");
+			sys_close(initrd_fd);
+		}
+	}
+}
 ```

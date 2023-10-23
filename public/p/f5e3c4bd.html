@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 6.3.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -241,7 +241,7 @@
         <h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><p>假设我们需要修改cpu0的频率。</p>
 <span id="more"></span>
 
-<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><p>首先需要进入/sys/devices/system/cpu/cpu0/cpufreq目录。该目录下文件如下图所示：</p>
+<h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><p>首先需要进入&#x2F;sys&#x2F;devices&#x2F;system&#x2F;cpu&#x2F;cpu0&#x2F;cpufreq目录。该目录下文件如下图所示：</p>
 <img src="/p/f5e3c4bd/cpufreq.PNG" class title="图1 cpufreq">
 
 <p>前缀cpuinfo代表的是cpu硬件上支持的频率，而scaling前缀代表的是可以通过CPUFreq系统用软件进行调节时所支持的频率。cpuinfo_cur_freq代表通过硬件实际上读到的频率值，而scaling_cur_freq则是软件当前的设置值，多数情况下这两个值是一致的，但是也有可能因为硬件的原因，有微小的差异。</p>
@@ -256,7 +256,7 @@
 
 <p>我们需要设定cpu0的频率，则需要将scaling_setspeed内写入需要的频率。</p>
 <p>所以需要修改cpu0的频率，只需要执行以下指令：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo userspace &gt; scaling_governor</span><br><span class="line">echo 1100000 &gt; scaling_setspeed</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo userspace &gt; scaling_governor</span><br><span class="line">echo 1100000 &gt; scaling_setspeed</span><br></pre></td></tr></table></figure>
 
 <p>修改完毕后，执行s-tui查看结果。</p>
 <img src="/p/f5e3c4bd/result.PNG" class title="图3 result">

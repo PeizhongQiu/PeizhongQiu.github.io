@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 6.3.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -289,8 +289,8 @@
 <p>USER：进程所有者的实际用户名。</p>
 <p>PR：进程的调度优先级。这个字段的一些值是’rt’。这意味这这些进程运行在实时态。</p>
 <p>NI：进程的nice值（优先级）。越小的值意味着越高的优先级。负值表示高优先级，正值表示低优先级</p>
-<p>VIRT：进程使用的虚拟内存。进程使用的虚拟内存总量，单位kb。VIRT=SWAP+RES</p>
-<p>RES：驻留内存大小。驻留内存是任务使用的非交换物理内存大小。进程使用的、未被换出的物理内存大小，单位kb。RES=CODE+DATA</p>
+<p>VIRT：进程使用的虚拟内存。进程使用的虚拟内存总量，单位kb。VIRT&#x3D;SWAP+RES</p>
+<p>RES：驻留内存大小。驻留内存是任务使用的非交换物理内存大小。进程使用的、未被换出的物理内存大小，单位kb。RES&#x3D;CODE+DATA</p>
 <p>SHR：SHR是进程使用的共享内存。共享内存大小，单位kb</p>
 <p>S：这个是进程的状态。它有以下不同的值:</p>
 <ul>
@@ -303,22 +303,22 @@
 <p>%CPU：自从上一次更新时到现在任务所使用的CPU时间百分比。</p>
 <p>%MEM：进程使用的可用物理内存百分比。</p>
 <p>TIME+：任务启动后到现在所使用的全部CPU时间，精确到百分之一秒。</p>
-<p>COMMAND：运行进程所使用的命令。进程名称（命令名/命令行）</p>
+<p>COMMAND：运行进程所使用的命令。进程名称（命令名&#x2F;命令行）</p>
 <p>更多内容可以查看<a target="_blank" rel="noopener" href="https://www.cnblogs.com/zhoug2020/p/6336453.html">https://www.cnblogs.com/zhoug2020/p/6336453.html</a></p>
-<h2 id="压力测试工具：stress"><a href="#压力测试工具：stress" class="headerlink" title="压力测试工具：stress"></a>压力测试工具：stress</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum install -y epel-release</span><br><span class="line">yum install -y stress</span><br></pre></td></tr></table></figure>
+<h2 id="压力测试工具：stress"><a href="#压力测试工具：stress" class="headerlink" title="压力测试工具：stress"></a>压力测试工具：stress</h2><h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">yum install -y epel-release</span><br><span class="line">yum install -y stress</span><br></pre></td></tr></table></figure>
 
-<h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&#96;stress&#39; imposes certain types of compute stress on your system</span><br><span class="line"></span><br><span class="line">Usage: stress [OPTION [ARG]] ...</span><br><span class="line"> -?, --help         show this help statement</span><br><span class="line">     --version      show version statement</span><br><span class="line"> -v, --verbose      be verbose</span><br><span class="line"> -q, --quiet        be quiet	&#x2F;&#x2F;不显示运行信息</span><br><span class="line"> -n, --dry-run      show what would have been done</span><br><span class="line"> -t, --timeout N    timeout after N seconds</span><br><span class="line">     --backoff N    wait factor of N microseconds before work starts</span><br><span class="line"> -c, --cpu N        spawn N workers spinning on sqrt()</span><br><span class="line"> -i, --io N         spawn N workers spinning on sync()</span><br><span class="line"> -m, --vm N         spawn N workers spinning on malloc()&#x2F;free()</span><br><span class="line">     --vm-bytes B   malloc B bytes per vm worker (default is 256MB)</span><br><span class="line">     --vm-stride B  touch a byte every B bytes (default is 4096)</span><br><span class="line">     --vm-hang N    sleep N secs before free (default none, 0 is inf)</span><br><span class="line">     --vm-keep      redirty memory instead of freeing and reallocating</span><br><span class="line"> -d, --hdd N        spawn N workers spinning on write()&#x2F;unlink()</span><br><span class="line">     --hdd-bytes B  write B bytes per hdd worker (default is 1GB)</span><br><span class="line"></span><br><span class="line">Example: stress --cpu 8 --io 4 --vm 2 --vm-bytes 128M --timeout 10s</span><br><span class="line"></span><br><span class="line">Note: Numbers may be suffixed with s,m,h,d,y (time) or B,K,M,G (size).</span><br></pre></td></tr></table></figure>
+<h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">`stress&#x27; imposes certain types of compute stress on your system</span><br><span class="line"></span><br><span class="line">Usage: stress [OPTION [ARG]] ...</span><br><span class="line"> -?, --help         show this help statement</span><br><span class="line">     --version      show version statement</span><br><span class="line"> -v, --verbose      be verbose</span><br><span class="line"> -q, --quiet        be quiet	//不显示运行信息</span><br><span class="line"> -n, --dry-run      show what would have been done</span><br><span class="line"> -t, --timeout N    timeout after N seconds</span><br><span class="line">     --backoff N    wait factor of N microseconds before work starts</span><br><span class="line"> -c, --cpu N        spawn N workers spinning on sqrt()</span><br><span class="line"> -i, --io N         spawn N workers spinning on sync()</span><br><span class="line"> -m, --vm N         spawn N workers spinning on malloc()/free()</span><br><span class="line">     --vm-bytes B   malloc B bytes per vm worker (default is 256MB)</span><br><span class="line">     --vm-stride B  touch a byte every B bytes (default is 4096)</span><br><span class="line">     --vm-hang N    sleep N secs before free (default none, 0 is inf)</span><br><span class="line">     --vm-keep      redirty memory instead of freeing and reallocating</span><br><span class="line"> -d, --hdd N        spawn N workers spinning on write()/unlink()</span><br><span class="line">     --hdd-bytes B  write B bytes per hdd worker (default is 1GB)</span><br><span class="line"></span><br><span class="line">Example: stress --cpu 8 --io 4 --vm 2 --vm-bytes 128M --timeout 10s</span><br><span class="line"></span><br><span class="line">Note: Numbers may be suffixed with s,m,h,d,y (time) or B,K,M,G (size).</span><br></pre></td></tr></table></figure>
 
-<h2 id="查看CPU功耗"><a href="#查看CPU功耗" class="headerlink" title="查看CPU功耗"></a>查看CPU功耗</h2><h3 id="方法1：s-tui"><a href="#方法1：s-tui" class="headerlink" title="方法1：s-tui"></a>方法1：s-tui</h3><h4 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum install python-pip stress</span><br><span class="line">pip install s-tui	&#x2F;&#x2F;python2.X</span><br><span class="line">pip3 install s-tui	&#x2F;&#x2F;python3.X</span><br></pre></td></tr></table></figure>
+<h2 id="查看CPU功耗"><a href="#查看CPU功耗" class="headerlink" title="查看CPU功耗"></a>查看CPU功耗</h2><h3 id="方法1：s-tui"><a href="#方法1：s-tui" class="headerlink" title="方法1：s-tui"></a>方法1：s-tui</h3><h4 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum install python-pip stress</span><br><span class="line">pip install s-tui	//python2.X</span><br><span class="line">pip3 install s-tui	//python3.X</span><br></pre></td></tr></table></figure>
 
 <h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><p>需要root权限。需要以下命令启动：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s-tui</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s-tui</span><br></pre></td></tr></table></figure>
 
 <img src="/p/861b9aeb/s-tui.PNG" class title="图7 s-tui">
 
 <p>s-tui里面包含cpu的功耗，温度，频率，利用率等信息。</p>
 <h3 id="方法2：turbostat"><a href="#方法2：turbostat" class="headerlink" title="方法2：turbostat"></a>方法2：turbostat</h3><p>需要root权限。需要以下命令使用：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">turbostat</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">turbostat</span><br></pre></td></tr></table></figure>
 
 <img src="/p/861b9aeb/turbostat.PNG" class title="图8 turbostat">
 
@@ -327,7 +327,7 @@
 <p>三、turbostat查看CPU的忙碌状态。<br>AVG_MHz 执行周期数除以经过的时间<br>%Busy 处于“ C0”状态的时间百分比。<br>Bzy_MHz cpu繁忙时的平均时钟频率。 (in “c0” state).<br>TSC_MHz TSC在整个时间间隔内运行的平均MHz。TSC是一个64bit的寄存器，用来记录cpu的cycle个数。</p>
 <p>四、查看能耗消耗位置<br>PkgWatt 整个CPU消耗的瓦特数。<br>CorWatt 核心消耗的瓦特数。<br>GFXWatt 图像部分消耗的瓦特数。<br>RAMWatt DRAM DIMMS 部分消耗的瓦特数。</p>
 <p>五、查看RAPL信息<br>RAPL是Running Average Power Limit的缩写。<br>PKG_% cpu RAPL节流活动间隔的百分比。<br>RAM_% cpu RAPL节流在DRAM上处于活动状态的时间间隔的百分比。</p>
-<h3 id="方法3：powertop"><a href="#方法3：powertop" class="headerlink" title="方法3：powertop"></a>方法3：powertop</h3><h4 id="安装-2"><a href="#安装-2" class="headerlink" title="安装"></a>安装</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install powertop</span><br></pre></td></tr></table></figure>
+<h3 id="方法3：powertop"><a href="#方法3：powertop" class="headerlink" title="方法3：powertop"></a>方法3：powertop</h3><h4 id="安装-2"><a href="#安装-2" class="headerlink" title="安装"></a>安装</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install powertop</span><br></pre></td></tr></table></figure>
 
 <h4 id="使用-1"><a href="#使用-1" class="headerlink" title="使用"></a>使用</h4><p>Powertop需要root权限。详细可以参考<a target="_blank" rel="noopener" href="https://linux.cn/article-10560-1.html%E3%80%82">https://linux.cn/article-10560-1.html。</a></p>
 <h3 id="方法4：MSR寄存器"><a href="#方法4：MSR寄存器" class="headerlink" title="方法4：MSR寄存器"></a>方法4：MSR寄存器</h3><p>MSR（Model Specific Register）是x86架构中的概念，指的是在x86架构处理器中，一系列用于控制CPU运行、功能开关、调试、跟踪程序执行、监测CPU性能等方面的寄存器。</p>
@@ -341,17 +341,17 @@
 <li>再次读取MSR_PKG_ENERGY_STATUS寄存器的内容，乘以能量基本计算单元，得到累积能量消耗。</li>
 <li>用第二次得到的累积能量消耗减去第一次的，除以时间，就得到了这段时间的平均功耗。</li>
 </ul>
-<p>详细可以参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link">https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link</a></p>
-<h2 id="查看服务器功耗"><a href="#查看服务器功耗" class="headerlink" title="查看服务器功耗"></a>查看服务器功耗</h2><h3 id="ipmitool"><a href="#ipmitool" class="headerlink" title="ipmitool"></a>ipmitool</h3><h4 id="安装-3"><a href="#安装-3" class="headerlink" title="安装"></a>安装</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y OpenIPMI ipmitool</span><br></pre></td></tr></table></figure>
+<p>详细可以参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link">https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link</a></p>
+<h2 id="查看服务器功耗"><a href="#查看服务器功耗" class="headerlink" title="查看服务器功耗"></a>查看服务器功耗</h2><h3 id="ipmitool"><a href="#ipmitool" class="headerlink" title="ipmitool"></a>ipmitool</h3><h4 id="安装-3"><a href="#安装-3" class="headerlink" title="安装"></a>安装</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y OpenIPMI ipmitool</span><br></pre></td></tr></table></figure>
 
 <h4 id="使用-2"><a href="#使用-2" class="headerlink" title="使用"></a>使用</h4><p>需要root权限。使用命令：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ipmitool -I open sdr elist</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ipmitool -I open sdr elist</span><br></pre></td></tr></table></figure>
 
 
 
 <p>此命令可以获取传感器中的各种监测值和该值的监测阈值，包括（CPU温度，电压，风扇转速，电源调制模块温度，电源电压等信息）。</p>
 <p>使用以下命令查看功耗：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ipmitool -I open sdr elist | grep Sys_Total_Power</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ipmitool -I open sdr elist | grep Sys_Total_Power</span><br></pre></td></tr></table></figure>
 
 <img src="/p/861b9aeb/impi2.PNG" class title="图10 ipmi2">
 
@@ -360,7 +360,7 @@
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_44793395/article/details/106167831">https://blog.csdn.net/weixin_44793395/article/details/106167831</a></p>
 <p><a target="_blank" rel="noopener" href="https://linux.cn/article-10560-1.html">https://linux.cn/article-10560-1.html</a></p>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/xinqidian_xiao/article/details/80924897">https://blog.csdn.net/xinqidian_xiao/article/details/80924897</a></p>
-<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link">https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~default-2.no_search_link">https://blog.csdn.net/Xiaobai__Lee/article/details/100729269?spm=1001.2101.3001.6650.2&amp;utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link&amp;depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7Edefault-2.no_search_link</a></p>
 
     </div>
 

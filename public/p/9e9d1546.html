@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.0">
+<meta name="generator" content="Hexo 6.3.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
@@ -233,7 +233,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>本部分内容摘自《Viitual I/O Device(VIRTIO) Version 1.2》</p>
+        <p>本部分内容摘自《Viitual I&#x2F;O Device(VIRTIO) Version 1.2》</p>
 <span id="more"></span>
 
 <p>本系列文档描述了“virtio”系列设备的规格。这些设备存在于虚拟环境中，但从设计上来说，对于虚拟机中的客户机来说，它们看起来就像物理设备，本文档也将它们视为物理设备。 这种相似性允许客户机使用标准驱动程序和发现机制。</p>
@@ -241,7 +241,7 @@
 <ul>
 <li>直接：Virtio 设备使用正常的中断和 DMA 总线机制，任何设备驱动程序作者都应该熟悉这些机制。没有奇特的翻页或 COW 机制：它只是一个普通的设备。</li>
 <li>高效：Virtio 设备由用于输入和输出的描述符环组成，这些描述符的布局整齐，以避免驱动程序和设备写入相同缓存行时产生缓存影响。</li>
-<li>标准：除了支持设备所连接的总线之外，Virtio 对其运行环境不做任何假设。在本规范中，virtio 设备是通过 MMIO、通道 I/O 和 PCI 总线传输实现的。</li>
+<li>标准：除了支持设备所连接的总线之外，Virtio 对其运行环境不做任何假设。在本规范中，virtio 设备是通过 MMIO、通道 I&#x2F;O 和 PCI 总线传输实现的。</li>
 <li>可扩展：Virtio 设备包含在设备设置期间由客户机操作系统确认的功能位。 这允许向前和向后兼容：设备提供它所知道的所有功能，并且驱动程序承认它理解并希望使用的功能。</li>
 </ul>
 <h2 id="术语"><a href="#术语" class="headerlink" title="术语"></a>术语</h2><p><font color="#FF0000">MUST, REQUIRED, SHALL</font> mean that the definition is an absolute requirement of the specification.</p>

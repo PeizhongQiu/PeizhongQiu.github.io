@@ -44,11 +44,11 @@ Each heuristic is attempting to minimize the makespan, i.e., finish execution of
 | Duplex | 会同时执行Min-Min和Max-Min，然后选择更好的一个 |  |  |
 | Round-Robin(RR) | Round-Robin 算法将负载均匀的发放给各个节点。当使用这个算法时，调度器会循环的将VM分配给节点。比如：3个节点，第一个请求到达时，分配给第一个节点，第二个请求到达时，分配给第二个节点，第三个请求到达时分配给第三个节点，第四个请求到达时又分配给第一个节点，以此类推。 | 能均匀的利用所有的资源，保障了公平性 | 没有考虑任务的执行时间和资源使用情况。 |
 | Power Save Algorithm | 在调度器分配了VM后，检查是否有空闲的节点，有的话就关掉。等到有请求需要分配到该节点时，再打开该节点。 | 考虑能耗问题 |  |
-| Genetic Algorithms (GA) | initial population genetation;<br>evaluation;<br>while(stopping criteria not met){<br>&emsp;selection;<br>&emsp;crossover;<br>&emsp;mutation;<br>&emsp;evaluation;<br>}<br>output best solution;<br>具体算法可以参考{% post_link 遗传算法 Genetic Algorithm %} | Genetic Algorithms (GAs) are a technique used for searching large solution spaces.  GA usually found the best mappings of all 11 heuristics. | 调度时间长 |
-| Simulated Annealing (SA) | 具体算法可以参考{% post_link 模拟退火算法 Simulated Annealing %} |  | 可能会找到比Min-Min和GA更差的解决办法；调度时间较长 |
+| Genetic Algorithms (GA) | initial population genetation;<br>evaluation;<br>while(stopping criteria not met){<br>&emsp;selection;<br>&emsp;crossover;<br>&emsp;mutation;<br>&emsp;evaluation;<br>}<br>output best solution;<br>具体算法可以参考 | Genetic Algorithms (GAs) are a technique used for searching large solution spaces.  GA usually found the best mappings of all 11 heuristics. | 调度时间长 |
+| Simulated Annealing (SA) | 具体算法可以参考 |  | 可能会找到比Min-Min和GA更差的解决办法；调度时间较长 |
 | Genetic Simulated Annealing (GSA) | a combination of the GA and SA techniques . In general, GSA follows procedures similar to the GA outlined above. However, for the selection process, GSA uses the SA cooling schedule and system temperature and a simplified SA decision process for accepting or rejecting a new chromosome. |  | 调度时间长 |
-| Tabu | {% asset_img  tabu.PNG 图1 tabu%}<br>具体算法可以参考{% post_link 禁忌算法 Tabu %} |  | 调度时间较长 |
-| A* | 具体算法可以参考{% post_link A-算法 A* %} |  | 调度时间很长 |
+| Tabu | {% asset_img  tabu.PNG 图1 tabu%}<br>具体算法可以参考 |  | 调度时间较长 |
+| A* | 具体算法可以参考 |  | 调度时间很长 |
 
 ### 总体评价：
 
