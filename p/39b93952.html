@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"peizhongqiu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Unikraft 安装">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Unikraft 安装与使用">
+<meta property="og:url" content="https://peizhongqiu.github.io/p/39b93952.html">
+<meta property="og:site_name" content="Little Q 的个人博客">
+<meta property="og:description" content="Unikraft 安装">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-10-23T15:45:57.000Z">
+<meta property="article:modified_time" content="2023-10-24T15:49:54.516Z">
+<meta property="article:author" content="Little_Q">
+<meta property="article:tag" content="unikernel">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://peizhongqiu.github.io/p/39b93952.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Unikraft 安装与使用 | Little Q 的个人博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <!--<div class="headband"></div>-->
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Little Q 的个人博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/39b93952.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lulu.jpg">
+      <meta itemprop="name" content="Little_Q">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Little Q 的个人博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Unikraft 安装与使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-10-23 23:45:57" itemprop="dateCreated datePublished" datetime="2023-10-23T23:45:57+08:00">2023-10-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-10-24 23:49:54" itemprop="dateModified" datetime="2023-10-24T23:49:54+08:00">2023-10-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Unikraft-安装"><a href="#Unikraft-安装" class="headerlink" title="Unikraft 安装"></a>Unikraft 安装</h1><span id="more"></span>
+<p>源代码地址：<br><a target="_blank" rel="noopener" href="https://github.com/unikraft/unikraft">https://github.com/unikraft/unikraft</a></p>
+<p>安装 kraft： </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl --proto &#x27;=https&#x27; --tlsv1.2 -sSf https://get.kraftkit.sh | sh</span><br></pre></td></tr></table></figure>
+
+<p>参考网页：<br><a target="_blank" rel="noopener" href="https://github.com/unikraft/kraftkit">https://github.com/unikraft/kraftkit</a><br><a target="_blank" rel="noopener" href="https://unikraft.org/docs/getting-started">https://unikraft.org/docs/getting-started</a></p>
+<h1 id="Unikraft-使用"><a href="#Unikraft-使用" class="headerlink" title="Unikraft 使用"></a>Unikraft 使用</h1><p>接下来以 sqlite qemu-x86-64 为例说明 unikraft 的使用。<br><a target="_blank" rel="noopener" href="https://github.com/unikraft/app-sqlite">https://github.com/unikraft/app-sqlite</a><br><a target="_blank" rel="noopener" href="https://github.com/unikraft/app-sqlite/releases/tag/RELEASE-0.15.0">https://github.com/unikraft/app-sqlite/releases/tag/RELEASE-0.15.0</a></p>
+<h2 id="快速使用指南"><a href="#快速使用指南" class="headerlink" title="快速使用指南"></a>快速使用指南</h2><p>方法一：kraft</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/unikraft/app-sqlite sqlite</span><br><span class="line">cd sqlite/</span><br><span class="line">kraft build # 或者直接使用 kraft build --target sqlite-qemu-x86_64-initrd -j $(nproc)</span><br><span class="line">kraft run --initrd rootfs/</span><br></pre></td></tr></table></figure>
+
+<p>方法二：make</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/unikraft/app-sqlite sqlite</span><br><span class="line">cd sqlite/</span><br><span class="line">./scripts/setup.sh</span><br><span class="line">wget https://raw.githubusercontent.com/unikraft/app-testing/staging/scripts/generate.py -O scripts/generate.py</span><br><span class="line">chmod a+x scripts/generate.py # 根据 defconfig 目录下的文件，生成构建和运行脚本。</span><br><span class="line">./scripts/generate.py</span><br><span class="line">./scripts/build/make-qemu-x86_64-9pfs.sh </span><br><span class="line">./scripts/run/qemu-x86_64-9pfs.sh </span><br></pre></td></tr></table></figure>
+
+<h2 id="app-sqlite-目录"><a href="#app-sqlite-目录" class="headerlink" title="app-sqlite 目录"></a>app-sqlite 目录</h2><p>首先在编译链接之前，看看 sqlite 目录结构：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">tree sqlite/</span></span><br><span class="line">sqlite/</span><br><span class="line">├── defconfigs # defconfig 里面存放的是启动该实例需要的最小配置文件，如果需要额外的配置，可以使用 make menuconfig 来配置</span><br><span class="line">│   ├── fc-x86_64-initrd</span><br><span class="line">│   ├── qemu-arm64-9pfs</span><br><span class="line">│   ├── qemu-arm64-initrd</span><br><span class="line">│   ├── qemu-x86_64-9pfs</span><br><span class="line">│   └── qemu-x86_64-initrd</span><br><span class="line">├── kraft.cloud.yaml</span><br><span class="line">├── kraft.yaml # 该文件用于使用 kraft 配置、构建应用程序并将其打包为 Unikraft unikernel</span><br><span class="line">├── Makefile # 用于指定主 Unikraft 存储库相对于应用程序存储库的位置，以及应用程序需要使用的任何外部库的存储库</span><br><span class="line">├── Makefile.uk # 用于指定要构建的源（以及可选地从何处获取它们），包括路径、标志和任何特定于应用程序的目标</span><br><span class="line">├── README.md</span><br><span class="line">├── rootfs # rootfs 是 qemu 启动虚拟机时要传递的参数，在这个例子中，该目录下存放的是数据库数据</span><br><span class="line">│   ├── chinook.db</span><br><span class="line">│   └── script.sql</span><br><span class="line">└── scripts # 准备和运行脚本</span><br><span class="line">    ├── run.yaml</span><br><span class="line">    └── setup.sh # 下载需要的库</span><br></pre></td></tr></table></figure>
+
+<h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><h3 id="Kraftfile"><a href="#Kraftfile" class="headerlink" title="Kraftfile"></a>Kraftfile</h3><p>参考链接：<a target="_blank" rel="noopener" href="https://unikraft.org/docs/cli/reference/kraftfile/v0.5">https://unikraft.org/docs/cli/reference/kraftfile/v0.5</a><br>Kraftfile 可以有以下命名：Kraftfile，kraft.yaml，kraft.yml。<br>简单看一下 kraft.yaml 内容：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line">specification: &#x27;0.5&#x27; # 所有 Kraftfile 必须包含一个顶级 specification 属性，kraft 使用该属性来验证并正确解析文件的其余部分。最新的规范号是v0.5。</span><br><span class="line">name: sqlite # 可以指定应用程序名称。当未指定 name 属性时，将使用目录的基本名称作为名称</span><br><span class="line">unikraft: # 必须指定 unikraft 属性，并用于定义 Unikraft core 的源代码位置</span><br><span class="line">  version: stable # 可以是 stable 也可以是 unikraft 的某一次 Git 提交：“v0.14.0”，“70bc0af”</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="built_in">source</span> 指定源代码位置，<span class="built_in">source</span> 和 version 参数一起确定源代码。比如：</span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="built_in">source</span>: https://github.com/unikraft/unikraft.git</span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="built_in">source</span>: path/to/unikraft</span></span><br><span class="line">  kconfig:</span><br><span class="line">    - CONFIG_LIBUKLIBPARAM=y</span><br><span class="line">    - CONFIG_LIBUKMMAP=y</span><br><span class="line">    - CONFIG_LIBPOSIX_SYSINFO=y</span><br><span class="line">targets: # 目标被定义为生成的 unikernel 所指向的特定目的地，并且至少由特定平台（例如 qemu 或 firecracker）和架构（例如 x86_64 或 arm64）元组组成。 根据用例，一个项目可以有多个目标，但必须至少有一个。</span><br><span class="line">  - name: sqlite-qemu-x86_64-9pfs</span><br><span class="line">    architecture: x86_64</span><br><span class="line">    platform: qemu</span><br><span class="line">    kconfig:</span><br><span class="line">      - CONFIG_PLAT_KVM=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_AUTOMOUNT_ROOTFS=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS_9PFS=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS=&quot;9pfs&quot;</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTDEV=&quot;fs1&quot;</span><br><span class="line">  - name: sqlite-qemu-x86_64-initrd</span><br><span class="line">    architecture: x86_64</span><br><span class="line">    platform: qemu</span><br><span class="line">    kconfig:</span><br><span class="line">      - CONFIG_PLAT_KVM=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_AUTOMOUNT_ROOTFS=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS_INITRD=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS=&quot;initrd&quot;</span><br><span class="line">  - name: sqlite-qemu-arm64-9pfs</span><br><span class="line">    architecture: arm64</span><br><span class="line">    platform: qemu</span><br><span class="line">    kconfig:</span><br><span class="line">      - CONFIG_PLAT_KVM=y</span><br><span class="line">      - CONFIG_ARCH_ARM_64=y</span><br><span class="line">      - CONFIG_MCPU_ARM64_NONE=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_AUTOMOUNT_ROOTFS=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS_9PFS=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS=&quot;9pfs&quot;</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTDEV=&quot;fs1&quot;</span><br><span class="line">  - name: sqlite-qemu-arm64-initrd</span><br><span class="line">    architecture: arm64</span><br><span class="line">    platform: qemu</span><br><span class="line">    kconfig:</span><br><span class="line">      - CONFIG_PLAT_KVM=y</span><br><span class="line">      - CONFIG_ARCH_ARM_64=y</span><br><span class="line">      - CONFIG_MCPU_ARM64_NONE=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_AUTOMOUNT_ROOTFS=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS_INITRD=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS=&quot;initrd&quot;</span><br><span class="line">  - name: sqlite-fc-x86_64-initrd</span><br><span class="line">    architecture: x86_64</span><br><span class="line">    platform: fc</span><br><span class="line">    kconfig:</span><br><span class="line">      - CONFIG_PLAT_KVM=y</span><br><span class="line">      - CONFIG_KVM_BOOT_PROTO_LXBOOT=y</span><br><span class="line">      - CONFIG_KVM_VMM_FIRECRACKER=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_AUTOMOUNT_ROOTFS=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS_INITRD=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS=&quot;initrd&quot;</span><br><span class="line">  - name: sqlite-fc-arm64-initrd</span><br><span class="line">    architecture: arm64</span><br><span class="line">    platform: fc</span><br><span class="line">    kconfig:</span><br><span class="line">      - CONFIG_PLAT_KVM=y</span><br><span class="line">      - CONFIG_KVM_BOOT_PROTO_LXBOOT=y</span><br><span class="line">      - CONFIG_KVM_VMM_FIRECRACKER=y</span><br><span class="line">      - CONFIG_ARCH_ARM_64=y</span><br><span class="line">      - CONFIG_MCPU_ARM64_NONE=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_AUTOMOUNT_ROOTFS=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS_INITRD=y</span><br><span class="line">      - CONFIG_LIBVFSCORE_ROOTFS=&quot;initrd&quot;</span><br><span class="line">libraries: # 其他第三方库可以指定为构建的一部分，并以 map-format 列出。与 unikraft 属性类似，每个库都可以指定源、版本和一组 kconfig 选项</span><br><span class="line">  musl:</span><br><span class="line">    version: stable</span><br><span class="line">  sqlite:</span><br><span class="line">    version: stable</span><br><span class="line">    kconfig:</span><br><span class="line">      - CONFIG_LIBSQLITE_MAIN_FUNCTION=y</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="kraft"><a href="#kraft" class="headerlink" title="kraft"></a>kraft</h3><p>Kraftfile 是静态配置文件，用于使用 kraft 以编程方式构建和打包 unikernel。 该文件包含有关 Unikraft 核心构建系统、第三方库、用于构建的所有配置选项以及应用程序的可能目标列表的信息。 对于所有组件，可以定义 KConfig 选项来设置选项及其各自的值。要发现更多选项或以图形方式设置内容，可以调用：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kraft menu</span><br></pre></td></tr></table></figure>
+<p>构建 unikernel 使用以下命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">kraft build [FLAGS] [SUBCOMMAND|DIR]</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft build --<span class="built_in">help</span></span></span><br><span class="line">Build a Unikraft unikernel.</span><br><span class="line"></span><br><span class="line">The default behaviour of `kraft build` is to build a project.  Given no</span><br><span class="line">arguments, you will be guided through interactive mode.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">USAGE</span><br><span class="line">  kraft build [FLAGS] [SUBCOMMAND|DIR]</span><br><span class="line"></span><br><span class="line">FLAGS</span><br><span class="line">      --all                      Build all targets</span><br><span class="line">  -m, --arch string              Filter the creation of the build by architecture of known targets</span><br><span class="line">      --build-log string         Use the specified file to save the output from the build</span><br><span class="line">  -c, --config string            Override the path to the KConfig .config file</span><br><span class="line">      --config-dir string        Path to KraftKit config directory</span><br><span class="line">      --containerd-addr string   Address of containerd daemon socket</span><br><span class="line">      --dbg                      Build the debuggable (symbolic) kernel image instead of the stripped image</span><br><span class="line">      --editor string            Set the text editor to open when prompt to edit a file</span><br><span class="line">      --events-pid-file string   Events process ID used when running multiple unikernels</span><br><span class="line">      --git-protocol string      Preferred Git protocol to use (default &quot;https&quot;)</span><br><span class="line">  -h, --help                     help for build</span><br><span class="line">      --http-unix-sock string    When making HTTP(S) connections, pipe requests via this shared socket</span><br><span class="line">  -j, --jobs int                 Allow N jobs at once</span><br><span class="line">  -K, --kraftfile string         Set an alternative path of the Kraftfile</span><br><span class="line">      --log-level string         Log level verbosity (default &quot;info&quot;)</span><br><span class="line">      --log-timestamps           Enable log timestamps</span><br><span class="line">      --log-type string          Log type (default &quot;fancy&quot;)</span><br><span class="line">      --manifests-dir string     Path to Unikraft manifest cache</span><br><span class="line">  -F, --no-cache                 Force a rebuild even if existing intermediate artifacts already exist</span><br><span class="line">      --no-check-updates         Do not check for updates</span><br><span class="line">      --no-configure             Do not run Unikraft&#x27;s configure step before building</span><br><span class="line">      --no-emojis                Do not use emojis in any console output</span><br><span class="line">      --no-fast                  Do not use maximum parallelization when performing the build</span><br><span class="line">      --no-fetch                 Do not run Unikraft&#x27;s fetch step before building</span><br><span class="line">      --no-parallel              Do not run internal tasks in parallel</span><br><span class="line">      --no-prompt                Do not prompt for user interaction</span><br><span class="line">      --no-pull                  Do not pull packages before invoking Unikraft&#x27;s build system</span><br><span class="line">      --no-update                Do not update package index before running the build</span><br><span class="line">      --pager string             System pager to pipe output to</span><br><span class="line">  -p, --plat string              Filter the creation of the build by platform of known targets</span><br><span class="line">      --plugins-dir string       Path to KraftKit plugin directory</span><br><span class="line">      --runtime-dir string       Directory for placing runtime files (e.g. pidfiles)</span><br><span class="line">      --sources-dir string       Path to Unikraft component cache</span><br><span class="line">  -t, --target string            Build a particular known target</span><br><span class="line">      --with-manifest strings    Paths to package or component manifests (default [https://manifests.kraftkit.sh/index.yaml])</span><br><span class="line">      --with-mirror strings      Paths to mirrors of Unikraft component artifacts</span><br><span class="line"></span><br><span class="line">EXAMPLES</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">Build the current project (cwd)</span></span><br><span class="line"><span class="meta prompt_">  $ </span><span class="language-bash">kraft build</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">Build path to a Unikraft project</span></span><br><span class="line"><span class="meta prompt_">  $ </span><span class="language-bash">kraft build path/to/app</span></span><br></pre></td></tr></table></figure>
+<p>运行应用命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">kraft run [FLAGS] PROJECT|PACKAGE|BINARY -- [APP ARGS]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Run a built target <span class="keyword">in</span> the current working directory project:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Run a specific target from a multi-target project at the provided project directory:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run -t TARGET path/to/project</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Run a specific kernel binary:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run --<span class="built_in">arch</span> x86_64 --plat qemu path/to/kernel-x86_64-qemu</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Run an OCI-compatible unikernel, mapping port 8080 on the host to port 80 <span class="keyword">in</span> the unikernel:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run -p 8080:80 unikraft.org/nginx:latest</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Attach the unikernel to an existing network kraft0 backed by the bridge driver:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run --network bridge:kraft0</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Run a Linux userspace binary <span class="keyword">in</span> POSIX-/binary-compatibility mode:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run a.out</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Supply an initramfs CPIO archive file to the unikernel <span class="keyword">for</span> its rootfs:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run --initrd ./initramfs.cpio</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Supply a path <span class="built_in">which</span> is dynamically serialized into an initramfs CPIO archive:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run --initrd ./path/to/rootfs</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Mount a bi-directional path from on the host to the unikernel mapped to /dir:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run -v ./path/to/dir:/dir</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Supply a read-only root file system at / via initramfs CPIO archive and mount a bi-directional volume at /dir:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run --initrd ./initramfs.cpio --volume ./path/to/dir:/dir</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Customize the default content directory of the official Unikraft NGINX OCI-compatible unikernel and map port 8080 to localhost:</span></span><br><span class="line"><span class="meta prompt_">$ </span><span class="language-bash">kraft run -v ./path/to/html:/nginx/html -p 8080:80 unikraft.org/nginx:latest</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">参数设置</span></span><br><span class="line">-m, --arch string            Set the architecture</span><br><span class="line">      --as string              Force a specific runner</span><br><span class="line">  -d, --detach                 Run unikernel in background</span><br><span class="line">  -W, --disable-acceleration   Disable acceleration of CPU (usually enables TCG)</span><br><span class="line">  -h, --help                   help for run</span><br><span class="line">      --initrd string          Use the specified initrd (readonly)</span><br><span class="line">  -i, --interactive            Keep stdin open even if not attached</span><br><span class="line">      --ip string              Assign the provided IP address</span><br><span class="line">  -a, --kernel-arg strings     Set additional kernel arguments</span><br><span class="line">      --kraftfile string       Set an alternative path of the Kraftfile</span><br><span class="line">      --mac string             Assign the provided MAC address</span><br><span class="line">  -M, --memory string          Assign MB memory to the unikernel (default &quot;64M&quot;)</span><br><span class="line">  -n, --name string            Name of the instance</span><br><span class="line">      --network string         Attach instance to the provided network in the format &lt;driver&gt;:&lt;network&gt;, e.g. bridge:kraft0</span><br><span class="line">      --no-start               Do not start the machine</span><br><span class="line">      --plat string            Set the platform virtual machine monitor driver (default &quot;auto&quot;)</span><br><span class="line">  -p, --port stringArray       Publish a machine&#x27;s port(s) to the host</span><br><span class="line">      --rm                     Automatically remove the unikernel when it shutsdown</span><br><span class="line">      --rootfs string          Specify a path to use as root file system (can be volume or initramfs)</span><br><span class="line">      --symbolic               Use the debuggable (symbolic) unikernel</span><br><span class="line">  -t, --target string          Explicitly use the defined project target</span><br><span class="line">      --tty                    Allocate a pseudo-TTY</span><br><span class="line">  -v, --volume strings         Bind a volume to the instance</span><br></pre></td></tr></table></figure>
+
+<h2 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h2><p>首先看一下 setup.sh 的内容：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"></span><br><span class="line">test ! -d &quot;workdir&quot; &amp;&amp; echo &quot;Cloning repositories...&quot; || true</span><br><span class="line">test ! -d &quot;workdir/unikraft&quot; &amp;&amp; git clone https://github.com/unikraft/unikraft workdir/unikraft || true</span><br><span class="line">test ! -d &quot;workdir/libs/sqlite&quot; &amp;&amp; git clone https://github.com/unikraft/lib-sqlite workdir/libs/sqlite || true</span><br><span class="line">test ! -d &quot;workdir/libs/musl&quot; &amp;&amp; git clone https://github.com/unikraft/lib-musl workdir/libs/musl || true</span><br></pre></td></tr></table></figure>
+<p>setup.sh 内部下载了三个仓库：unikraft，lib-musl，lib-sqlite。以 lib-sqlite 为例，看一下目录结构：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">workdir/libs$ </span><span class="language-bash">tree sqlite</span></span><br><span class="line">sqlite</span><br><span class="line">├── CODING_STYLE.md</span><br><span class="line">├── Config.uk</span><br><span class="line">├── CONTRIBUTING.md</span><br><span class="line">├── COPYING.md</span><br><span class="line">├── include</span><br><span class="line">│   └── sqlite_cfg.h</span><br><span class="line">├── main.c # glue code</span><br><span class="line">├── MAINTAINERS.md</span><br><span class="line">├── Makefile.uk</span><br><span class="line">└── README.md</span><br></pre></td></tr></table></figure>
+
+<p>参考链接：<a target="_blank" rel="noopener" href="https://unikraft.org/docs/internals/build-system">https://unikraft.org/docs/internals/build-system</a></p>
+<h3 id="Makefile"><a href="#Makefile" class="headerlink" title="Makefile"></a>Makefile</h3><p><strong>在方法二中，我们将重点关注属于应用程序（即不属于库）的文件。 移植库的过程非常相似，只需将变量名的 APP 前缀更改为 LIB 即可。</strong><br>Makefile 通常简短且简单。 对于大多数应用程序，Makefile 不应超过以下内容：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">UK_ROOT  ?= <span class="variable">$(PWD)</span>/workdir/unikraft</span><br><span class="line">UK_LIBS  ?= <span class="variable">$(PWD)</span>/workdir/libs</span><br><span class="line">UK_PLATS ?= <span class="variable">$(PWD)</span>/workdir/plats</span><br><span class="line">LIBS  := <span class="variable">$(UK_LIBS)</span>/lib1:<span class="variable">$(UK_LIBS)</span>/lib2:<span class="variable">$(UK_LIBS)</span>/libN</span><br><span class="line">PLATS ?=</span><br><span class="line"></span><br><span class="line"><span class="section">all:</span></span><br><span class="line">        @make -C <span class="variable">$(UK_ROOT)</span> A=<span class="variable">$(PWD)</span> L=<span class="variable">$(LIBS)</span> P=<span class="variable">$(PLATS)</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$(MAKECMDGOALS)</span>:</span><br><span class="line">        @make -C <span class="variable">$(UK_ROOT)</span> A=<span class="variable">$(PWD)</span> L=<span class="variable">$(LIBS)</span> P=<span class="variable">$(PLATS)</span> <span class="variable">$(MAKECMDGOALS)</span></span><br></pre></td></tr></table></figure>
+<p>这个 makefile 等价于以下命令：</p>
+<figure class="highlight make"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -C workdir/unikraft A=. L=workdir/libs/lib1:workdir/libs/lib2:workdir/libs/libN</span><br></pre></td></tr></table></figure>
+
+<h3 id="Makefile-uk"><a href="#Makefile-uk" class="headerlink" title="Makefile.uk"></a>Makefile.uk</h3><p>Unikraft 构建系统提供了许多函数和宏，使编写 Makefile.uk 文件变得更加容易。另外，请确保定义的所有变量均以 APP[NAME]_ 或 LIB[NAME]_（例如 APPHELLOWORLD_）开头，以便它们正确命名。</p>
+<p>首先要做的是调用 Unikraft addlib 函数向系统注册应用程序，所有内容在 UNikraft 中最终都是一个库。此函数调用还将包含应用程序源的目录路径填入 APPNAME_BASE，将包含应用程序构建目录的目录路径填入 APPNAME_BUILD：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$(<span class="built_in">eval</span> $(<span class="built_in">call</span> addlib,appname)</span>)</span><br></pre></td></tr></table></figure>
+<p>name 被替换成应用名称。</p>
+<p>如果主应用程序代码需要从远程服务器下载，下一步是设置一个变量以指向包含应用程序源（或对象或预链接库）的 URL，并调用 Unikraft fetch 函数来下载并解压这些源（提取文件的目录路径将被填入 APPNAME_ORIGIN）：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">APPNAME_ZIPNAME = myapp-v0.0.1</span><br><span class="line">APPNAME_URL = http://app.org/<span class="variable">$(APPNAME_ZIPNAME)</span>.zip</span><br><span class="line"><span class="variable">$(<span class="built_in">eval</span> $(<span class="built_in">call</span> fetch,appname,<span class="variable">$(APPNAME_URL)</span>)</span>)</span><br></pre></td></tr></table></figure>
+<p>接下来设置对 Unikraft patch 函数的调用。 即使还没有任何补丁，也最好进行此设置以备以后需要。</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">APPNAME_PATCHDIR=<span class="variable">$(APPNAME_BASE)</span>/patches</span><br><span class="line"><span class="variable">$(<span class="built_in">eval</span> $(<span class="built_in">call</span> patch,appname,<span class="variable">$(APPNAME_PATCHDIR)</span>,<span class="variable">$(APPNAME_ZIPNAME)</span>)</span>)</span><br></pre></td></tr></table></figure>
+<p>完成所有这些后，就可以开始测试了：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ make menuconfig</span><br><span class="line">$ make</span><br></pre></td></tr></table></figure>
+<p>应该看到 Unikraft 下载应用程序并将其解压。对通过菜单或 makefile 指定的库会执行相同的操作。但是，目前还没有为应用程序构建任何内容，因为尚未指定任何要构建的源文件。构建时，Unikraft 会创建一个 build&#x2F; 目录，并将所有临时文件和目标文件放在该目录；应用程序源文件位于 build&#x2F;origin&#x2F;[tarballname]&#x2F; 下。</p>
+<p>为了告诉 Unikraft 要构建哪些源文件，要将文件添加到 APPNAME_SRCS-y 变量中：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">APPNAME_SRCS-y += <span class="variable">$(APPNAME_BASE)</span>/path_to_src/myfile.c</span><br></pre></td></tr></table></figure>
+<p>对于源文件，Unikraft 到目前为止支持 C (.c)、C++（.cc、.cxx、.cpp）和汇编文件（.s、.S）。</p>
+<p>如果有预编译的目标文件，可以添加它们（但由于预编译目标文件的编译标志可能不兼容，应该小心处理）：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">APPNAME_OBJS-y += <span class="variable">$(APPNAME_BASE)</span>/path_to_src/myobj.o</span><br></pre></td></tr></table></figure>
+<p>还可以使用 APPNAME_OBJS-y 添加预构建的库（如 .o 或 .a）：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">APPNAME_OBJS-y += <span class="variable">$(APPNAME_BASE)</span>/path_to_lib/mylib.a</span><br></pre></td></tr></table></figure>
+<p>一旦指定了所有源文件（以及可选的二进制文件），通常还需要指定头文件路径和编译标志：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Include paths</span></span><br><span class="line">APPNAME_ASINCLUDES  += -I<span class="variable">$(APPNAME_BASE)</span>/path_to_include/<span class="keyword">include</span> [for assembly files]</span><br><span class="line">APPNAME_CINCLUDES   += -I<span class="variable">$(APPNAME_BASE)</span>/path_to_include/<span class="keyword">include</span> [for C files]</span><br><span class="line">APPNAME_CXXINCLUDES += -I<span class="variable">$(APPNAME_BASE)</span>/path_to_include/<span class="keyword">include</span> [for C++ files]</span><br><span class="line"></span><br><span class="line"><span class="comment"># Flags for application sources</span></span><br><span class="line">APPNAME_ASFLAGS-y   += -DFLAG_NAME1 ... -DFLAG_NAMEN [for assembly files]</span><br><span class="line">APPNAME_CFLAGS-y    += -DFLAG_NAME1 ... -DFLAG_NAMEN [for C files]</span><br><span class="line">APPNAME_CXXFLAGS-y  += -DFLAG_NAME1 ... -DFLAG_NAMEN [for C++ files]</span><br></pre></td></tr></table></figure>
+<p>完成所有这些后，可以保存 Makefile.uk 并输入 make。假设所选的 Unikraft 库提供了应用程序所需的所有支持，Unikraft 应该将所有内容编译并链接在一起，并为菜单中指定的每个目标平台输出一个镜像。</p>
+<p>除了提到的所有功能之外，应用程序可能需要在下载并解压源代码之后、编译之前执行许多其他任务（例如，运行配置脚本或从源文件生成源代码的自定义脚本）。为了支持这一点，Unikraft 提供了 UK_PREPARE 变量，连接到内部 prepare 目标，可以将其设置为临时标记文件，并从那里设置为 Makefile.uk 文件中的目标。 例如：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$(APPNAME_BUILD)</span>/.prepared: [dependencies to further targets]</span><br><span class="line">       cmd &amp;&amp; <span class="variable">$(TOUCH)</span> <span class="variable">$@</span></span><br><span class="line"></span><br><span class="line">UK_PREPARE += <span class="variable">$(APPNAME_BUILD)</span>/.prepared</span><br></pre></td></tr></table></figure>
+<p>通过这种方式，可以确保在进行任何编译之前运行 cmd。 如果使用 fetch，请添加 $(APPNAME_BUILD)&#x2F;.origin 作为依赖项。 如果使用 patch，请添加 $(APPNAME_BUILD)&#x2F;.patched。</p>
+<p>此外，可能会发现有必要为特定源文件指定编译标志或头文件。 Unikraft 通过以下语法支持这一点：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">APPNAME_SRCS-y += <span class="variable">$(APPNAME_BASE)</span>/filename.c</span><br><span class="line">APPNAME_FILENAME_FLAGS-y += -DFLAG</span><br><span class="line">APPNAME_FILENAME_INCLUDES-y += -Iextra/<span class="keyword">include</span></span><br></pre></td></tr></table></figure>
+<p>还可以使用不同的标志多次编译单个源文件。 对于这种情况，Unikraft 支持变体：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">APPNAME_SRCS-y += <span class="variable">$(APPNAME_BASE)</span>/filename.c|variantname</span><br><span class="line">APPNAME_FILENAME_VARIANTNAME_FLAGS-y += -DFLAG2</span><br><span class="line">APPNAME_FILENAME_VARIANTNAME_INCLUDES-y += -Iextra/<span class="keyword">include</span></span><br></pre></td></tr></table></figure>
+<p>最后，可能还需要提供 “glue” 代码，例如 Unikraft 需要实现一个 main() 函数来调用应用程序的 main 或 init 例程。建议将任何此类文件放在应用程序的主目录 (APPNAME_BASE) 中，并将它们可能依赖的头文件放在 APPNAME_BASE&#x2F;include&#x2F; 下。 当然，不要忘记添加源文件并包含 Makefile.uk 的路径。<br>到目前为止，名称范围内的保留变量名称:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">APPNAME_BASE                              - Path to source base</span><br><span class="line">APPNAME_BUILD                             - Path to target build dir</span><br><span class="line">APPNAME_EXPORTS                           - Path to the list of exported symbols</span><br><span class="line">                                            (default is &#x27;<span class="variable">$(APPNAME_BASE)</span>/exportsyms.uk&#x27;)</span><br><span class="line">APPNAME_ORIGIN                            - Path to extracted archive</span><br><span class="line">                                            (when fetch or unarchive was used)</span><br><span class="line">APPNAME_CLEAN APPNAME_CLEAN-y             - List of files to clean additional</span><br><span class="line">                                            on make clean</span><br><span class="line">APPNAME_SRCS APPNAME_SRCS-y               - List of source files to be</span><br><span class="line">                                            compiled</span><br><span class="line">APPNAME_OBJS APPNAME_OBJS-y               - List of object files to be linked</span><br><span class="line">                                            for the library</span><br><span class="line">APPNAME_OBJCFLAGS APPNAME_OBJCFLAGS-y     - link flags (e.g., <span class="keyword">define</span> symbols</span><br><span class="line">                                            as internal)</span><br><span class="line">APPNAME_CFLAGS APPNAME_CFLAGS-y           - Flags for C files of the library</span><br><span class="line">APPNAME_CXXFLAGS APPNAME_CXXFLAGS-y       - Flags for C++ files of the library</span><br><span class="line">APPNAME_ASFLAGS APPNAME_ASFLAGS-y         - Flags for assembly files of the</span><br><span class="line">                                            library</span><br><span class="line">APPNAME_CINCLUDES APPNAME_CINCLUDES-y     - Includes for C files of the</span><br><span class="line">                                            library</span><br><span class="line">APPNAME_CXXINCLUDES APPNAME_CXXINCLUDES-y - Includes for C++ files of the</span><br><span class="line">                                            library</span><br><span class="line">APPNAME_ASINCLUDES APPNAME_ASINCLUDES-y   - Includes for assembly files of</span><br><span class="line">                                            the library</span><br><span class="line">APPNAME_FILENAME_FLAGS                    - Flags for a *specific* source file</span><br><span class="line">APPNAME_FILENAME_FLAGS-y                    of the library (not exposed to its</span><br><span class="line">                                            variants)</span><br><span class="line">APPNAME_FILENAME_INCLUDES                 - Includes for a *specific* source</span><br><span class="line">APPNAME_FILENAME_INCLUDES-y                 file of the library (not exposed</span><br><span class="line">                                            to its variants)</span><br><span class="line">APPNAME_FILENAME_VARIANT_FLAGS            - Flags for a *specific* source file</span><br><span class="line">APPNAME_FILENAME_VARIANT_FLAGS-y            and variant of the library</span><br><span class="line">APPNAME_FILENAME_VARIANT_INCLUDES         - Includes for a *specific* source</span><br><span class="line">APPNAME_FILENAME_VARIANT_INCLUDES-y         file and variant of the library</span><br></pre></td></tr></table></figure>
+<h3 id="Config-uk"><a href="#Config-uk" class="headerlink" title="Config.uk"></a>Config.uk</h3><p><a target="_blank" rel="noopener" href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/Documentation/kbuild/kconfig-language.rst">https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/plain/Documentation/kbuild/kconfig-language.rst</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.kernel.org/doc/html/latest/kbuild/kconfig-language.html">https://www.kernel.org/doc/html/latest/kbuild/kconfig-language.html</a></p>
+<p>Unikraft 的配置系统是基于 Linux 的 KConfig 系统。使用 Config.uk，可以为应用程序定义可能的配置并定义对其他库的依赖关系。Unikraft 包含此文件来呈现基于菜单的配置，以及加载和存储配置（.config）。该文件中定义的每个设置都将全局填充为所有 Makefile.uk 文件的设置变量，以及使用 “#include &lt;uk&#x2F;config.h&gt;” 时源代码中定义的宏。请确保所有设置都正确命名。它们应该以 [APPNAME]_ 开头（例如 APPHELLOWORLD_）。另请注意，一些变量名称是为每个应用程序或库命名空间预定义的（请参阅 Makefile.uk）。</p>
+<p>作为最佳实践，建议在文件开始时定义设置为 y 的在 menuconfig 屏幕中不可见的布尔类型依赖项：</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">### Invisible option for dependencies</span></span><br><span class="line">config APPHELLOWORLD_DEPENDENCIES</span><br><span class="line">    bool</span><br><span class="line">    default y</span><br><span class="line">    <span class="comment"># dependencies with `select`:</span></span><br><span class="line">    select LIBNOLIBC if !HAVE_LIBC</span><br><span class="line">    select LIB1</span><br><span class="line">    select LIB2</span><br></pre></td></tr></table></figure>
+<p>应用程序的任何其他设置都可以是布尔值、整数或字符串类型。 甚至可以定义下拉选择。请注意，Unikraft 没有 tristates（对于内核模块，m 选项不可用）。</p>
+<h3 id="exportsyms-uk"><a href="#exportsyms-uk" class="headerlink" title="exportsyms.uk"></a>exportsyms.uk</h3><p>Unikraft 为每个库提供单独的命名空间。这意味着每个函数和变量仅在内部可见和可链接。</p>
+<p>要使符号对其他库可见，请将其添加到此 exportsyms.uk 文件中。每行一个符号名称。行注释可以通过 <strong>#</strong> 引入。</p>
+<p>如果您正在编写应用程序，则需要将程序入口点添加到此文件中。很可能那里应该没有其他东西。对于库，必须列出所有外部 API 函数。</p>
+<p>为了文件结构的一致性，不建议更改此符号文件的默认路径。可以通过定义 APPNAME_EXPORTS 变量来覆盖它。该路径必须是绝对路径（可以使用 $(APPNAME_BASE) 引用应用程序源的基本目录）或相对于 Unikraft 源目录。</p>
+<p>如果给定库中不存在 exportsyms.uk 文件，则默认情况下将导出所有符号。</p>
+<h3 id="extra-ld"><a href="#extra-ld" class="headerlink" title="extra.ld"></a>extra.ld</h3><p>如果库&#x2F;应用程序需要最终可执行映像中的一个 section，请编辑 Makefile.uk 以添加:</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LIBYOURAPPNAME_SRCS-<span class="variable">$(CONFIG_LIBYOURAPPNAME)</span> += <span class="variable">$(LIBYOURAPPNAME_BASE)</span>/extra.ld</span><br></pre></td></tr></table></figure>
+<p>extra.ld 的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">    .uk_fs_list : &#123;</span><br><span class="line">         PROVIDE(uk_fslist_start = .);</span><br><span class="line">         KEEP (*(.uk_fs_list))</span><br><span class="line">         PROVIDE(uk_fslist_end = .);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">INSERT AFTER .text;</span><br></pre></td></tr></table></figure>
+<p>这会在 .text section 后添加 .uk_fs_list section。</p>
+<h3 id="make-和-run"><a href="#make-和-run" class="headerlink" title="make 和 run"></a>make 和 run</h3><p>以 script&#x2F;build&#x2F;make-qemu-x86_64-initrd.sh 和 script&#x2F;run&#x2F;qemu-x86_64-initrd.sh</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/sh</span></span><br><span class="line"></span><br><span class="line">make distclean</span><br><span class="line">UK_DEFCONFIG=$(pwd)/defconfigs/qemu-x86_64-initrd make defconfig # 生成 .config 文件</span><br><span class="line">make prepare</span><br><span class="line">make -j $(nproc)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/sh</span></span><br><span class="line"></span><br><span class="line">kernel=&quot;workdir/build/sqlite_qemu-x86_64&quot;</span><br><span class="line">cmd=&quot;&quot;</span><br><span class="line"></span><br><span class="line">if test $# -eq 1; then</span><br><span class="line">    kernel=&quot;$1&quot;</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">rootfs=&quot;./rootfs&quot;</span><br><span class="line">test -d &quot;$rootfs&quot; || mkdir &quot;$rootfs&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Clean up any previous instances.</span></span><br><span class="line">sudo pkill -f qemu-system</span><br><span class="line">sudo pkill -f firecracker</span><br><span class="line">sudo kraft stop --all</span><br><span class="line">sudo kraft rm --all</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Create CPIO archive to be used as the initrd.</span></span><br><span class="line">old=&quot;$PWD&quot;</span><br><span class="line">cd &quot;$rootfs&quot;</span><br><span class="line">find -depth -print | tac | bsdcpio -o --format newc &gt; &quot;$old&quot;/rootfs.cpio</span><br><span class="line">cd &quot;$old&quot;</span><br><span class="line"></span><br><span class="line">qemu-system-x86_64 \</span><br><span class="line">    -kernel &quot;$kernel&quot; \</span><br><span class="line">    -nographic \</span><br><span class="line">    -m 64M \</span><br><span class="line">    -append &quot;$cmd&quot; \</span><br><span class="line">    -initrd &quot;$PWD&quot;/rootfs.cpio \</span><br><span class="line">    -cpu max</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Little_Q
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://peizhongqiu.github.io/p/39b93952.html" title="Unikraft 安装与使用">https://peizhongqiu.github.io/p/39b93952.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/unikernel/" rel="tag"># unikernel</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/p/640bec68.html" rel="prev" title="SGX简介">
+      <i class="fa fa-chevron-left"></i> SGX简介
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Unikraft-%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">Unikraft 安装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Unikraft-%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">Unikraft 使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97"><span class="nav-number">2.1.</span> <span class="nav-text">快速使用指南</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#app-sqlite-%E7%9B%AE%E5%BD%95"><span class="nav-number">2.2.</span> <span class="nav-text">app-sqlite 目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80"><span class="nav-number">2.3.</span> <span class="nav-text">方法一</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Kraftfile"><span class="nav-number">2.3.1.</span> <span class="nav-text">Kraftfile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#kraft"><span class="nav-number">2.3.2.</span> <span class="nav-text">kraft</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C"><span class="nav-number">2.4.</span> <span class="nav-text">方法二</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Makefile"><span class="nav-number">2.4.1.</span> <span class="nav-text">Makefile</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Makefile-uk"><span class="nav-number">2.4.2.</span> <span class="nav-text">Makefile.uk</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Config-uk"><span class="nav-number">2.4.3.</span> <span class="nav-text">Config.uk</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#exportsyms-uk"><span class="nav-number">2.4.4.</span> <span class="nav-text">exportsyms.uk</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#extra-ld"><span class="nav-number">2.4.5.</span> <span class="nav-text">extra.ld</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#make-%E5%92%8C-run"><span class="nav-number">2.4.6.</span> <span class="nav-text">make 和 run</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Little_Q"
+      src="/images/lulu.jpg">
+  <p class="site-author-name" itemprop="name">Little_Q</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">14</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/PeizhongQiu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;PeizhongQiu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Little_Q</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
