@@ -1,24 +1,12 @@
 ---
-title: Unikraft
+title: Unikraft 启动流程
 abbrlink: 8e98bdb9
 date: 2023-10-08 23:22:09
 tags: unikernel 
 ---
-# Unikraft 安装
-<!-- more -->
-源代码地址：
-https://github.com/unikraft/unikraft
-
-安装 kraft： 
-```shell
-curl --proto '=https' --tlsv1.2 -sSf https://get.kraftkit.sh | sh
-```
-
-参考网页：
-[https://github.com/unikraft/kraftkit](https://github.com/unikraft/kraftkit)
-https://unikraft.org/docs/getting-started
 
 # Unikraft 调试
+<!-- more -->
 [https://www.youtube.com/watch?v=ANm0diPrWUE](https://www.youtube.com/watch?v=ANm0diPrWUE)
 https://users.ece.utexas.edu/~adnan/gdb-refcard.pdf
 ## KVM
