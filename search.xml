@@ -1086,15 +1086,6 @@ EPCM(DS:RCX).VALID := 1;
       </tags>
   </entry>
   <entry>
-    <title>unikernel知识总结</title>
-    <url>/p/c8f61804.html</url>
-    <content><![CDATA[<h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><span id="more"></span>
-]]></content>
-      <tags>
-        <tag>unikernel</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>A*</title>
     <url>/p/7300a56d.html</url>
     <content><![CDATA[]]></content>
