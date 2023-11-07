@@ -1518,7 +1518,7 @@ EPCM(DS:RCX).VALID := 1;
 
 <p>运行结果如下图所示：</p>
 <img src="/p/e12ad5d/hello.png" class title="图 2 hello1">
-<p>由于 APPHELLOWORLD_SPINNER 默认为 n，所以最后一部分 monkey 代码没有打印。所以，可以通过 make menuconfig 指令打开。运行结果如下图所示：</p>
+<p>由于 APPHELLOWORLD_SPINNER 默认为 n，所以最后一部分 monkey 代码没有打印。可以通过 make menuconfig 指令打开对应的 config 选项。运行结果如下图所示：</p>
 <img src="/p/e12ad5d/hello2.png" class title="图 3 hello2">
 
 <h2 id="redis"><a href="#redis" class="headerlink" title="redis"></a>redis</h2><p>以上的内容都比较简单。接下来，我们看一下复杂的应用程序 redis 该如何移植到 unikraft 上。<br>首先，由于 redis 应用程序庞大，为了以后方便能够移植到其他 unikrat 镜像中，我们将 redis 分成两部分：App 和 Lib。</p>
