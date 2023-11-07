@@ -159,6 +159,7 @@ libraries: # 其他第三方库可以指定为构建的一部分，并以 map-fo
 
 
 ### kraft
+kraft config 配置：https://unikraft.org/docs/cli/options
 Kraftfile 是静态配置文件，用于使用 kraft 以编程方式构建和打包 unikernel。 该文件包含有关 Unikraft 核心构建系统、第三方库、用于构建的所有配置选项以及应用程序的可能目标列表的信息。 对于所有组件，可以定义 KConfig 选项来设置选项及其各自的值。要发现更多选项或以图形方式设置内容，可以调用：
 ``` shell
 kraft menu
