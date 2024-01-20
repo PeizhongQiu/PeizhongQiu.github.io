@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"peizhongqiu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="源代码地址：https:&#x2F;&#x2F;github.com&#x2F;arceos-hypervisor&#x2F;arceos&#x2F;tree&#x2F;hypervisor-x86 apps&#x2F;hv&#x2F;src&#x2F;main.rs创建虚拟机全过程： 1234567891011121314151617181920212223242526272829303132333435363738394041fn main(hart_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="arceos 之 hypervisor-x86 源码阅读">
+<meta property="og:url" content="https://peizhongqiu.github.io/p/af2a573a.html">
+<meta property="og:site_name" content="Little Q 的个人博客">
+<meta property="og:description" content="源代码地址：https:&#x2F;&#x2F;github.com&#x2F;arceos-hypervisor&#x2F;arceos&#x2F;tree&#x2F;hypervisor-x86 apps&#x2F;hv&#x2F;src&#x2F;main.rs创建虚拟机全过程： 1234567891011121314151617181920212223242526272829303132333435363738394041fn main(hart_">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-01-09T13:31:39.000Z">
+<meta property="article:modified_time" content="2024-01-10T07:18:12.580Z">
+<meta property="article:author" content="Little_Q">
+<meta property="article:tag" content="arceos">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://peizhongqiu.github.io/p/af2a573a.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>arceos 之 hypervisor-x86 源码阅读 | Little Q 的个人博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <!--<div class="headband"></div>-->
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Little Q 的个人博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/af2a573a.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lulu.jpg">
+      <meta itemprop="name" content="Little_Q">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Little Q 的个人博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          arceos 之 hypervisor-x86 源码阅读
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-01-09 21:31:39" itemprop="dateCreated datePublished" datetime="2024-01-09T21:31:39+08:00">2024-01-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-01-10 15:18:12" itemprop="dateModified" datetime="2024-01-10T15:18:12+08:00">2024-01-10</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>源代码地址：<a target="_blank" rel="noopener" href="https://github.com/arceos-hypervisor/arceos/tree/hypervisor-x86">https://github.com/arceos-hypervisor/arceos/tree/hypervisor-x86</a></p>
+<h2 id="apps-hv-src-main-rs"><a href="#apps-hv-src-main-rs" class="headerlink" title="apps&#x2F;hv&#x2F;src&#x2F;main.rs"></a>apps&#x2F;hv&#x2F;src&#x2F;main.rs</h2><p>创建虚拟机全过程：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">main</span>(hart_id: <span class="type">usize</span>) &#123;</span><br><span class="line">	<span class="built_in">println!</span>(<span class="string">&quot;Hello, hv!&quot;</span>);</span><br><span class="line">	<span class="meta">#[cfg(target_arch = <span class="string">&quot;x86_64&quot;</span>)]</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;into main &#123;&#125;&quot;</span>, hart_id);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 第一步：打开 vmx</span></span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">p</span> = PerCpu::&lt;HyperCraftHalImpl&gt;::<span class="title function_ invoke__">new</span>(hart_id);</span><br><span class="line">        p.<span class="title function_ invoke__">hardware_enable</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 第二步：设置页表</span></span><br><span class="line">        <span class="keyword">let</span> <span class="variable">gpm</span> = x64::<span class="title function_ invoke__">setup_gpm</span>(hart_id).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">npt</span> = gpm.<span class="title function_ invoke__">nest_page_table_root</span>();   <span class="comment">// 页表根节点物理地址</span></span><br><span class="line">        info!(<span class="string">&quot;&#123;:#x?&#125;&quot;</span>, gpm);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 第三步，创建虚拟机需要的 vcpu</span></span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">vcpus</span> = VmCpus::&lt;HyperCraftHalImpl, X64VcpuDevices&lt;HyperCraftHalImpl&gt;&gt;::<span class="title function_ invoke__">new</span>();</span><br><span class="line">        vcpus.<span class="title function_ invoke__">add_vcpu</span>(VCpu::<span class="title function_ invoke__">new</span>(<span class="number">0</span>, p.<span class="title function_ invoke__">vmcs_revision_id</span>(), <span class="number">0x7c00</span>, npt).<span class="title function_ invoke__">unwrap</span>());</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">vm</span> = VM::&lt;HyperCraftHalImpl, X64VcpuDevices&lt;HyperCraftHalImpl&gt;, X64VmDevices&lt;HyperCraftHalImpl&gt;&gt;::<span class="title function_ invoke__">new</span>(vcpus);</span><br><span class="line">        vm.<span class="title function_ invoke__">bind_vcpu</span>(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> hart_id == <span class="number">0</span> &#123;   <span class="comment">// 主 cpu 执行</span></span><br><span class="line">            <span class="keyword">let</span> (_, dev) = vm.<span class="title function_ invoke__">get_vcpu_and_device</span>(<span class="number">0</span>).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">            *(dev.console.<span class="title function_ invoke__">lock</span>().<span class="title function_ invoke__">backend</span>()) = device::device_emu::MultiplexConsoleBackend::Primary;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> <span class="variable">v</span> <span class="keyword">in</span> <span class="number">0</span>..<span class="number">256</span> &#123;</span><br><span class="line">                libax::hv::<span class="title function_ invoke__">set_host_irq_enabled</span>(v, <span class="literal">true</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;Running guest...&quot;</span>);</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">&quot;&#123;:?&#125;&quot;</span>, vm.<span class="title function_ invoke__">run_vcpu</span>(<span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">        p.<span class="title function_ invoke__">hardware_disable</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line"></span><br><span class="line">        <span class="built_in">panic!</span>(<span class="string">&quot;done&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="第一步：打开-vmx"><a href="#第一步：打开-vmx" class="headerlink" title="第一步：打开 vmx"></a>第一步：打开 vmx</h3><p>首先看 PerCpu 相关数据结构：</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// arceos/crates/hypercraft/src/arch/x86_64/percpu.rs</span></span><br><span class="line"><span class="comment">/// Host per-CPU states to run the guest. All methods must be called on the corresponding CPU.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">PerCpu</span>&lt;H: HyperCraftHal&gt; &#123;</span><br><span class="line">    cpu_id: <span class="type">usize</span>,  <span class="comment">// 物理 cpu-id</span></span><br><span class="line">    arch: VmxPerCpuState&lt;H&gt;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// arceos/crates/hypercraft/src/arch/x86_64/vmx/percpu.rs</span></span><br><span class="line"><span class="comment">/// State per vmx physical cpu.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">VmxPerCpuState</span>&lt;H: HyperCraftHal&gt; &#123;</span><br><span class="line">    <span class="title function_ invoke__">pub</span>(<span class="keyword">super</span>) vmcs_revision_id: <span class="type">u32</span>,</span><br><span class="line">    vmx_region: VmxRegion&lt;H&gt;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// arceos/crates/hypercraft/src/arch/x86_64/vmx/region.rs</span></span><br><span class="line"><span class="comment">/// VMCS/VMXON region in 4K size. (SDM Vol. 3C, Section 24.2)</span></span><br><span class="line"><span class="meta">#[derive(Debug)]</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">VmxRegion</span>&lt;H: HyperCraftHal&gt; &#123;</span><br><span class="line">    frame: PhysFrame&lt;H&gt;,        <span class="comment">// 4K 页面</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>PerCpu 与一个逻辑 cpu 绑定，进行 vmx 的启动与关闭等操作。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">impl</span>&lt;H: HyperCraftHal&gt; PerCpu&lt;H&gt; &#123;</span><br><span class="line">    <span class="comment">/// Create an uninitialized instance.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">new</span>(cpu_id: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> <span class="keyword">Self</span> &#123;</span><br><span class="line">        <span class="keyword">Self</span> &#123;</span><br><span class="line">            cpu_id: cpu_id,     <span class="comment">// 物理 cpu id</span></span><br><span class="line">            arch: VmxPerCpuState::<span class="title function_ invoke__">new</span>(),    <span class="comment">// vmcs_revision_id 为 0，VmxRegion 未分配空间</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Whether the current CPU has hardware virtualization enabled.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">is_enabled</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> <span class="type">bool</span> &#123;</span><br><span class="line">        <span class="keyword">self</span>.arch.<span class="title function_ invoke__">is_enabled</span>()  <span class="comment">// 检查 CR4 寄存器 VMXE 是否打开</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Enable hardware virtualization on the current CPU.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">hardware_enable</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) <span class="punctuation">-&gt;</span> HyperResult &#123;</span><br><span class="line">        <span class="keyword">match</span> <span class="keyword">self</span>.arch.<span class="title function_ invoke__">hardware_enable</span>() &#123;</span><br><span class="line">            <span class="title function_ invoke__">Ok</span>(_) =&gt; &#123;</span><br><span class="line">                info!(<span class="string">&quot;VMX enabled on cpu &#123;&#125;.&quot;</span>, <span class="keyword">self</span>.cpu_id);</span><br><span class="line">                <span class="title function_ invoke__">Ok</span>(())</span><br><span class="line">            &#125;,</span><br><span class="line">            e @ <span class="title function_ invoke__">Err</span>(_) =&gt; &#123;</span><br><span class="line">                e</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Disable hardware virtualization on the current CPU.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">hardware_disable</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) <span class="punctuation">-&gt;</span> HyperResult &#123;</span><br><span class="line">        <span class="keyword">match</span> <span class="keyword">self</span>.arch.<span class="title function_ invoke__">hardware_disable</span>() &#123;</span><br><span class="line">            <span class="title function_ invoke__">Ok</span>(_) =&gt; &#123;</span><br><span class="line">                info!(<span class="string">&quot;VMX disabled on cpu &#123;&#125;.&quot;</span>, <span class="keyword">self</span>.cpu_id);</span><br><span class="line">                <span class="title function_ invoke__">Ok</span>(())</span><br><span class="line">            &#125;,</span><br><span class="line">            e @ <span class="title function_ invoke__">Err</span>(_) =&gt; &#123;</span><br><span class="line">                e</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Get current vmcs revision id.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">vmcs_revision_id</span>(&amp;<span class="keyword">self</span>) <span class="punctuation">-&gt;</span> <span class="type">u32</span> &#123;</span><br><span class="line">        <span class="keyword">self</span>.arch.<span class="title function_ invoke__">vmcs_revision_id</span>()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;H: HyperCraftHal&gt; <span class="built_in">Drop</span> <span class="keyword">for</span> <span class="title class_">PerCpu</span>&lt;H&gt; &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">drop</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">self</span>.<span class="title function_ invoke__">is_enabled</span>() &#123;</span><br><span class="line">            <span class="keyword">self</span>.<span class="title function_ invoke__">hardware_disable</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="第二步，设置页表"><a href="#第二步，设置页表" class="headerlink" title="第二步，设置页表"></a>第二步，设置页表</h3><p>现在需要支持两个虚拟机，所以内存只分配两个虚拟机的量。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[repr(align(4096))]</span></span><br><span class="line"><span class="title function_ invoke__">pub</span>(<span class="keyword">super</span>) <span class="keyword">struct</span> <span class="title class_">AlignedMemory</span>&lt;<span class="keyword">const</span> LEN: <span class="type">usize</span>&gt;([<span class="type">u8</span>; LEN]);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 两个虚拟机的内存空间，大小为 GUEST_PHYS_MEMORY_SIZE（16M）</span></span><br><span class="line"><span class="title function_ invoke__">pub</span>(<span class="keyword">super</span>) <span class="keyword">static</span> <span class="keyword">mut</span> GUEST_PHYS_MEMORY: [AlignedMemory&lt;GUEST_PHYS_MEMORY_SIZE&gt;; <span class="number">2</span>] =</span><br><span class="line">    [<span class="title function_ invoke__">AlignedMemory</span>([<span class="number">0</span>; GUEST_PHYS_MEMORY_SIZE]), <span class="title function_ invoke__">AlignedMemory</span>([<span class="number">0</span>; GUEST_PHYS_MEMORY_SIZE])];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取第 id 个虚拟机的 guest_paddr 对应的物理机虚拟地址</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">gpa_as_mut_ptr</span>(id: <span class="type">usize</span>, guest_paddr: GuestPhysAddr) <span class="punctuation">-&gt;</span> *<span class="keyword">mut</span> <span class="type">u8</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">offset</span> = <span class="keyword">unsafe</span> &#123; &amp;(GUEST_PHYS_MEMORY[id]) <span class="keyword">as</span> *<span class="keyword">const</span> _ <span class="keyword">as</span> <span class="type">usize</span> &#125;;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">host_vaddr</span> = guest_paddr + offset;</span><br><span class="line">    host_vaddr <span class="keyword">as</span> *<span class="keyword">mut</span> <span class="type">u8</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将 host 物理地址为 hpa，大小为 size 的镜像复制到第 id 个虚拟机的物理地址为 load_gpa 处。</span></span><br><span class="line"><span class="meta">#[cfg(target_arch = <span class="string">&quot;x86_64&quot;</span>)]</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">load_guest_image</span>(id: <span class="type">usize</span>, hpa: HostPhysAddr, load_gpa: GuestPhysAddr, size: <span class="type">usize</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">image_ptr</span> = <span class="type">usize</span>::<span class="title function_ invoke__">from</span>(<span class="title function_ invoke__">phys_to_virt</span>(hpa.<span class="title function_ invoke__">into</span>())) <span class="keyword">as</span> *<span class="keyword">const</span> <span class="type">u8</span>; <span class="comment">// host 物理地址转为 host 虚拟地址</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">image</span> = <span class="keyword">unsafe</span> &#123; core::slice::<span class="title function_ invoke__">from_raw_parts</span>(image_ptr, size) &#125;;</span><br><span class="line"></span><br><span class="line">    trace!(<span class="string">&quot;loading to guest memory: host &#123;:#x&#125; to guest &#123;:#x&#125;, size &#123;:#x&#125;&quot;</span>, image_ptr <span class="keyword">as</span> <span class="type">usize</span>, load_gpa, size);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">unsafe</span> &#123;</span><br><span class="line">        core::slice::<span class="title function_ invoke__">from_raw_parts_mut</span>(<span class="title function_ invoke__">gpa_as_mut_ptr</span>(id, load_gpa), size).<span class="title function_ invoke__">copy_from_slice</span>(image)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#[cfg(target_arch = <span class="string">&quot;x86_64&quot;</span>)]</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">setup_gpm</span>(id: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> HyperResult&lt;GuestPhysMemorySet&gt; &#123;</span><br><span class="line">    <span class="comment">// copy BIOS and guest images</span></span><br><span class="line"></span><br><span class="line">    <span class="title function_ invoke__">load_guest_image</span>(id, BIOS_PADDR, BIOS_ENTRY, BIOS_SIZE);</span><br><span class="line">    <span class="meta">#[cfg(feature = <span class="string">&quot;guest_nimbos&quot;</span>)]</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="title function_ invoke__">load_guest_image</span>(id, GUEST_IMAGE_PADDR, GUEST_ENTRY, GUEST_IMAGE_SIZE);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// create nested page table and add mapping</span></span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">gpm</span> = GuestPhysMemorySet::<span class="title function_ invoke__">new</span>()?;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">guest_memory_regions</span> = [</span><br><span class="line">        GuestMemoryRegion &#123;</span><br><span class="line">            <span class="comment">// Low RAM</span></span><br><span class="line">            gpa: GUEST_PHYS_MEMORY_BASE,</span><br><span class="line">            hpa: <span class="title function_ invoke__">virt_to_phys</span>((<span class="title function_ invoke__">gpa_as_mut_ptr</span>(id, GUEST_PHYS_MEMORY_BASE) <span class="keyword">as</span> HostVirtAddr).<span class="title function_ invoke__">into</span>()).<span class="title function_ invoke__">into</span>(),</span><br><span class="line">            size: GUEST_PHYS_MEMORY_SIZE,</span><br><span class="line">            flags: MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="meta">#[cfg(feature = <span class="string">&quot;guest_linux&quot;</span>)]</span></span><br><span class="line">        GuestMemoryRegion &#123;</span><br><span class="line">            <span class="comment">// Low RAM2</span></span><br><span class="line">            gpa: <span class="number">0x100_0000</span>,</span><br><span class="line">            hpa: <span class="number">0x6100_0000</span>,</span><br><span class="line">            size: <span class="number">0xf00_0000</span>,</span><br><span class="line">            flags: MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="meta">#[cfg(feature = <span class="string">&quot;guest_linux&quot;</span>)]</span></span><br><span class="line">        GuestMemoryRegion &#123;</span><br><span class="line">            <span class="comment">// RAM</span></span><br><span class="line">            gpa: <span class="number">0x7000_0000</span>,</span><br><span class="line">            hpa: <span class="number">0x7000_0000</span>,</span><br><span class="line">            size: <span class="number">0x1000_0000</span>,</span><br><span class="line">            flags: MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,</span><br><span class="line">        &#125;,</span><br><span class="line">        GuestMemoryRegion &#123;</span><br><span class="line">            <span class="comment">// PCI</span></span><br><span class="line">            gpa: <span class="number">0x8000_0000</span>,</span><br><span class="line">            hpa: <span class="number">0x8000_0000</span>,</span><br><span class="line">            size: <span class="number">0x1000_0000</span>,</span><br><span class="line">            flags: MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,</span><br><span class="line">        &#125;,</span><br><span class="line">        GuestMemoryRegion &#123;</span><br><span class="line">            gpa: <span class="number">0xfe00_0000</span>,</span><br><span class="line">            hpa: <span class="number">0xfe00_0000</span>,</span><br><span class="line">            size: <span class="number">0x1_0000</span>,</span><br><span class="line">            flags: MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,</span><br><span class="line">        &#125;,</span><br><span class="line">        GuestMemoryRegion &#123;</span><br><span class="line">            gpa: <span class="number">0xfeb0_0000</span>,</span><br><span class="line">            hpa: <span class="number">0xfeb0_0000</span>,</span><br><span class="line">            size: <span class="number">0x10_0000</span>,</span><br><span class="line">            flags: MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,</span><br><span class="line">        &#125;,</span><br><span class="line">        GuestMemoryRegion &#123;</span><br><span class="line">            <span class="comment">// IO APIC</span></span><br><span class="line">            gpa: <span class="number">0xfec0_0000</span>,</span><br><span class="line">            hpa: <span class="number">0xfec0_0000</span>,</span><br><span class="line">            size: <span class="number">0x1000</span>,</span><br><span class="line">            flags: MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,</span><br><span class="line">        &#125;,</span><br><span class="line">        GuestMemoryRegion &#123;</span><br><span class="line">            <span class="comment">// HPET</span></span><br><span class="line">            gpa: <span class="number">0xfed0_0000</span>,</span><br><span class="line">            hpa: <span class="number">0xfed0_0000</span>,</span><br><span class="line">            size: <span class="number">0x1000</span>,</span><br><span class="line">            flags: MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,</span><br><span class="line">        &#125;,</span><br><span class="line">        GuestMemoryRegion &#123;</span><br><span class="line">            <span class="comment">// Local APIC</span></span><br><span class="line">            gpa: <span class="number">0xfee0_0000</span>,</span><br><span class="line">            hpa: <span class="number">0xfee0_0000</span>,</span><br><span class="line">            size: <span class="number">0x1000</span>,</span><br><span class="line">            flags: MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,</span><br><span class="line">        &#125;,</span><br><span class="line">    ];</span><br><span class="line">    <span class="keyword">for</span> <span class="variable">r</span> <span class="keyword">in</span> guest_memory_regions.<span class="title function_ invoke__">into_iter</span>() &#123;</span><br><span class="line">        gpm.<span class="title function_ invoke__">map_region</span>(r.<span class="title function_ invoke__">into</span>())?;  <span class="comment">// 建立虚拟机内存映射</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="title function_ invoke__">Ok</span>(gpm)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第三步，创建虚拟机需要的-vcpu"><a href="#第三步，创建虚拟机需要的-vcpu" class="headerlink" title="第三步，创建虚拟机需要的 vcpu"></a>第三步，创建虚拟机需要的 vcpu</h3><p>首先阅读 VmCpus 相关数据结构。</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// The maximum number of CPUs we can support.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">const</span> MAX_CPUS: <span class="type">usize</span> = <span class="number">8</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">const</span> VM_CPUS_MAX: <span class="type">usize</span> = MAX_CPUS;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// The set of vCPUs in a VM.</span></span><br><span class="line"><span class="meta">#[derive(Default)]</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">VmCpus</span>&lt;H: HyperCraftHal, PD: PerCpuDevices&lt;H&gt;&gt; &#123;</span><br><span class="line">    inner: [Once&lt;VCpu&lt;H&gt;&gt;; VM_CPUS_MAX],    <span class="comment">// Once：https://zhuanlan.zhihu.com/p/272848155</span></span><br><span class="line">    device: [Once&lt;PD&gt;; VM_CPUS_MAX],</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;H: HyperCraftHal, PD: PerCpuDevices&lt;H&gt;&gt; VmCpus&lt;H, PD&gt; &#123;</span><br><span class="line">    <span class="comment">/// Creates a new vCPU tracking structure.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">new</span>() <span class="punctuation">-&gt;</span> <span class="keyword">Self</span> &#123;</span><br><span class="line">        <span class="keyword">Self</span> &#123;</span><br><span class="line">            inner: [Once::INIT; VM_CPUS_MAX],</span><br><span class="line">            device: [Once::INIT; VM_CPUS_MAX],</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Adds the given vCPU to the set of vCPUs.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">add_vcpu</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, vcpu: VCpu&lt;H&gt;) <span class="punctuation">-&gt;</span> HyperResult&lt;()&gt; &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">vcpu_id</span> = vcpu.<span class="title function_ invoke__">vcpu_id</span>();</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">once_entry</span> = <span class="keyword">self</span>.inner.<span class="title function_ invoke__">get</span>(vcpu_id).<span class="title function_ invoke__">ok_or</span>(HyperError::BadState)?;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> <span class="variable">real_vcpu</span> = once_entry.<span class="title function_ invoke__">call_once</span>(|| vcpu);  <span class="comment">// 初始化第 vcpu_id 个虚拟机的 vcpu</span></span><br><span class="line">        <span class="keyword">let</span> <span class="variable">device_once_entry</span> = <span class="keyword">self</span>.device.<span class="title function_ invoke__">get</span>(vcpu_id).<span class="title function_ invoke__">ok_or</span>(HyperError::BadState)?;</span><br><span class="line"></span><br><span class="line">        device_once_entry.<span class="title function_ invoke__">call_once</span>(|| PD::<span class="title function_ invoke__">new</span>(real_vcpu).<span class="title function_ invoke__">unwrap</span>()); <span class="comment">// 初始化第 vcpu_id 个虚拟机的 device</span></span><br><span class="line"></span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(())</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Returns a reference to the vCPU with `vcpu_id` if it exists.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">get_vcpu_and_device</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, vcpu_id: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> HyperResult&lt;(&amp;<span class="keyword">mut</span> VCpu&lt;H&gt;, &amp;<span class="keyword">mut</span> PD)&gt; &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">vcpu</span> = <span class="keyword">self</span></span><br><span class="line">            .inner</span><br><span class="line">            .<span class="title function_ invoke__">get_mut</span>(vcpu_id)</span><br><span class="line">            .<span class="title function_ invoke__">and_then</span>(|once| once.<span class="title function_ invoke__">get_mut</span>())</span><br><span class="line">            .<span class="title function_ invoke__">ok_or</span>(HyperError::NotFound)?;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">device</span> = <span class="keyword">self</span></span><br><span class="line">            .device</span><br><span class="line">            .<span class="title function_ invoke__">get_mut</span>(vcpu_id)</span><br><span class="line">            .<span class="title function_ invoke__">and_then</span>(|once| once.<span class="title function_ invoke__">get_mut</span>())</span><br><span class="line">            .<span class="title function_ invoke__">ok_or</span>(HyperError::NotFound)?;</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>((vcpu, device))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Safety: Each VCpu is wrapped with a Mutex to provide safe concurrent access to VCpu.</span></span><br><span class="line"><span class="keyword">unsafe</span> <span class="keyword">impl</span>&lt;H: HyperCraftHal, PD: PerCpuDevices&lt;H&gt;&gt; <span class="built_in">Sync</span> <span class="keyword">for</span> <span class="title class_">VmCpus</span>&lt;H, PD&gt; &#123;&#125;</span><br><span class="line"><span class="keyword">unsafe</span> <span class="keyword">impl</span>&lt;H: HyperCraftHal, PD: PerCpuDevices&lt;H&gt;&gt; <span class="built_in">Send</span> <span class="keyword">for</span> <span class="title class_">VmCpus</span>&lt;H, PD&gt; &#123;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// A virtual CPU within a guest.</span></span><br><span class="line"><span class="meta">#[repr(C)]</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">VmxVcpu</span>&lt;H: HyperCraftHal&gt; &#123;</span><br><span class="line">    <span class="comment">// DO NOT modify `guest_regs` and `host_stack_top` and their order unless you do know what you are doing!</span></span><br><span class="line">    <span class="comment">// DO NOT add anything before or between them unless you do know what you are doing!</span></span><br><span class="line">    guest_regs: GeneralRegisters,   <span class="comment">// guest 通用寄存器</span></span><br><span class="line">    host_stack_top: <span class="type">u64</span>,            </span><br><span class="line">    vcpu_id: <span class="type">usize</span>,                 <span class="comment">// vcpu id。因为现在只支持单核，所以只能为 0 </span></span><br><span class="line">    launched: <span class="type">bool</span>,                 </span><br><span class="line">    vmcs: VmxRegion&lt;H&gt;,</span><br><span class="line">    msr_bitmap: MsrBitmap&lt;H&gt;,</span><br><span class="line">    pending_events: VecDeque&lt;(<span class="type">u8</span>, <span class="type">Option</span>&lt;<span class="type">u32</span>&gt;)&gt;,</span><br><span class="line">    xstate: XState,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;H: HyperCraftHal&gt; VmxVcpu&lt;H&gt; &#123;</span><br><span class="line">    <span class="comment">/// Create a new [`VmxVcpu`].</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">new</span>(</span><br><span class="line">        vcpu_id: <span class="type">usize</span>,</span><br><span class="line">        vmcs_revision_id: <span class="type">u32</span>,</span><br><span class="line">        entry: GuestPhysAddr,</span><br><span class="line">        ept_root: HostPhysAddr,</span><br><span class="line">    ) <span class="punctuation">-&gt;</span> HyperResult&lt;<span class="keyword">Self</span>&gt; &#123;</span><br><span class="line">        XState::<span class="title function_ invoke__">enable_xsave</span>();</span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">vcpu</span> = <span class="keyword">Self</span> &#123;</span><br><span class="line">            guest_regs: GeneralRegisters::<span class="title function_ invoke__">default</span>(),</span><br><span class="line">            host_stack_top: <span class="number">0</span>,</span><br><span class="line">            vcpu_id,</span><br><span class="line">            launched: <span class="literal">false</span>,</span><br><span class="line">            vmcs: VmxRegion::<span class="title function_ invoke__">new</span>(vmcs_revision_id, <span class="literal">false</span>)?,</span><br><span class="line">            msr_bitmap: MsrBitmap::<span class="title function_ invoke__">passthrough_all</span>()?,</span><br><span class="line">            pending_events: VecDeque::<span class="title function_ invoke__">with_capacity</span>(<span class="number">8</span>),</span><br><span class="line">            xstate: XState::<span class="title function_ invoke__">new</span>(),</span><br><span class="line">        &#125;;</span><br><span class="line">        vcpu.<span class="title function_ invoke__">setup_msr_bitmap</span>()?;   <span class="comment">// 设置 msr_bitmap，使 vmm 拦截 IA32_APIC_BASE MSR accesses，all x2APIC MSR accesses</span></span><br><span class="line">        vcpu.<span class="title function_ invoke__">setup_vmcs</span>(entry, ept_root)?;  <span class="comment">// 设置 vmcs</span></span><br><span class="line">        info!(<span class="string">&quot;[HV] created VmxVcpu(vmcs: &#123;:#x&#125;)&quot;</span>, vcpu.vmcs.<span class="title function_ invoke__">phys_addr</span>());</span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(vcpu)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第四步，将新创建的-vcpu-加入到-vm"><a href="#第四步，将新创建的-vcpu-加入到-vm" class="headerlink" title="第四步，将新创建的 vcpu 加入到 vm"></a>第四步，将新创建的 vcpu 加入到 vm</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// VM define.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">VM</span>&lt;H: HyperCraftHal, PD: PerCpuDevices&lt;H&gt;, VD: PerVmDevices&lt;H&gt;&gt; &#123;</span><br><span class="line">    vcpus: VmCpus&lt;H, PD&gt;,   <span class="comment">// 虚拟机持有的 vcpu</span></span><br><span class="line">    vcpu_bond: BitSet,      <span class="comment">// 索引是 vcpuid，位图，代表 cpu 上正在运行的 vcpu。</span></span><br><span class="line">    device: VD,             <span class="comment">// 每个虚拟机拥有的设备</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;H: HyperCraftHal, PD: PerCpuDevices&lt;H&gt;, VD: PerVmDevices&lt;H&gt;&gt; VM&lt;H, PD, VD&gt; &#123;</span><br><span class="line">    <span class="comment">/// Create a new [`VM`].</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">new</span>(vcpus: VmCpus&lt;H, PD&gt;) <span class="punctuation">-&gt;</span> <span class="keyword">Self</span> &#123;</span><br><span class="line">        <span class="keyword">Self</span> &#123; vcpus, vcpu_bond: BitSet::<span class="title function_ invoke__">new</span>(), device: VD::<span class="title function_ invoke__">new</span>().<span class="title function_ invoke__">unwrap</span>() &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Bind the specified [`VCpu`] to current physical processor.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">bind_vcpu</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, vcpu_id: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> HyperResult&lt;(&amp;<span class="keyword">mut</span> VCpu&lt;H&gt;, &amp;<span class="keyword">mut</span> PD)&gt; &#123;</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">self</span>.vcpu_bond.<span class="title function_ invoke__">contains</span>(vcpu_id) &#123;  </span><br><span class="line">            <span class="title function_ invoke__">Err</span>(HyperError::InvalidParam)   <span class="comment">// 已绑定</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">match</span> <span class="keyword">self</span>.vcpus.<span class="title function_ invoke__">get_vcpu_and_device</span>(vcpu_id) &#123;</span><br><span class="line">                <span class="title function_ invoke__">Ok</span>((vcpu, device)) =&gt; &#123;</span><br><span class="line">                    <span class="keyword">self</span>.vcpu_bond.<span class="title function_ invoke__">insert</span>(vcpu_id);     <span class="comment">// vcpu-id 位置 1</span></span><br><span class="line">                    vcpu.<span class="title function_ invoke__">bind_to_current_processor</span>()?;  <span class="comment">// 使用 vmptrld 与现有 cpu 绑定</span></span><br><span class="line">                    <span class="title function_ invoke__">Ok</span>((vcpu, device))</span><br><span class="line">                &#125;,</span><br><span class="line">                e @ <span class="title function_ invoke__">Err</span>(_) =&gt; e,</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="第五步，运行-vm"><a href="#第五步，运行-vm" class="headerlink" title="第五步，运行 vm"></a>第五步，运行 vm</h3><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">impl</span>&lt;H: HyperCraftHal, PD: PerCpuDevices&lt;H&gt;, VD: PerVmDevices&lt;H&gt;&gt; VM&lt;H, PD, VD&gt; &#123;</span><br><span class="line">    <span class="meta">#[allow(unreachable_code)]</span></span><br><span class="line">    <span class="comment">/// Run a specified [`VCpu`] on current logical vcpu.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">run_vcpu</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, vcpu_id: <span class="type">usize</span>) <span class="punctuation">-&gt;</span> HyperResult &#123;</span><br><span class="line">        <span class="keyword">let</span> (vcpu, vcpu_device) = <span class="keyword">self</span>.vcpus.<span class="title function_ invoke__">get_vcpu_and_device</span>(vcpu_id).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">loop</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">let</span> <span class="variable">Some</span>(exit_info) = vcpu.<span class="title function_ invoke__">run</span>() &#123;</span><br><span class="line">                <span class="comment">// we need to handle vm-exit this by ourselves</span></span><br><span class="line">                <span class="keyword">let</span> <span class="variable">result</span> = vcpu_device.<span class="title function_ invoke__">vmexit_handler</span>(vcpu, &amp;exit_info)</span><br><span class="line">                    .<span class="title function_ invoke__">or_else</span>(|| <span class="keyword">self</span>.device.<span class="title function_ invoke__">vmexit_handler</span>(vcpu, &amp;exit_info));</span><br><span class="line"></span><br><span class="line">                <span class="keyword">match</span> result &#123;</span><br><span class="line">                    <span class="title function_ invoke__">Some</span>(result) =&gt; &#123;</span><br><span class="line">                        <span class="keyword">if</span> result.<span class="title function_ invoke__">is_err</span>() &#123;</span><br><span class="line">                            <span class="built_in">panic!</span>(<span class="string">&quot;VM failed to handle a vm-exit: &#123;:?&#125;, error &#123;:?&#125;, vcpu: &#123;:#x?&#125;&quot;</span>, exit_info.exit_reason, result.<span class="title function_ invoke__">unwrap_err</span>(), vcpu);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;,</span><br><span class="line">                    <span class="literal">None</span> =&gt; &#123;</span><br><span class="line">                        <span class="built_in">panic!</span>(<span class="string">&quot;nobody wants to handle this vm-exit: &#123;:?&#125;, vcpu: &#123;:#x?&#125;&quot;</span>, exit_info, vcpu);</span><br><span class="line">                    &#125;,</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            vcpu_device.<span class="title function_ invoke__">check_events</span>(vcpu)?;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="title function_ invoke__">Ok</span>(())</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span>&lt;H: HyperCraftHal&gt; VmxVcpu&lt;H&gt; &#123;</span><br><span class="line">    <span class="comment">/// Run the guest. It returns when a vm-exit happens and returns the vm-exit if it cannot be handled by this [`VmxVcpu`] itself.</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">run</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) <span class="punctuation">-&gt;</span> <span class="type">Option</span>&lt;VmxExitInfo&gt; &#123;</span><br><span class="line">        <span class="comment">// Inject pending events</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">self</span>.launched &#123;</span><br><span class="line">            <span class="keyword">self</span>.<span class="title function_ invoke__">inject_pending_events</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// Run guest</span></span><br><span class="line">        <span class="keyword">self</span>.<span class="title function_ invoke__">load_guest_xstate</span>();</span><br><span class="line">        <span class="keyword">unsafe</span> &#123; </span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">self</span>.launched &#123;</span><br><span class="line">                <span class="keyword">self</span>.<span class="title function_ invoke__">vmx_resume</span>();</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">self</span>.launched = <span class="literal">true</span>;</span><br><span class="line">                VmcsHostNW::RSP.<span class="title function_ invoke__">write</span>(&amp;<span class="keyword">self</span>.host_stack_top <span class="keyword">as</span> *<span class="keyword">const</span> _ <span class="keyword">as</span> <span class="type">usize</span>).<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">self</span>.<span class="title function_ invoke__">vmx_launch</span>();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">self</span>.<span class="title function_ invoke__">load_host_xstate</span>();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Handle vm-exits</span></span><br><span class="line">        <span class="keyword">let</span> <span class="variable">exit_info</span> = <span class="keyword">self</span>.<span class="title function_ invoke__">exit_info</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        trace!(<span class="string">&quot;VM exit: &#123;:#x?&#125;&quot;</span>, exit_info);    </span><br><span class="line"></span><br><span class="line">        <span class="keyword">let</span> <span class="variable">cr4</span> = VmcsGuestNW::CR4.<span class="title function_ invoke__">read</span>().<span class="title function_ invoke__">unwrap</span>();</span><br><span class="line">        <span class="keyword">if</span> cr4.<span class="title function_ invoke__">get_bit</span>(<span class="number">18</span>) &#123;</span><br><span class="line">            <span class="comment">// panic!(&quot;osxsave dead!&quot;);</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">match</span> <span class="keyword">self</span>.<span class="title function_ invoke__">builtin_vmexit_handler</span>(&amp;exit_info) &#123;</span><br><span class="line">            <span class="title function_ invoke__">Some</span>(result) =&gt; &#123;   </span><br><span class="line">                <span class="keyword">if</span> result.<span class="title function_ invoke__">is_err</span>() &#123;</span><br><span class="line">                    <span class="built_in">panic!</span>(<span class="string">&quot;VmxVcpu failed to handle a VM-exit that should be handled by itself: &#123;:?&#125;, error &#123;:?&#125;, vcpu: &#123;:#x?&#125;&quot;</span>, exit_info.exit_reason, result.<span class="title function_ invoke__">unwrap_err</span>(), <span class="keyword">self</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="literal">None</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="literal">None</span> =&gt; <span class="title function_ invoke__">Some</span>(exit_info),</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Little_Q
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://peizhongqiu.github.io/p/af2a573a.html" title="arceos 之 hypervisor-x86 源码阅读">https://peizhongqiu.github.io/p/af2a573a.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/arceos/" rel="tag"># arceos</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/p/f4d3d34.html" rel="prev" title="Webassembly 学习（2）Structure">
+      <i class="fa fa-chevron-left"></i> Webassembly 学习（2）Structure
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/p/30eb7570.html" rel="next" title="rvm1.5">
+      rvm1.5 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#apps-hv-src-main-rs"><span class="nav-number">1.</span> <span class="nav-text">apps&#x2F;hv&#x2F;src&#x2F;main.rs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E6%89%93%E5%BC%80-vmx"><span class="nav-number">1.1.</span> <span class="nav-text">第一步：打开 vmx</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%8C%E8%AE%BE%E7%BD%AE%E9%A1%B5%E8%A1%A8"><span class="nav-number">1.2.</span> <span class="nav-text">第二步，设置页表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%8C%E5%88%9B%E5%BB%BA%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%9C%80%E8%A6%81%E7%9A%84-vcpu"><span class="nav-number">1.3.</span> <span class="nav-text">第三步，创建虚拟机需要的 vcpu</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E6%AD%A5%EF%BC%8C%E5%B0%86%E6%96%B0%E5%88%9B%E5%BB%BA%E7%9A%84-vcpu-%E5%8A%A0%E5%85%A5%E5%88%B0-vm"><span class="nav-number">1.4.</span> <span class="nav-text">第四步，将新创建的 vcpu 加入到 vm</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E6%AD%A5%EF%BC%8C%E8%BF%90%E8%A1%8C-vm"><span class="nav-number">1.5.</span> <span class="nav-text">第五步，运行 vm</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Little_Q"
+      src="/images/lulu.jpg">
+  <p class="site-author-name" itemprop="name">Little_Q</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/PeizhongQiu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;PeizhongQiu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Little_Q</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

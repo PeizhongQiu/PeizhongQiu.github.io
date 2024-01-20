@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"peizhongqiu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="ConventionsWebAssembly 是一种具有多种具体表示形式（二进制格式和文本格式）的编程语言。两者都映射到一个共同的结构。为了简洁起见，该结构以抽象语法的形式描述。本规范的所有部分都是根据此抽象语法定义的。 语法符号在定义抽象语法的语法规则时采用以下约定。  Terminal symbols（原子）以无衬线字体或符号形式书写：i32、end。 Nonterminal symbols">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Webassembly 学习（2）Structure">
+<meta property="og:url" content="https://peizhongqiu.github.io/p/f4d3d34.html">
+<meta property="og:site_name" content="Little Q 的个人博客">
+<meta property="og:description" content="ConventionsWebAssembly 是一种具有多种具体表示形式（二进制格式和文本格式）的编程语言。两者都映射到一个共同的结构。为了简洁起见，该结构以抽象语法的形式描述。本规范的所有部分都是根据此抽象语法定义的。 语法符号在定义抽象语法的语法规则时采用以下约定。  Terminal symbols（原子）以无衬线字体或符号形式书写：i32、end。 Nonterminal symbols">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-12-04T03:35:29.000Z">
+<meta property="article:modified_time" content="2023-12-04T08:57:18.853Z">
+<meta property="article:author" content="Little_Q">
+<meta property="article:tag" content="WebAssembly">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://peizhongqiu.github.io/p/f4d3d34.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Webassembly 学习（2）Structure | Little Q 的个人博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <!--<div class="headband"></div>-->
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Little Q 的个人博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://peizhongqiu.github.io/p/f4d3d34.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/lulu.jpg">
+      <meta itemprop="name" content="Little_Q">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Little Q 的个人博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Webassembly 学习（2）Structure
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-12-04 11:35:29 / 修改时间：16:57:18" itemprop="dateCreated datePublished" datetime="2023-12-04T11:35:29+08:00">2023-12-04</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Conventions"><a href="#Conventions" class="headerlink" title="Conventions"></a>Conventions</h2><p>WebAssembly 是一种具有多种具体表示形式（二进制格式和文本格式）的编程语言。两者都映射到一个共同的结构。为了简洁起见，该结构以抽象语法的形式描述。本规范的所有部分都是根据此抽象语法定义的。</p>
+<h3 id="语法符号"><a href="#语法符号" class="headerlink" title="语法符号"></a>语法符号</h3><p>在定义抽象语法的语法规则时采用以下约定。</p>
+<ul>
+<li>Terminal symbols（原子）以无衬线字体或符号形式书写：i32、end。</li>
+<li>Nonterminal symbols 用斜体书写: <em>valtype</em>, <em>instr</em>。</li>
+<li>𝐴<sup>𝑛</sup> 是 𝑛 ≥ 0 次 𝐴 迭代的序列。</li>
+<li>𝐴* 是 𝐴 的可能为空的迭代序列。（这是 𝐴<sup>𝑛</sup> 的简写，在 𝑛 不相关的情况下使用。）</li>
+<li>𝐴<sup>+</sup> 是 𝐴 的非空迭代序列。 （这是 𝐴<sup>𝑛</sup> 的简写，其中 𝑛 ≥ 1。）</li>
+<li>𝐴<sup>?</sup> 是 𝐴 的可选出现。 （这是 𝐴<sup>𝑛</sup> 的简写，其中 𝑛 ≤ 1。）</li>
+<li>Productions are written <em>sym</em> ::&#x3D; 𝐴<sub>1</sub> | . . . | 𝐴<sub>𝑛</sub>.</li>
+<li>大型作品可以分为多个定义，通过用明确的省略号结束第一个定义来表示， <em>sym</em> ::&#x3D; 𝐴<sub>1</sub> | …，并以省略号开始延续 <em>sym</em> ::&#x3D; … | 𝐴<sub>2</sub></li>
+<li>一些产生式通过括号中的附加条件“（如果条件）”进行了增强，这为将产生式组合扩展为许多单独的情况提供了简写。</li>
+</ul>
+<h3 id="辅助符号"><a href="#辅助符号" class="headerlink" title="辅助符号"></a>辅助符号</h3><p>在处理句法结构时，还使用以下符号：</p>
+<ul>
+<li>𝜖 表示空序列</li>
+<li>|𝑠| 表示序列 𝑠 的长度。</li>
+<li>𝑠[𝑖] 表示序列 𝑠 的第 𝑖 个元素，从 0 开始。</li>
+<li>𝑠[𝑖:𝑛] 表示子序列 𝑠[𝑖] … 𝑠[𝑖 + 𝑛 − 1]。</li>
+<li>𝑠 with [𝑖] &#x3D; 𝐴 表示与 𝑠 相同的序列，只是将第 𝑖 个元素替换为 𝐴</li>
+<li>𝑠 with [𝑖 : 𝑛] &#x3D; 𝐴<sup>𝑛</sup> 表示与 𝑠 相同的序列，只不过子序列 𝑠[𝑖 : 𝑛] 被替换为 𝐴<sup>𝑛</sup></li>
+<li>concat(𝑠*) 表示将 𝑠* 中的所有序列 𝑠<sub>𝑖</sub> 连接起来形成的平坦序列</li>
+</ul>
+<p>此外，还采用以下约定：</p>
+<ul>
+<li>符号 𝑥<sup>𝑛</sup>（其中 𝑥 是非终结符）被视为范围在各个𝑥 序列上的元变量（𝑥*、𝑥<sup>+</sup>、𝑥<sup>？</sup> 类似）。</li>
+<li>当给定序列 𝑥<sup>𝑛</sup> 时，则假定在 (𝐴<sub>1</sub> 𝑥 𝐴<sub>2</sub>)<sup>𝑛</sup> 序列中出现的 𝑥 与 𝑥<sup>𝑛</sup> 逐点对应（对于𝑥*、𝑥<sup>+</sup>、𝑥<sup>？</sup>类似）。 这隐式地表达了一种在序列上映射句法结构的形式.</li>
+</ul>
+<p>以下形式的产生式被解释为将一组固定字段 field<sub>𝑖</sub> 分别映射到值 𝐴<sub>𝑖</sub> 的记录:<br>r ::&#x3D; {field<sub>1</sub> 𝐴<sub>1</sub>, field<sub>2</sub> 𝐴<sub>2</sub>, . . . }</p>
+<p>采用以下符号来处理此类记录</p>
+<ul>
+<li>𝑟.field 表示 𝑟 的 field 组件的内容。</li>
+<li>𝑟 with field &#x3D; 𝐴 表示与 𝑟 相同的记录，只是用 𝐴 替换了 field 组件的内容。</li>
+<li>𝑟1 ⊕ 𝑟2 表示通过逐点附加每个序列来组合具有相同序列字段的两个记录：<br>{field<sub>1</sub> 𝐴*<sub>1</sub>, field<sub>2</sub> 𝐴*<sub>2</sub>, …} ⊕ {field<sub>1</sub> 𝐵*<sub>1</sub>, field<sub>2</sub> 𝐵*<sub>2</sub>,…} &#x3D; {field<sub>1</sub> 𝐴*<sub>1</sub>𝐵*<sub>1</sub> , field<sub>2</sub> 𝐴*<sub>2</sub> 𝐵*<sub>2</sub>,…}</li>
+<li>⨁︀𝑟*分别表示记录序列的组成；如果序列为空，则结果记录的所有字段均为空。</li>
+</ul>
+<p>序列和记录的更新表示法递归地概括为通过“路径” pth ::&#x3D; ([…] | .field)+ 访问的嵌套组件：</p>
+<ul>
+<li>𝑠 with [𝑖] pth &#x3D; 𝐴 是 𝑠 with [𝑖] &#x3D; (𝑠[𝑖] with pth &#x3D; 𝐴) 的缩写</li>
+<li>𝑟 with field pth &#x3D; 𝐴 是 𝑟 with field &#x3D; (𝑟.field with pth &#x3D; 𝐴) 的缩写</li>
+<li>𝑟 with .field &#x3D; 𝐴 被缩短为 𝑟 with field &#x3D; 𝐴</li>
+</ul>
+<h3 id="Vectors"><a href="#Vectors" class="headerlink" title="Vectors"></a>Vectors</h3><p>向量是 𝐴<sup>𝑛</sup> （或 𝐴*）形式的有界序列，其中 𝐴 可以是值或复杂的结构。 向量最多可以有 2<sup>32</sup> − 1 个元素。<br>vec(𝐴) ::&#x3D; 𝐴<sup>𝑛</sup>（如果 𝑛 &lt; 2<sup>32</sup>）</p>
+<h2 id="Values"><a href="#Values" class="headerlink" title="Values"></a>Values</h2><p>WebAssembly 程序对原始数值进行操作。此外，在程序的定义中，不可变的值序列出现来表示更复杂的数据，例如文本字符串或其他向量。</p>
+<h3 id="字节"><a href="#字节" class="headerlink" title="字节"></a>字节</h3><p>最简单的值形式是原始的未解释字节。 在抽象语法中，它们表示为十六进制文字。</p>
+<p>byte ::&#x3D; 0x00 | . . . | 0xFF</p>
+<p>元变量𝑏的范围超过字节。<br>字节有时被解释为自然数 𝑛 &lt; 256。</p>
+<h3 id="整数"><a href="#整数" class="headerlink" title="整数"></a>整数</h3><p>具有不同值范围的不同类别的整数通过其位宽 𝑁 以及它们是无符号还是有符号来区分。</p>
+<p>u𝑁 ::&#x3D; 0 | 1 | … | 2<sup>𝑁</sup> −1</p>
+<p>s𝑁 ::&#x3D; −2<sup>𝑁−1</sup>  | … | −1 | 0 | 1 | … | 2<sup>𝑁−1</sup> −1</p>
+<p>i𝑁 ::&#x3D; u𝑁</p>
+<p>类 i𝑁 定义了未解释的整数，其符号解释可能会根据上下文而变化。 在抽象语法中，它们表示为无符号值。但是，某些操作会根据二进制补码解释将它们转换为有符号。</p>
+<p>注意：本规范中出现的主要整数类型是 u32、u64、 s32、 s64、 i8、i16 、i32 、i64。然而，其他大小作为辅助结构出现，例如，在浮点数的定义中。</p>
+<p>元变量 𝑚、𝑛、𝑖 的范围为整数.<br>数字可以用简单的算术表示，如上面的语法所示。为了区分像 2<sup>𝑁</sup> 这样的算术和像 (1)<sup>𝑁</sup> 这样的序列，后者用括号来区分。</p>
+<h3 id="浮点"><a href="#浮点" class="headerlink" title="浮点"></a>浮点</h3><p>浮点数据表示 32 或 64 位值，对应于 IEEE 754 标准的相应二进制格式。<br>每个值都有一个符号和一个量纲。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Little_Q
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://peizhongqiu.github.io/p/f4d3d34.html" title="Webassembly 学习（2）Structure">https://peizhongqiu.github.io/p/f4d3d34.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/WebAssembly/" rel="tag"># WebAssembly</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/p/95362efb.html" rel="prev" title="WebAssembly 学习（1）Introduction">
+      <i class="fa fa-chevron-left"></i> WebAssembly 学习（1）Introduction
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/p/af2a573a.html" rel="next" title="arceos 之 hypervisor-x86 源码阅读">
+      arceos 之 hypervisor-x86 源码阅读 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Conventions"><span class="nav-number">1.</span> <span class="nav-text">Conventions</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%AD%E6%B3%95%E7%AC%A6%E5%8F%B7"><span class="nav-number">1.1.</span> <span class="nav-text">语法符号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%85%E5%8A%A9%E7%AC%A6%E5%8F%B7"><span class="nav-number">1.2.</span> <span class="nav-text">辅助符号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Vectors"><span class="nav-number">1.3.</span> <span class="nav-text">Vectors</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Values"><span class="nav-number">2.</span> <span class="nav-text">Values</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E8%8A%82"><span class="nav-number">2.1.</span> <span class="nav-text">字节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B4%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">整数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%AE%E7%82%B9"><span class="nav-number">2.3.</span> <span class="nav-text">浮点</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Little_Q"
+      src="/images/lulu.jpg">
+  <p class="site-author-name" itemprop="name">Little_Q</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/PeizhongQiu" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;PeizhongQiu" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Little_Q</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
