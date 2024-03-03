@@ -28,7 +28,7 @@
 <meta property="og:description" content="源代码仓库RVM1.5：https:&#x2F;&#x2F;github.com&#x2F;rvm-rtos&#x2F;RVM1.5&#x2F;tree&#x2F;mainJailhouse：https:&#x2F;&#x2F;github.com&#x2F;siemens&#x2F;jailhouse.gitJailhouse patch：https:&#x2F;&#x2F;github.com&#x2F;rvm-rtos&#x2F;RVM1.5&#x2F;blob&#x2F;main&#x2F;scripts&#x2F;guest&#x2F;jailhouse.patch">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2024-01-19T06:44:01.000Z">
-<meta property="article:modified_time" content="2024-01-20T03:59:45.688Z">
+<meta property="article:modified_time" content="2024-03-03T14:07:03.258Z">
 <meta property="article:author" content="Little_Q">
 <meta property="article:tag" content="arceos">
 <meta name="twitter:card" content="summary">
@@ -219,7 +219,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2024-01-20 11:59:45" itemprop="dateModified" datetime="2024-01-20T11:59:45+08:00">2024-01-20</time>
+                <time title="修改时间：2024-03-03 22:07:03" itemprop="dateModified" datetime="2024-03-03T22:07:03+08:00">2024-03-03</time>
               </span>
 
           
@@ -258,7 +258,6 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">jailhouse_cmd_enable</span><span class="params">(<span class="keyword">struct</span> jailhouse_system __user *arg)</span>;</span><br></pre></td></tr></table></figure>
 <p>我们可以看 jailhouse_cmd_enable 的调用路线：enable(argc, argv)(tools&#x2F;jailhouse.c) -&gt; ioctl(fd, JAILHOUSE_ENABLE, config) -&gt; jailhouse_cmd_enable((struct jailhouse_system __user *)arg)。<br>第一个 enable 函数中 argc 和 argv 跟 main 函数的一致。iocal 中的 fd 是打开 jailhouse 的文件描述符。config 是读取 argv 第三个参数所对应的文件内容。最后的 arg 就跟 config 对应。<br>根据以上内容可知，arg 对应的就是 $JH_DIR&#x2F;configs&#x2F;x86&#x2F;qemu-ubuntu.cell 文件的内容，即系统配置文件。</p>
 <h4 id="内存布局"><a href="#内存布局" class="headerlink" title="内存布局"></a>内存布局</h4><p>在开始阅读代码之前，了解 hypervisor image 的内存布局。RVM 1.5 的内存布局如下图所示。</p>
-
 
 <p>接下来详细分析以下 enable 的全过程。</p>
 <h4 id="第一步，将-arg-中的前-sizeof-jailhouse-system-个字节拷贝到-config-header"><a href="#第一步，将-arg-中的前-sizeof-jailhouse-system-个字节拷贝到-config-header" class="headerlink" title="第一步，将 arg 中的前 sizeof(jailhouse_system) 个字节拷贝到 config_header"></a>第一步，将 arg 中的前 sizeof(jailhouse_system) 个字节拷贝到 config_header</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">jailhouse_cmd_enable</span><span class="params">(<span class="keyword">struct</span> jailhouse_system __user *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (copy_from_user(&amp;config_header, arg, <span class="keyword">sizeof</span>(config_header)))</span><br><span class="line">		<span class="keyword">return</span> -EFAULT;</span><br><span class="line">    <span class="comment">// 检查 config_header.signature 和 config_header.revision</span></span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">memcmp</span>(config_header.signature, JAILHOUSE_SYSTEM_SIGNATURE,</span><br><span class="line">		   <span class="keyword">sizeof</span>(config_header.signature)) != <span class="number">0</span>) &#123;</span><br><span class="line">		pr_err(<span class="string">&quot;jailhouse: Not a system configuration\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> -EINVAL;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (config_header.revision != JAILHOUSE_CONFIG_REVISION) &#123;</span><br><span class="line">		pr_err(<span class="string">&quot;jailhouse: Configuration revision mismatch\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> -EINVAL;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	config_header.root_cell.name[JAILHOUSE_CELL_NAME_MAXLEN] = <span class="number">0</span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -319,8 +318,8 @@
       <i class="fa fa-chevron-left"></i> arceos 之 hypervisor-x86 源码阅读
     </a></div>
       <div class="post-nav-item">
-    <a href="/p/ff35c096.html" rel="next" title="2023-hotos-kernel-interfaces">
-      2023-hotos-kernel-interfaces <i class="fa fa-chevron-right"></i>
+    <a href="/p/ff35c096.html" rel="next" title="Evolving Operating Systems Towards Secure Kernel-Driver Interfaces">
+      Evolving Operating Systems Towards Secure Kernel-Driver Interfaces <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>

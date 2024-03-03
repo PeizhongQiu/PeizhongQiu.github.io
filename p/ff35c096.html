@@ -20,13 +20,15 @@
     var CONFIG = {"hostname":"peizhongqiu.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta property="og:type" content="article">
-<meta property="og:title" content="2023-hotos-kernel-interfaces">
+  <meta name="description" content="论文链接：https:&#x2F;&#x2F;dl.acm.org&#x2F;doi&#x2F;10.1145&#x2F;3593856.3595914">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Evolving Operating Systems Towards Secure Kernel-Driver Interfaces">
 <meta property="og:url" content="https://peizhongqiu.github.io/p/ff35c096.html">
 <meta property="og:site_name" content="Little Q 的个人博客">
+<meta property="og:description" content="论文链接：https:&#x2F;&#x2F;dl.acm.org&#x2F;doi&#x2F;10.1145&#x2F;3593856.3595914">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2024-03-03T12:24:21.000Z">
-<meta property="article:modified_time" content="2024-03-03T12:28:29.414Z">
+<meta property="article:modified_time" content="2024-03-03T14:00:25.700Z">
 <meta property="article:author" content="Little_Q">
 <meta property="article:tag" content="论文研读">
 <meta property="article:tag" content="安全隔离">
@@ -45,7 +47,7 @@
   };
 </script>
 
-  <title>2023-hotos-kernel-interfaces | Little Q 的个人博客</title>
+  <title>Evolving Operating Systems Towards Secure Kernel-Driver Interfaces | Little Q 的个人博客</title>
   
 
 
@@ -201,7 +203,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          2023-hotos-kernel-interfaces
+          Evolving Operating Systems Towards Secure Kernel-Driver Interfaces
         </h1>
 
         <div class="post-meta">
@@ -212,7 +214,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2024-03-03 20:24:21 / 修改时间：20:28:29" itemprop="dateCreated datePublished" datetime="2024-03-03T20:24:21+08:00">2024-03-03</time>
+              <time title="创建时间：2024-03-03 20:24:21 / 修改时间：22:00:25" itemprop="dateCreated datePublished" datetime="2024-03-03T20:24:21+08:00">2024-03-03</time>
             </span>
 
           
@@ -226,7 +228,19 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <p>论文链接：<a target="_blank" rel="noopener" href="https://dl.acm.org/doi/10.1145/3593856.3595914">https://dl.acm.org/doi/10.1145/3593856.3595914</a></p>
+<span id="more"></span>
+
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>安全攻击数量的稳定增加（加上攻击复杂性和自动化水平的不断提高）引发了人们对隔离硬件支持的新兴趣。经过几十年相对缓慢的发展之后，最近几代商用 CPU 引入了一系列新的硬件隔离机制。英特尔内存保护密钥 (MPK) 提供了对内存隔离的支持，其开销逐渐接近函数调用的开销。最新的 ARM CPU 引入了带有内存标记扩展 (MTE) 的 16 字节粒度内存隔离，这有可能实现低开销边界检查和数据的零拷贝交换。此外，ARM 和 x86 都提供对控制流完整性 (CFI) 和堆栈保护的支持。最后，像 Rust 这样的安全编程语言正在成为现代系统中的一等公民。</p>
+<p>为了降低硬件和软件隔离的开销，一系列项目开始探索隔离遗留系统的技术，其中许多项目针对设备驱动程序等内核子系统的隔离。 此外，最近的静态分析技术证明了内核代码很大程度上是自动隔离的。随着解决两个关键隔离挑战（性能和复杂性）的突破，隔离很可能很快就会进入现代内核。</p>
+<p>然而，一个自然的问题是，当前的隔离框架实现了什么样的安全保证？不幸的是，即使使用最先进的隔离边界方法来跨隔离边界强制执行临时内存安全，内核也可能会受到多种方式的攻击。</p>
+<p>我们的工作探索了开发新的安全内核驱动程序接口的可能性，旨在保护内核免受孤立驱动程序的影响。我们首先分析当前隔离框架中存在的一系列可能的攻击向量。然后，我们建议一个新的隔离边界，围绕源自安全操作系统的两个想法：堆隔离和单一所有权。这些想法使我们能够增强对与隔离子系统交换的数据结构的访问安全性（即使驱动程序是恶意的），并在崩溃时提供隔离驱动程序的干净终止和重新启动。</p>
+<h2 id="现代隔离方式"><a href="#现代隔离方式" class="headerlink" title="现代隔离方式"></a>现代隔离方式</h2><p>x86 CPU：分段分页。分段被证明是一种低开销的隔离方式。</p>
+<p>x86-64：分页。尽管进行了许多优化，但对于需要频繁通信的子系统的隔离来说，分页仍然过于昂贵。</p>
+<p>为了改善隔离开销，CPU 供应商探索了隔离机制，并引入了对轻量级进程内隔离、控制流完整性 (CFI) 和软件故障隔离 (SFI) 的支持。</p>
+<h3 id="Intel-MPK"><a href="#Intel-MPK" class="headerlink" title="Intel MPK"></a>Intel MPK</h3><p>在 Intel SDM 第三卷中称为 protection key。</p>
+<p>4 级分页和 5 级分页将每个线性地址与 4 位保护密钥相关联（保护密钥位于映射包含线性地址的页面的分页结构条目的第 62:59 位）。 两个保护密钥功能根据其保护密钥控制对线性地址的访问：<br>• 如果CR4.PKE &#x3D; 1，则PKRU 寄存器针对每个保护密钥确定是否可以读取或写入具有该保护密钥的用户模式地址。<br>• 如果CR4.PKS &#x3D; 1，则IA32_PKRS MSR（MSR 索引6E1H）针对每个保护密钥确定是否可以读取或写入具有该保护密钥的管理员模式地址。<br>32 位分页和 PAE 分页不将线性地址与保护密钥相关联。 出于第 4.6.1 节的目的，对于使用这些分页模式中的任何一种的所有保护密钥都隐式允许读取和写入。<br>PKRU 寄存器（用户页面的保护密钥权限）是一个 32 位寄存器，其格式如下：对于每个 i (0 ≤ i ≤ 15)，PKRU[2i] 是保护密钥 i (ADi ）； PKRU[2i+1] 是保护密钥 i (WDi) 的写禁止位。 IA32_PKRS MSR 具有相同的格式（MSR 的位 63:32 被保留并且必须为零）。<br>软件可以使用 ECX &#x3D; 0 的 RDPKRU 和 WRPKRU 指令来读取和写入 PKRU。 此外，PKRU 寄存器处于 XSAVE 管理状态，因此可以由 XSAVE 功能集中的指令读写。 有关 XSAVE 功能集的更多信息，请参阅《英特尔® 64 和 IA-32 架构软件开发人员手册》第 1 卷第 13 章“使用 XSAVE 功能集管理状态”。<br>软件可以使用 RDMSR 和 WRMSR 指令来读写 IA32_PKRS MSR。 使用 WRMSR 对 IA32_PKRS MSR 的写入未序列化。 IA32_PKRS MSR 不受 XSAVE 管理。<br>线性地址的保护键如何控制对地址的访问取决于线性地址的模式：<br>• 线性地址的保护密钥仅控制对该地址的数据访问。 它不会以任何方式影响从地址读取指令。<br>• 如果 CR4.PKE &#x3D; 0，则用户模式地址的保护密钥不控制对该地址的数据访问（就第 4.6.1 节而言，所有保护密钥都隐式允许读取和写入用户模式地址） ）。<br>如果 CR4.PKE &#x3D; 1，则用户模式地址的保护密钥 i 的使用取决于 PKRU 寄存器的值：<br>— 如果 ADi &#x3D; 1，则不允许数据访问。<br>— 如果 WDi &#x3D; 1，则可能会拒绝某些数据写入访问权限：<br>• 不允许用户模式写访问。<br>• 如果CR0.WP &#x3D; 1，则不允许管理程序模式写访问。（如果CR0.WP &#x3D; 0，WDi 不影响<br>使用保护密钥 i 对用户模式地址进行管理员模式写访问。）<br>• 如果 CR4.PKS &#x3D; 0，则管理员模式地址的保护密钥不控制对该地址的数据访问（就第 4.6.1 节而言，所有保护密钥都隐式允许读取和写入管理员模式地址） ）。<br>如果 CR4.PKS &#x3D; 1，则管理模式地址的保护密钥 i 的使用取决于 IA32_PKRS MSR 的值：<br>— 如果 ADi &#x3D; 1，则不允许数据访问。<br>— 如果 WDi &#x3D; 1，则在 CR0.WP &#x3D; 1 时不允许写访问。（如果 CR0.WP &#x3D; 0，则 IA32_PKRS.WDi 不允许<br>使用保护密钥影响对管理员模式地址的写访问 i.) 保护密钥适用于影子堆栈访问，就像它们适用于普通数据访问一样。</p>
+<h3 id="ARM-MTE"><a href="#ARM-MTE" class="headerlink" title="ARM MTE"></a>ARM MTE</h3><h3 id="ARM-PAC"><a href="#ARM-PAC" class="headerlink" title="ARM PAC"></a>ARM PAC</h3><h3 id="Rust"><a href="#Rust" class="headerlink" title="Rust"></a>Rust</h3><h2 id="攻击方式"><a href="#攻击方式" class="headerlink" title="攻击方式"></a>攻击方式</h2>
     </div>
 
     
@@ -241,7 +255,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://peizhongqiu.github.io/p/ff35c096.html" title="2023-hotos-kernel-interfaces">https://peizhongqiu.github.io/p/ff35c096.html</a>
+    <a href="https://peizhongqiu.github.io/p/ff35c096.html" title="Evolving Operating Systems Towards Secure Kernel-Driver Interfaces">https://peizhongqiu.github.io/p/ff35c096.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -324,6 +338,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%B0%E4%BB%A3%E9%9A%94%E7%A6%BB%E6%96%B9%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">现代隔离方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Intel-MPK"><span class="nav-number">2.1.</span> <span class="nav-text">Intel MPK</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ARM-MTE"><span class="nav-number">2.2.</span> <span class="nav-text">ARM MTE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ARM-PAC"><span class="nav-number">2.3.</span> <span class="nav-text">ARM PAC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rust"><span class="nav-number">2.4.</span> <span class="nav-text">Rust</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%BB%E5%87%BB%E6%96%B9%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">攻击方式</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

@@ -1777,7 +1777,6 @@ EPCM(DS:RCX).VALID := 1;
 <p>我们可以看 jailhouse_cmd_enable 的调用路线：enable(argc, argv)(tools&#x2F;jailhouse.c) -&gt; ioctl(fd, JAILHOUSE_ENABLE, config) -&gt; jailhouse_cmd_enable((struct jailhouse_system __user *)arg)。<br>第一个 enable 函数中 argc 和 argv 跟 main 函数的一致。iocal 中的 fd 是打开 jailhouse 的文件描述符。config 是读取 argv 第三个参数所对应的文件内容。最后的 arg 就跟 config 对应。<br>根据以上内容可知，arg 对应的就是 $JH_DIR&#x2F;configs&#x2F;x86&#x2F;qemu-ubuntu.cell 文件的内容，即系统配置文件。</p>
 <h4 id="内存布局"><a href="#内存布局" class="headerlink" title="内存布局"></a>内存布局</h4><p>在开始阅读代码之前，了解 hypervisor image 的内存布局。RVM 1.5 的内存布局如下图所示。</p>
 
-
 <p>接下来详细分析以下 enable 的全过程。</p>
 <h4 id="第一步，将-arg-中的前-sizeof-jailhouse-system-个字节拷贝到-config-header"><a href="#第一步，将-arg-中的前-sizeof-jailhouse-system-个字节拷贝到-config-header" class="headerlink" title="第一步，将 arg 中的前 sizeof(jailhouse_system) 个字节拷贝到 config_header"></a>第一步，将 arg 中的前 sizeof(jailhouse_system) 个字节拷贝到 config_header</h4><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">jailhouse_cmd_enable</span><span class="params">(<span class="keyword">struct</span> jailhouse_system __user *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span> (copy_from_user(&amp;config_header, arg, <span class="keyword">sizeof</span>(config_header)))</span><br><span class="line">		<span class="keyword">return</span> -EFAULT;</span><br><span class="line">    <span class="comment">// 检查 config_header.signature 和 config_header.revision</span></span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">memcmp</span>(config_header.signature, JAILHOUSE_SYSTEM_SIGNATURE,</span><br><span class="line">		   <span class="keyword">sizeof</span>(config_header.signature)) != <span class="number">0</span>) &#123;</span><br><span class="line">		pr_err(<span class="string">&quot;jailhouse: Not a system configuration\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> -EINVAL;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (config_header.revision != JAILHOUSE_CONFIG_REVISION) &#123;</span><br><span class="line">		pr_err(<span class="string">&quot;jailhouse: Configuration revision mismatch\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> -EINVAL;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	config_header.root_cell.name[JAILHOUSE_CELL_NAME_MAXLEN] = <span class="number">0</span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -1804,9 +1803,21 @@ EPCM(DS:RCX).VALID := 1;
       </tags>
   </entry>
   <entry>
-    <title>2023-hotos-kernel-interfaces</title>
+    <title>Evolving Operating Systems Towards Secure Kernel-Driver Interfaces</title>
     <url>/p/ff35c096.html</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p>论文链接：<a href="https://dl.acm.org/doi/10.1145/3593856.3595914">https://dl.acm.org/doi/10.1145/3593856.3595914</a></p>
+<span id="more"></span>
+
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>安全攻击数量的稳定增加（加上攻击复杂性和自动化水平的不断提高）引发了人们对隔离硬件支持的新兴趣。经过几十年相对缓慢的发展之后，最近几代商用 CPU 引入了一系列新的硬件隔离机制。英特尔内存保护密钥 (MPK) 提供了对内存隔离的支持，其开销逐渐接近函数调用的开销。最新的 ARM CPU 引入了带有内存标记扩展 (MTE) 的 16 字节粒度内存隔离，这有可能实现低开销边界检查和数据的零拷贝交换。此外，ARM 和 x86 都提供对控制流完整性 (CFI) 和堆栈保护的支持。最后，像 Rust 这样的安全编程语言正在成为现代系统中的一等公民。</p>
+<p>为了降低硬件和软件隔离的开销，一系列项目开始探索隔离遗留系统的技术，其中许多项目针对设备驱动程序等内核子系统的隔离。 此外，最近的静态分析技术证明了内核代码很大程度上是自动隔离的。随着解决两个关键隔离挑战（性能和复杂性）的突破，隔离很可能很快就会进入现代内核。</p>
+<p>然而，一个自然的问题是，当前的隔离框架实现了什么样的安全保证？不幸的是，即使使用最先进的隔离边界方法来跨隔离边界强制执行临时内存安全，内核也可能会受到多种方式的攻击。</p>
+<p>我们的工作探索了开发新的安全内核驱动程序接口的可能性，旨在保护内核免受孤立驱动程序的影响。我们首先分析当前隔离框架中存在的一系列可能的攻击向量。然后，我们建议一个新的隔离边界，围绕源自安全操作系统的两个想法：堆隔离和单一所有权。这些想法使我们能够增强对与隔离子系统交换的数据结构的访问安全性（即使驱动程序是恶意的），并在崩溃时提供隔离驱动程序的干净终止和重新启动。</p>
+<h2 id="现代隔离方式"><a href="#现代隔离方式" class="headerlink" title="现代隔离方式"></a>现代隔离方式</h2><p>x86 CPU：分段分页。分段被证明是一种低开销的隔离方式。</p>
+<p>x86-64：分页。尽管进行了许多优化，但对于需要频繁通信的子系统的隔离来说，分页仍然过于昂贵。</p>
+<p>为了改善隔离开销，CPU 供应商探索了隔离机制，并引入了对轻量级进程内隔离、控制流完整性 (CFI) 和软件故障隔离 (SFI) 的支持。</p>
+<h3 id="Intel-MPK"><a href="#Intel-MPK" class="headerlink" title="Intel MPK"></a>Intel MPK</h3><p>在 Intel SDM 第三卷中称为 protection key。</p>
+<p>4 级分页和 5 级分页将每个线性地址与 4 位保护密钥相关联（保护密钥位于映射包含线性地址的页面的分页结构条目的第 62:59 位）。 两个保护密钥功能根据其保护密钥控制对线性地址的访问：<br>• 如果CR4.PKE &#x3D; 1，则PKRU 寄存器针对每个保护密钥确定是否可以读取或写入具有该保护密钥的用户模式地址。<br>• 如果CR4.PKS &#x3D; 1，则IA32_PKRS MSR（MSR 索引6E1H）针对每个保护密钥确定是否可以读取或写入具有该保护密钥的管理员模式地址。<br>32 位分页和 PAE 分页不将线性地址与保护密钥相关联。 出于第 4.6.1 节的目的，对于使用这些分页模式中的任何一种的所有保护密钥都隐式允许读取和写入。<br>PKRU 寄存器（用户页面的保护密钥权限）是一个 32 位寄存器，其格式如下：对于每个 i (0 ≤ i ≤ 15)，PKRU[2i] 是保护密钥 i (ADi ）； PKRU[2i+1] 是保护密钥 i (WDi) 的写禁止位。 IA32_PKRS MSR 具有相同的格式（MSR 的位 63:32 被保留并且必须为零）。<br>软件可以使用 ECX &#x3D; 0 的 RDPKRU 和 WRPKRU 指令来读取和写入 PKRU。 此外，PKRU 寄存器处于 XSAVE 管理状态，因此可以由 XSAVE 功能集中的指令读写。 有关 XSAVE 功能集的更多信息，请参阅《英特尔® 64 和 IA-32 架构软件开发人员手册》第 1 卷第 13 章“使用 XSAVE 功能集管理状态”。<br>软件可以使用 RDMSR 和 WRMSR 指令来读写 IA32_PKRS MSR。 使用 WRMSR 对 IA32_PKRS MSR 的写入未序列化。 IA32_PKRS MSR 不受 XSAVE 管理。<br>线性地址的保护键如何控制对地址的访问取决于线性地址的模式：<br>• 线性地址的保护密钥仅控制对该地址的数据访问。 它不会以任何方式影响从地址读取指令。<br>• 如果 CR4.PKE &#x3D; 0，则用户模式地址的保护密钥不控制对该地址的数据访问（就第 4.6.1 节而言，所有保护密钥都隐式允许读取和写入用户模式地址） ）。<br>如果 CR4.PKE &#x3D; 1，则用户模式地址的保护密钥 i 的使用取决于 PKRU 寄存器的值：<br>— 如果 ADi &#x3D; 1，则不允许数据访问。<br>— 如果 WDi &#x3D; 1，则可能会拒绝某些数据写入访问权限：<br>• 不允许用户模式写访问。<br>• 如果CR0.WP &#x3D; 1，则不允许管理程序模式写访问。（如果CR0.WP &#x3D; 0，WDi 不影响<br>使用保护密钥 i 对用户模式地址进行管理员模式写访问。）<br>• 如果 CR4.PKS &#x3D; 0，则管理员模式地址的保护密钥不控制对该地址的数据访问（就第 4.6.1 节而言，所有保护密钥都隐式允许读取和写入管理员模式地址） ）。<br>如果 CR4.PKS &#x3D; 1，则管理模式地址的保护密钥 i 的使用取决于 IA32_PKRS MSR 的值：<br>— 如果 ADi &#x3D; 1，则不允许数据访问。<br>— 如果 WDi &#x3D; 1，则在 CR0.WP &#x3D; 1 时不允许写访问。（如果 CR0.WP &#x3D; 0，则 IA32_PKRS.WDi 不允许<br>使用保护密钥影响对管理员模式地址的写访问 i.) 保护密钥适用于影子堆栈访问，就像它们适用于普通数据访问一样。</p>
+<h3 id="ARM-MTE"><a href="#ARM-MTE" class="headerlink" title="ARM MTE"></a>ARM MTE</h3><h3 id="ARM-PAC"><a href="#ARM-PAC" class="headerlink" title="ARM PAC"></a>ARM PAC</h3><h3 id="Rust"><a href="#Rust" class="headerlink" title="Rust"></a>Rust</h3><h2 id="攻击方式"><a href="#攻击方式" class="headerlink" title="攻击方式"></a>攻击方式</h2>]]></content>
       <tags>
         <tag>论文研读</tag>
         <tag>安全隔离</tag>
