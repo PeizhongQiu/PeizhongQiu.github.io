@@ -1623,6 +1623,7 @@ EPCM(DS:RCX).VALID := 1;
     <url>/p/95362efb.html</url>
     <content><![CDATA[<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>WebAssembly（wasm）：safe，portable，low-level code format，专为高效执行和紧凑表示而设计。<br>它的主要目标是在 Web 上启用高性能应用程序，但它没有做出任何特定于 Web 的假设或提供特定于 Web 的功能，因此它也可以在其他环境中使用。</p>
 <p>WebAssembly 是由 W3C 社区团体开发的开放标准。本文档介绍了核心 WebAssembly 标准的 2.0 版（草案 2023-12-01）。预计它将被未来具有附加功能的新增量版本所取代。</p>
+<span id="more"></span>
 <h3 id="设计目标"><a href="#设计目标" class="headerlink" title="设计目标"></a>设计目标</h3><ul>
 <li>Fast, safe, and portable semantics:<ul>
 <li>快速：以接近本机代码的性能执行，利用所有当代硬件的通用功能。</li>
@@ -1684,6 +1685,7 @@ EPCM(DS:RCX).VALID := 1;
     <title>Webassembly 学习（2）Structure</title>
     <url>/p/f4d3d34.html</url>
     <content><![CDATA[<h2 id="Conventions"><a href="#Conventions" class="headerlink" title="Conventions"></a>Conventions</h2><p>WebAssembly 是一种具有多种具体表示形式（二进制格式和文本格式）的编程语言。两者都映射到一个共同的结构。为了简洁起见，该结构以抽象语法的形式描述。本规范的所有部分都是根据此抽象语法定义的。</p>
+<span id="more"></span>
 <h3 id="语法符号"><a href="#语法符号" class="headerlink" title="语法符号"></a>语法符号</h3><p>在定义抽象语法的语法规则时采用以下约定。</p>
 <ul>
 <li>Terminal symbols（原子）以无衬线字体或符号形式书写：i32、end。</li>
